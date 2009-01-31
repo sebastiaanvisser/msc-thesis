@@ -1,0 +1,18 @@
+Name:             gstore
+Version:          0.0.0
+Description:      pure functional generic storage
+Synopsis:         pure functional generic storage
+Category:         Data
+License:          BSD3
+License-file:     LICENSE
+Author:           Sebastiaan Visser
+Maintainer:       sfvisser@cs.uu.nl
+Build-Type:       Simple
+Build-Depends:    base
+
+GHC-Options:      -Wall
+Extensions:       CPP
+HS-Source-Dirs:   src
+Other-modules:    
+Exposed-modules:  
+
