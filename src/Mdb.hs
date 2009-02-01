@@ -1,6 +1,5 @@
 module Mdb where
 
-import Prelude hiding (lookup)
 import Storage
 import Tree
 
@@ -32,23 +31,20 @@ jurassicPark = Movie "Jurassic Park" "Steven Spielberg" ["Sam Neill", "Richard A
 anchorMan    = Movie "Anchorman"     "Adam McKay"       ["Will Ferell", "Christina Applegate", "Steve Carell"]
 zoolander    = Movie "Zoolander"     "Geen idee"        ["Ben Stiller"]
 
-insertWithTitle :: Movie -> Database -> Database
-insertWithTitle = insertWith title
-
-mdb :: Database
-mdb = 
-    insertWithTitle jurassicPark
-  $ insertWithTitle anchorMan
-  $ insertWithTitle zoolander
+mDB :: Database
+mDB = 
+    insertWith title anchorMan
+  $ insertWith title jurassicPark
+  $ insertWith title zoolander
   $ empty
 
 directorOf :: String -> String
-directorOf movie = ("not found" `maybe` director) (lookup movie mdb)
+directorOf movie = ("not found" `maybe` director) (select movie mDB)
 
 -------------------------------------------------------------------------------
 
 myCharList = "The quick brown fox jumped over the lazy dog!"
+numDB = fromList $ zip myCharList [0..]
 
-numTree = fromList $ zip myCharList [0..]
-
+-- mytest = traceSelect 'q' numDB
 
