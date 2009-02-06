@@ -6,8 +6,9 @@
 \usepackage{amsmath}
 \usepackage{pxfonts}
 \usepackage{eulervm}
-\usepackage{xcolor}
 \usepackage[usenames]{color}
+
+\usepackage{draft}
 
 \addtolength{\textheight}{2.4cm}
 %\addtolength{\hoffset}{ -0.8cm}
@@ -23,9 +24,9 @@
 
 \begin{document}
 \maketitle
-\abstract{\todo{abstract here}}
+\abstract{abstract here}
 
-\include{intro}
+\input{intro}
 
 \bibliographystyle{plain}
 \bibliography{paper}

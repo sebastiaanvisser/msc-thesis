@@ -1,7 +1,7 @@
 all: paper.pdf
 	open $<
 
-paper.pdf: paper.tex intro.tex
+paper.pdf: paper.tex intro.tex draft.sty
 
 %.tex: %.lhs
 	lhs2Tex -o $@ $<
