@@ -1,4 +1,4 @@
-module IO where
+module Heap.FileIO where
 
 import Control.Monad
 import Data.Char

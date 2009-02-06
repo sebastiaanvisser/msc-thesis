@@ -8,7 +8,7 @@ import Control.Monad.State
 import Data.Maybe
 import Data.Record.Label
 import Data.Word
-import IO
+import Heap.FileIO
 import System.IO
 import qualified Data.ByteString as B
 import qualified Data.ByteString.UTF8 as U
@@ -200,7 +200,7 @@ storeString s = do
 
 main :: IO ()
 main = do
-  runHeap "test.db" $ do
+  runHeap "../data/test.db" $ do
     get >>= liftIO . print 
     dump
 
