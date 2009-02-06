@@ -1,7 +1,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Store where
+module Heap.FileHeap where
 
 import Control.Monad
 import Control.Monad.State

@@ -1,4 +1,4 @@
-module Mdb where
+module Sample where
 
 import Storage
 import Tree
