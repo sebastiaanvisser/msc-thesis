@@ -22,27 +22,32 @@ finsert _ f a b (Branch c d l r)
 fromList :: Ord a => [(a, b)] -> Tree a b
 fromList = foldr (uncurry insert) empty
 
-fLookup :: (Ord a, Monad m) => (a -> f -> m b) -> a -> FTree a b f -> m b
+fLookup
+  :: (Ord a, Monad m)
+  => a
+  -> (f -> m b)
+  -> FTree a b f
+  -> m b
 fLookup _ _ Leaf = fail "element not found"
-fLookup f a (Branch c d l r) =
+fLookup a f (Branch c d l r) =
   case a `compare` c of
     EQ -> return d
-    LT -> f a l
-    GT -> f a r
+    LT -> f l
+    GT -> f r
 
 annLookup
   :: (Ord a, Monad m)
-  => (m b -> c)    -- lifter for query result
-  -> (a -> f -> c) -- recursive annotated lookup
-  -> a             -- key to search for
-  -> FTree a b f   -- tree to search in
-  -> c             -- lifted query result
-annLookup p _ _ Leaf = p $ fail "element not found"
-annLookup p f a (Branch c d l r) =
+  => a            -- key to search for
+  -> (m b -> c)   -- lifter for query result
+  -> (f -> c)     -- recursive annotated lookup
+  -> FTree a b f  -- tree to search in
+  -> c            -- lifted query result
+annLookup _ p _ Leaf = p $ fail "element not found"
+annLookup a p f (Branch c d l r) =
   case a `compare` c of
     EQ -> p (return d)
-    LT -> f a l
-    GT -> f a r
+    LT -> f l
+    GT -> f r
 
 -- Real domain.
 
@@ -55,6 +60,7 @@ withFTree f = Tree . f . ftree
 empty :: Tree a b
 empty = Tree (In fempty)
 
+-- todo fix insert
 insert :: Ord a => a -> b -> Tree a b -> Tree a b
 insert a b = withFTree $ fixM (\f -> finsert In (\_ _ -> f) a b)
 
@@ -64,11 +70,12 @@ insertWith f a = insert (f a) a
 --
 
 lookup :: (Ord a, Monad m) => a -> Tree a b -> m b
-lookup a = fixQ (\f -> fLookup (const f) a) . ftree
+lookup a = fixQ (fLookup a) . ftree
 
 traceLookup :: (Ord a, Monad m) => a -> Tree a b -> (m b, [a])
-traceLookup a = traceQ (\l q -> annLookup l (const q) a) key . ftree
+traceLookup a = traceQ (annLookup a) key . ftree
 
-ioLookup :: (Ord a, Monad m) => a -> Tree a b -> IO (m b)
-ioLookup a = ioQ (\l q -> annLookup l (const q) a) . ftree
+ioFixLookup :: (Ord a, Monad m, Show a, Show b) => a -> Tree a b -> IO (m b)
+ioFixLookup a = ioFixQ proc (annLookup a) . ftree
+  where proc c = print c >> return c
 

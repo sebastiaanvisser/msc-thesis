@@ -17,34 +17,49 @@ fixQ :: ((Fix f -> a) -> f (Fix f) -> a) -> Fix f -> a
 fixQ q = q (fixQ q) . out
 
 -- Annotated queries.
-annQ
-  :: (Fix f -> t)                          -- Tree indexed lift function.
-  -> (Fix f -> b -> c)                     -- Tree indexed post processor.
+annFixQ
+  :: (Fix f -> t)                          -- Container indexed lift function.
+  -> (Fix f -> b -> c)                     -- Container indexed post processor.
   -> (t -> (Fix f -> c) -> f (Fix f) -> b) -- Real query function.
   -> Fix f                                 -- Container to query in.
   -> b                                     -- Annotate query result.
-annQ l p q c = q (l c) (p c . annQ l p q) (out c)
+annFixQ l p q c = q (l c) (p c . annFixQ l p q) (out c)
 
+-- Annotated query that tracks all nodes it traverses.
 traceQ
   :: ((t -> (t, [a])) -> (Fix f -> (b, [a])) -> f (Fix f) -> (b, [a]))
   -> (f (Fix f) -> a)
   -> Fix f
   -> (b, [a])
-traceQ q s = annQ lift post q 
+traceQ q s = annFixQ lift post q 
   where lift c a      = (a, [s (out c)])
         post c (a, b) = (a,  s (out c) : b)
 
+-- Annotated queries in some monad.
+monadicQ
+  :: Monad m        -- Monad we live in.
+  => (t -> m a)     -- Lifted unwrap function.
+  ->   ((c -> m c)  -- Lift function.
+     -> (t -> m b)  -- Post processor.
+     -> a           -- Recursive container to query in.
+     -> m b)        -- Recursive lifted query result.
+  -> t              -- Container to query in.
+  -> m b            -- Lifted query result.
+monadicQ p q c = p c >>= q return (monadicQ p q)
+
+-- Annotated queries in the IO monad.
 ioQ
-  ::   ((a -> IO a)    -- lift function
-    -> (Fix f -> IO b) -- post processor
-    -> f (Fix f)       -- recursive container
-    -> IO b)           -- recursive query result
-  -> Fix f             -- container
-  -> IO b              -- query result in IO
-ioQ q c = do
-  print "trace"
-  let c'   = out c
-      lift = return
-      post = ioQ q
-  q lift post c'
+  :: (t -> IO a)
+  -> ((c -> IO c) -> (t -> IO b) -> a -> IO b)
+  -> t
+  -> IO b
+ioQ = monadicQ
+
+-- Annotated queries on fix-point containers inside the IO monad.
+ioFixQ
+  :: (f (Fix f) -> IO a)
+  -> ((c -> IO c) -> (Fix f -> IO b) -> a -> IO b)
+  -> Fix f
+  -> IO b
+ioFixQ p = ioQ (p . out)
 

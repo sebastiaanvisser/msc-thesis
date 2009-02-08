@@ -2,6 +2,7 @@ module Sample where
 
 import Prelude hiding (lookup)
 import Container.Tree
+import Generic.Annotate
 
 type Title    = String
 type Director = String
@@ -49,10 +50,10 @@ myCharList = "The quick brown fox jumped over the lazy dog!"
 numDB :: Tree Char Integer
 numDB = fromList $ zip myCharList [0..]
 
-mytest :: (Maybe Integer, String)
-mytest = traceLookup 'q' numDB :: (Maybe Integer, [Char])
+mytest0 :: (Maybe Integer, String)
+mytest0 = traceLookup 'q' numDB :: (Maybe Integer, [Char])
 
-mytest2 :: IO (Maybe Integer)
-mytest2 = ioLookup 'q' numDB :: IO (Maybe Integer)
+mytest1 :: IO (Maybe Integer)
+mytest1 = ioFixLookup 'q' numDB :: IO (Maybe Integer)
 
 
