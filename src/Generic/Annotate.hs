@@ -1,10 +1,10 @@
 {-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
-module Storage where
+module Generic.Annotate where
 
 newtype Fix f = In {out :: f (Fix f)}
 
 instance Show (f (Fix f)) => Show (Fix f) where
-  show = ("[| " ++) . (++ " |]") . show . out
+  show = const "..." -- ("[| " ++) . (++ " |]") . show . out
 
 -- Tying the knots for recursive computations.
 
@@ -24,4 +24,27 @@ annQ
   -> Fix f                                 -- Container to query in.
   -> b                                     -- Annotate query result.
 annQ l p q c = q (l c) (p c . annQ l p q) (out c)
+
+traceQ
+  :: ((t -> (t, [a])) -> (Fix f -> (b, [a])) -> f (Fix f) -> (b, [a]))
+  -> (f (Fix f) -> a)
+  -> Fix f
+  -> (b, [a])
+traceQ q s = annQ lift post q 
+  where lift c a      = (a, [s (out c)])
+        post c (a, b) = (a,  s (out c) : b)
+
+ioQ
+  ::   ((a -> IO a)    -- lift function
+    -> (Fix f -> IO b) -- post processor
+    -> f (Fix f)       -- recursive container
+    -> IO b)           -- recursive query result
+  -> Fix f             -- container
+  -> IO b              -- query result in IO
+ioQ q c = do
+  print "trace"
+  let c'   = out c
+      lift = return
+      post = ioQ q
+  q lift post c'
 

@@ -16,11 +16,9 @@ module Heap.FileHeap (
   ) where
 
 import Prelude hiding (read)
-import Control.Monad
 import Control.Monad.State
 import Data.Maybe
 import Data.Record.Label
-import Data.Word
 import Heap.FileIO
 import System.IO
 import qualified Data.ByteString as B
@@ -44,7 +42,15 @@ data FileHeap =
   , _file     :: Handle
   } deriving Show
 
+
 $(mkLabels [''Pointer, ''FileHeap])
+
+file     :: Label FileHeap Handle
+heapSize :: Label FileHeap Int
+allocMap :: Label FileHeap (I.IntMap [Int])
+payload  :: Label Pointer (Maybe B.ByteString)
+size     :: Label Pointer Size
+offset   :: Label Pointer Offset
 
 type Heap m = StateT FileHeap IO m
 
@@ -153,10 +159,10 @@ readAllocationMap o = do
 findFreeBlock :: Size -> Heap (Maybe (Offset, Size))
 findFreeBlock i = do
   a <- getM allocMap
-  let min = I.minViewWithKey $ snd $ I.split (i-1) a
-  return $ case min of
-    Just ((s, o:xs), _) -> Just (o, s)
-    _                   -> Nothing
+  let mini = I.minViewWithKey $ snd $ I.split (i-1) a
+  return $ case mini of
+    Just ((s, o:_), _) -> Just (o, s)
+    _                  -> Nothing
 
 splitThreshold :: Int
 splitThreshold = 4
@@ -173,7 +179,7 @@ allocate i = do
       return $ Pointer e i Nothing
 
     -- Free block with sufficient size found, use this block.
-    Just h@(o, s) -> do
+    Just (o, s) -> do
       if s > headerSize + i + headerSize + splitThreshold
         then do
           liftIO (print i)

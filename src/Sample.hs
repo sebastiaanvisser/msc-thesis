@@ -1,7 +1,7 @@
 module Sample where
 
-import Storage
-import Tree
+import Prelude hiding (lookup)
+import Container.Tree
 
 type Title    = String
 type Director = String
@@ -39,12 +39,20 @@ mDB =
   $ empty
 
 directorOf :: String -> String
-directorOf movie = ("not found" `maybe` director) (select movie mDB)
+directorOf movie = ("not found" `maybe` director) (lookup movie mDB)
 
 -------------------------------------------------------------------------------
 
+myCharList :: String
 myCharList = "The quick brown fox jumped over the lazy dog!"
+
+numDB :: Tree Char Integer
 numDB = fromList $ zip myCharList [0..]
 
--- mytest = traceSelect 'q' numDB
+mytest :: (Maybe Integer, String)
+mytest = traceLookup 'q' numDB :: (Maybe Integer, [Char])
+
+mytest2 :: IO (Maybe Integer)
+mytest2 = ioLookup 'q' numDB :: IO (Maybe Integer)
+
 
