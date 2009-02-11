@@ -1,5 +1,4 @@
 \documentclass[10pt,twocolumn,serif,xcolor=dvipsnames]{article}
-%\documentclass[12pt,serif,xcolor=dvipsnames]{article}
 
 %include polycode.fmt
 
@@ -10,15 +9,17 @@
 
 \usepackage{draft}
 
-\addtolength{\textheight}{2.4cm}
-%\addtolength{\hoffset}{ -0.8cm}
-%\addtolength{\voffset}{ -2cm}
-\addtolength{\textwidth}{1.0cm}
+\addtolength{\textheight}{1in}
+\addtolength{\voffset}{ -0.5in}
+\addtolength{\textwidth}{0.4in}
+\addtolength{\hoffset}{ -0.2in}
+%\setlength{\parindent}{0pt}
+%\setlength{\parskip}{0.06in} % \baselineskip}
 
 \definecolor{stress}{rgb}{0.50,0.50,0.50} 
 \newcommand{\stress}[1]{\textcolor{stress}{#1}}
 
-\title{Document title}
+\title{Proposal draft: Generic persistency of Haskell data types}
 \author{Sebastiaan Visser}
 \date{\today}
 
