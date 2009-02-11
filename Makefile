@@ -1,15 +1,13 @@
 all: paper.pdf
 	open $<
 
-paper.pdf: paper.tex intro.tex draft.sty
+paper.pdf: cont.tex more.tex paper.tex pers.tex seri.tex stor.tex intro.tex draft.sty
 
 %.tex: %.lhs
 	lhs2Tex -o $@ $<
 
-%.pdf: %.tex
+%.pdf: %.tex %.bib
 	latexmk -pdf $<
-
-# paper.bbl
 
 #paper.bbl: paper.bib
 #	bibtex paper
