@@ -2,22 +2,19 @@
 
 \section{Introduction}
 
-\review{
-Haskell is a powerful language for processing data. Algebraic data types (ADTs)
-allow programmers to compose their data in a structured and type safe way,
-functions can be used to process this data. All of this takes place in internal
-memory, somewhere deeply buried in the application's storage heap.
+\review{Haskell is a powerful language for processing data. Algebraic data
+types (ADTs) allow programmers to compose their data in a structured and type
+safe way, functions can be used to process this data. All of this takes place
+in internal memory, somewhere deeply buried in the application's storage heap.
 Unfortunately there are currently no systems available for Haskell that allow
 the programmer to process data stored on an external storage device with the
-same power and flexibility as you would have when dealing with in-memory data.
-}
+same power and flexibility as you would have when dealing with in-memory data.}
 
-\review{
-Currently there are several ways to make Haskell data persistent on disk.
-Unfortunately, all of the systems available lack some important properties or
-do not fit the functional paradigm well. The following enumeration lists the
-most common ways of persisting your data in Haskell today.
-}
+\review{Currently there are several ways to make Haskell data persistent on
+disk.  Unfortunately, all of the systems available lack some important
+properties or do not fit the functional paradigm well. The following
+enumeration lists the most common ways of persisting your data in Haskell
+today.}
 
 \begin{itemize}
 
@@ -50,9 +47,9 @@ most common ways of persisting your data in Haskell today.
   which you would normally manage your data are replaced by the internals of
   the database.}
 
-  \review{\emph{Currently both Americo Vargas Villazon and Chris
-  Eidhof\cite{chris} are working on (or making use of) generic bindings to
-  existing database systems.}}
+  \review{\emph{Currently both Americo Vargas Villazon and Chris Eidhof are
+  working on (or making use of) generic bindings to existing database
+  systems.}}
 
   \item
   \review{Not all libraries for data persistency make use of RDBMSs, other
@@ -113,18 +110,20 @@ following properties.}
   functions on pure data.}
 
   \item
-  \draft{It should be able to freely navigate the persistent data structure
-  without reading and writing the entire storage at once. Performing a find
-  action on an persistent AVL tree should actually run in |O(log n)| and should
-  not touch more data than necessary for this action.}
+  \review{It should be possible to freely navigate the persistent data structure
+  without reading and writing the entire storage at once. For example,
+  performing a find action on an persistent AVL tree should actually run in
+  |O(log n)| and should not touch more data than necessary for this action.}
 
   \item
-  \draft{The system should be implemented in pure Haskell and should not rely
+  \review{The system should be implemented in pure Haskell and should not rely
   on external database tools. This keeps the system lightweight and gives us
-  the possibility to keep the system `functional'}
+  the possibility to keep things `functional'}
 
 \end{itemize}
 
-\draft{The next sections explains the technical aspects that are needed in
-order to compose the system.}
+\review{The next sections explains the technical aspects that are needed in
+order to compose the system. Because this document is still a proposal, some
+functions are not yet implemented as displayed here and might need some
+additional research.}
 

@@ -5,24 +5,40 @@
 \usepackage{amsmath}
 \usepackage{pxfonts}
 \usepackage{eulervm}
+%\usepackage{mathpazo}
 \usepackage[usenames]{color}
 
+% \usepackage{my}
 \usepackage{draft}
 
-\addtolength{\textheight}{1.2in}
-\addtolength{\voffset}{ -0.6in}
-\addtolength{\textwidth}{1.0in}
-\addtolength{\hoffset}{ -0.5in}
-\setlength{\parindent}{0pt}
-\setlength{\parskip}{\baselineskip}
+\setlength{\hoffset}{ -1in}
+\setlength{\voffset}{ -1in}
+
+\setlength{\topmargin}{1in}
+\setlength{\headheight}{0pt}
+\setlength{\headsep}{0pt}
+
+\setlength{\evensidemargin}{.75in}
+\setlength{\oddsidemargin}{.75in}
+
+% \addtolength{\textheight}{1.2in}
+% \addtolength{\voffset}{ -0.6in}
+% \addtolength{\textwidth}{1.0in}
+% \addtolength{\hoffset}{ -0.5in}
+% \setlength{\parindent}{0pt}
+% \setlength{\parskip}{\baselineskip}
 
 \definecolor{stress}{rgb}{0.50,0.50,0.50} 
 \newcommand{\stress}[1]{\textcolor{stress}{#1}}
 
 \title{Proposal draft: Generic persistency of Haskell data types\\
 \large{Tying the knot, persistently.}}
-\author{Sebastiaan Visser}
+\authorinfo{Sebastiaan Visser}
 \date{\today}
+
+\authorinfo{Sebastiaan Visser}
+           {University Utrecht}
+           {sfvisser@cs.uu.nl}
 
 \begin{document}
 \maketitle
