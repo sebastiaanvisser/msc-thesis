@@ -100,6 +100,3 @@ make the usage as clean as possible without losing to much expressiveness.}
 for query functions, the same ideas can be used for producer and modifier
 functions.}
 
->insertP :: Ord a => a -> b -> PTree a b -> IO (PTree a b)
->insertP a = monadicM (write . serialize) . insertA a
-

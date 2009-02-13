@@ -16,7 +16,7 @@ properties or do not fit the functional paradigm well. The following
 enumeration lists the most common ways of persisting your data in Haskell
 today.}
 
-\begin{itemize}
+\begin{itemize}{}{\leftmargin=0in}
 
   \item
   \review{There are good connectors to existing relational database management

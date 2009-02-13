@@ -8,7 +8,7 @@ fulfils our demands. We need a layer for flexible binary data storage, a layer
 for generic serialization and deserialization of Haskell data values, a layer
 to tie Haskell container data types to the persistent storage, a basic set of
 efficient data structures to manage your data and a nice interface towards the
-programmer. The concrete implementation of these layers leaves room for a large
+programmer. The concrete implementation of these layers leaves room to a large
 amount of design choices and considerations, some of which are enumerated
 here.}
 

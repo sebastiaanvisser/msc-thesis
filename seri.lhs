@@ -15,6 +15,11 @@ streams of bits and vice versa:
 >serialize    :: a -> ByteString
 >deserialize  :: ByteString -> Maybe a
 
+Or, when we are sure the data must be of the type we expect so the bit patterns
+match:
+
+>unsafeDeserialize  :: ByteString -> a
+
 \fancy{There are several libraries available that can be used for generic
 serialization, all of them having there own advantages and disadvantages. It is
 interesting to investigate which of generic programming libraries
