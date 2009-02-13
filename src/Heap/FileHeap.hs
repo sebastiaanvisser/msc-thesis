@@ -205,8 +205,12 @@ free p = do
       shrink (headerSize + s)
       accessFile (flip hSetFileSize (fromIntegral o))
 
-read :: Pointer -> Heap (Maybe B.ByteString)
-read = return . lget payload
+read :: Offset -> Heap B.ByteString
+read o = do
+  p <- unsafeReadBlock o
+  case lget payload p of
+    Nothing -> error "reading from unoccupied pointer"
+    Just pl -> return pl
 
 write :: B.ByteString -> Pointer -> Heap ()
 write bs b = writeBlock (lset payload (Just bs) b)

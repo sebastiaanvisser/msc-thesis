@@ -35,15 +35,15 @@ fLookup a f (Branch c d l r) =
     LT -> f l
     GT -> f r
 
-annLookup
+lookupA
   :: (Ord a, Monad m)
   => a            -- key to search for
   -> (m b -> c)   -- lifter for query result
   -> (f -> c)     -- recursive annotated lookup
   -> FTree a b f  -- tree to search in
   -> c            -- lifted query result
-annLookup _ p _ Leaf = p $ fail "element not found"
-annLookup a p f (Branch c d l r) =
+lookupA _ p _ Leaf = p $ fail "element not found"
+lookupA a p f (Branch c d l r) =
   case a `compare` c of
     EQ -> p (return d)
     LT -> f l
@@ -73,9 +73,9 @@ lookup :: (Ord a, Monad m) => a -> Tree a b -> m b
 lookup a = fixQ (fLookup a) . ftree
 
 traceLookup :: (Ord a, Monad m) => a -> Tree a b -> (m b, [a])
-traceLookup a = traceQ (annLookup a) key . ftree
+traceLookup a = traceQ (lookupA a) key . ftree
 
 ioFixLookup :: (Ord a, Monad m, Show a, Show b) => a -> Tree a b -> IO (m b)
-ioFixLookup a = ioFixQ proc (annLookup a) . ftree
+ioFixLookup a = ioFixQ proc (lookupA a) . ftree
   where proc c = print c >> return c
 
