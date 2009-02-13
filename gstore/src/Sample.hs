@@ -2,10 +2,12 @@
 
 module Sample where
 
+import Data.Binary
 import Container.Tree
 import Generic.Annotate
 import Generic.Core
 import Generic.Persist
+import Data.Binary.Generic.Put
 import Prelude hiding (lookup)
 
 type Title    = String
@@ -28,6 +30,10 @@ instance PFView Movie where
 
   to (Inl (K t))                           = Ref t
   to (Inr (Prod (K t) (Prod (K d) (K c)))) = Movie t d c
+
+instance Binary Movie where
+  put = gput
+  get = undefined
 
 -- Compare movies by title.
 instance Eq Movie where
@@ -67,4 +73,8 @@ mytest0 = traceLookup 'q' numDB :: (Maybe Integer, [Char])
 
 mytest1 :: IO (Maybe Integer)
 mytest1 = ioFixLookup 'q' numDB :: IO (Maybe Integer)
+
+t = Branch "Jura" jurassicPark () ()
+
+encodeDB = encode t
 

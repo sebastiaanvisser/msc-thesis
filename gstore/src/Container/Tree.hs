@@ -1,7 +1,12 @@
+{-# LANGUAGE TypeFamilies #-}
+
 module Container.Tree where
 
 import Prelude hiding (lookup)
 import Generic.Annotate
+import Generic.Core
+import Data.Binary
+import Data.Binary.Generic.Put
 
 -- Fixpoint parametrized domain.
 
@@ -9,6 +14,19 @@ data FTree a b f =
     Leaf
   | Branch {key :: a, val :: b, left :: f, right :: f}
   deriving (Eq, Ord, Show, Read)
+
+instance PFView (FTree a b f) where
+  type PF (FTree a b f) = Sum Unit (Prod (Prod (K a) (K b)) (Prod (K f) (K f)))
+
+  from Leaf             = Inl Unit
+  from (Branch a b f g) = Inr (Prod (Prod (K a) (K b)) (Prod (K f) (K g)))
+
+  to (Inl Unit)                                         = Leaf
+  to (Inr (Prod (Prod (K a) (K b)) (Prod (K f) (K g)))) = Branch a b f g
+
+instance (Binary a, Binary b, Binary f) => Binary (FTree a b f) where
+  put = gput
+  get = undefined
 
 fempty :: FTree a b f
 fempty = Leaf

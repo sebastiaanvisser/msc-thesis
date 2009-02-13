@@ -1,10 +1,7 @@
 {-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 module Generic.Annotate where
 
-newtype Fix f = In {out :: f (Fix f)}
-
-instance Show (f (Fix f)) => Show (Fix f) where
-  show = const "..." -- ("[| " ++) . (++ " |]") . show . out
+import Generic.Core
 
 -- Tying the knots for recursive computations.
 

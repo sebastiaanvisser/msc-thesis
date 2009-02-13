@@ -21,7 +21,10 @@ data Con  f   r = Con  { conName :: String, unCon :: f r}   deriving Show
 
 newtype Fix f = In {out :: f (Fix f)}
 
-deriving instance Show (f (Fix f)) => Show (Fix f)
+-- deriving instance Show (f (Fix f)) => Show (Fix f)
+
+instance Show (f (Fix f)) => Show (Fix f) where
+  show = ("[| " ++) . (++ " |]") . show . out
 
 -- Generic recursive view on data types.
 
