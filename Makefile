@@ -1,7 +1,7 @@
-all: paper.pdf
+all: pre-proposal.pdf
 	open $<
 
-paper.pdf: cont.tex more.tex goal.tex paper.tex pers.tex seri.tex stor.tex intro.tex draft.sty
+pre-proposal.pdf: cont.tex more.tex goal.tex pre-proposal.tex pers.tex seri.tex stor.tex intro.tex draft.sty
 
 %.tex: %.lhs
 	lhs2Tex -o $@ $<
@@ -9,8 +9,8 @@ paper.pdf: cont.tex more.tex goal.tex paper.tex pers.tex seri.tex stor.tex intro
 %.pdf: %.tex %.bib
 	latexmk -pdf $<
 
-#paper.bbl: paper.bib
-#	bibtex paper
+#pre-proposal.bbl: pre-proposal.bib
+#	bibtex pre-proposal
 
 .PHONY: clean
 

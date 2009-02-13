@@ -12,7 +12,7 @@
 
 \pagestyle{fancy}
 
-\rhead{\emph{first proposal draft}}
+\rhead{\emph{PRE-PROPOSAL}}
 \lhead{Generic persistency of Haskell data types}
 \renewcommand{\headrulewidth}{0.4pt}
 
@@ -33,7 +33,7 @@
 \definecolor{stress}{rgb}{0.50,0.50,0.50} 
 \newcommand{\stress}[1]{\textcolor{stress}{#1}}
 
-\title{Proposal draft: Generic persistency of Haskell data types\\
+\title{PRE-PROPOSAL: Generic persistency of Haskell data types\\
 \large{Tying the knot, persistently.}}
 \author{Sebastiaan Visser}
 \date{\today}
@@ -60,7 +60,7 @@ remains lightweight and does not compromise the functional paradigm.}
 \input{more}
 
 \bibliographystyle{plain}
-\bibliography{paper}
+\bibliography{pre-proposal}
 
 \end{document}
 
