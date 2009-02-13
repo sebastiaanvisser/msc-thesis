@@ -42,7 +42,6 @@ data FileHeap =
   , _file     :: Handle
   } deriving Show
 
-
 $(mkLabels [''Pointer, ''FileHeap])
 
 file     :: Label FileHeap Handle

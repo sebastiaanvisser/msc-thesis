@@ -8,9 +8,17 @@ License-file:     LICENSE
 Author:           Sebastiaan Visser
 Maintainer:       sfvisser@cs.uu.nl
 Build-Type:       Simple
-Build-Depends:    base, utf8-string, bytestring, containers, fclabels, mtl, binary
+Build-Depends:    QuickCheck ==1.2.0.0,
+                  random ==1.0.0.1,
+                  bytestring ==0.9.1.4,
+                  base ==3.0.3.0,
+                  binary ==0.4.4,
+                  utf8-string ==0.3.4,
+                  containers ==0.2.0.0,
+                  fclabels ==0.1,
+                  mtl ==1.1.0.2
 
-GHC-Options:      -Wall
+GHC-Options:      -Wall -fno-warn-orphans
 Extensions:       CPP
 HS-Source-Dirs:   src
 Other-modules:    

@@ -4,6 +4,7 @@ module Sample where
 
 import Data.Binary
 import Container.Tree
+-- import Generic.Arbitrary
 import MovieDB
 import Prelude hiding (lookup)
 import qualified Data.ByteString.Lazy as B
