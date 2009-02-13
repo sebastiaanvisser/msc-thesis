@@ -3,7 +3,6 @@
 module Data.Binary.Generic.Put (gput) where
 
 import Data.Binary
-import Data.ByteString
 import Generic.Core
 
 class GBinary f where
