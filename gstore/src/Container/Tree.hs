@@ -1,19 +1,25 @@
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeFamilies, ScopedTypeVariables #-}
 
 module Container.Tree where
 
-import Prelude hiding (lookup)
-import Generic.Annotate
-import Generic.Core
+import Control.Applicative
+import Control.Monad
 import Data.Binary
-import Data.Binary.Generic.Put
+import Data.Binary.Generic
+import Generic.Annotate
+import Generic.Core hiding (left, right)
+import Heap.FileHeap
+import Generic.Persist
+import Prelude hiding (lookup, read)
 
--- Fixpoint parametrized domain.
+-- Binary tree parametrized by key type, value type and recursive points.
 
 data FTree a b f =
     Leaf
   | Branch {key :: a, val :: b, left :: f, right :: f}
   deriving (Eq, Ord, Show, Read)
+
+-- Generic pattern functor view.
 
 instance PFView (FTree a b f) where
   type PF (FTree a b f) = Sum Unit (Prod (Prod (K a) (K b)) (Prod (K f) (K f)))
@@ -24,21 +30,44 @@ instance PFView (FTree a b f) where
   to (Inl Unit)                                         = Leaf
   to (Inr (Prod (Prod (K a) (K b)) (Prod (K f) (K g)))) = Branch a b f g
 
+-- Generically derived binary instance.
+
 instance (Binary a, Binary b, Binary f) => Binary (FTree a b f) where
   put = gput
-  get = undefined
+  get = gget
+
+-- Basic functions.
 
 fempty :: FTree a b f
 fempty = Leaf
 
-finsert :: Ord a => (FTree a b f -> f) -> (a -> b -> f -> f) -> a -> b -> FTree a b f -> FTree a b f
-finsert p _ a b Leaf = Branch a b (p Leaf) (p Leaf)
-finsert _ f a b (Branch c d l r)
-   | a > c     = Branch c d l (f a b r)
-   | otherwise = Branch c d (f a b l) r
+fsingleton :: a -> b -> (FTree a b f -> f) -> FTree a b f
+fsingleton a b p = Branch a b (p Leaf) (p Leaf)
+
+ftriplet :: a -> b -> a -> b -> a -> b -> (FTree a b f -> f) -> FTree a b f
+ftriplet a0 b0 a1 b1 a2 b2 p =
+  Branch a1 b1
+    (p (Branch a0 b0 (p Leaf) (p Leaf)))
+    (p (Branch a2 b2 (p Leaf) (p Leaf)))
+
+tripletA
+  :: Monad m
+  => a -> b -> a -> b -> a -> b
+  -> (FTree a b f -> m f) -> m (FTree a b f)
+tripletA a0 b0 a1 b1 a2 b2 p =
+  do leaf  <- p $ Leaf
+     left  <- p $ Branch a0 b0 leaf leaf
+     right <- p $ Branch a2 b2 leaf leaf
+     return $ Branch a1 b1 left right
+
+finsert :: Ord a => a -> b -> (FTree a b f -> f) -> (f -> f) -> FTree a b f -> FTree a b f
+finsert a b p _ Leaf = Branch a b (p Leaf) (p Leaf)
+finsert a b _ f (Branch c d l r)
+   | a > c     = Branch c d l (f r)
+   | otherwise = Branch c d (f l) r
 
 fromList :: Ord a => [(a, b)] -> Tree a b
-fromList = foldr (uncurry insert) empty
+fromList = foldr (uncurry insert) emptyTree
 
 fLookup
   :: (Ord a, Monad m)
@@ -67,7 +96,14 @@ lookupA a p f (Branch c d l r) =
     LT -> f l
     GT -> f r
 
--- Real domain.
+countA :: (Num c, Monad m) => (c -> m c) -> (f -> m c) -> FTree a b f -> m c
+countA p _ Leaf = p 0
+countA p f t =
+  do a <- f (left  t)
+     b <- f (right t)
+     p (a + b + 1)
+
+---------------------- KNOTS TIED
 
 newtype Tree a b = Tree { ftree :: Fix (FTree a b) }
   deriving Show
@@ -75,12 +111,19 @@ newtype Tree a b = Tree { ftree :: Fix (FTree a b) }
 withFTree :: (Fix (FTree a b) -> Fix (FTree c d)) -> Tree a b -> Tree c d
 withFTree f = Tree . f . ftree
 
-empty :: Tree a b
-empty = Tree (In fempty)
+emptyTree :: Tree a b
+emptyTree = Tree $ In fempty
 
--- todo fix insert
+singleton :: a -> b -> Tree a b
+singleton a b = Tree . In $ fsingleton a b In
+
+triplet :: a -> b -> a -> b -> a -> b -> Tree a b
+triplet a0 b0 a1 b1 a2 b2 = Tree . In $ ftriplet a0 b0 a1 b1 a2 b2 In
+
 insert :: Ord a => a -> b -> Tree a b -> Tree a b
-insert a b = withFTree $ fixM (\f -> finsert In (\_ _ -> f) a b)
+insert a b = withFTree $ fixM $ finsert a b In
+
+-------------------------- ANNOTATED TESTS
 
 insertWith :: Ord a => (b -> a) -> b -> Tree a b -> Tree a b
 insertWith f a = insert (f a) a
@@ -96,4 +139,21 @@ traceLookup a = traceQ (lookupA a) key . ftree
 ioFixLookup :: (Ord a, Monad m, Show a, Show b) => a -> Tree a b -> IO (m b)
 ioFixLookup a = ioFixQ proc (lookupA a) . ftree
   where proc c = print c >> return c
+
+-------------------------- PERSISTENT
+
+newtype PTree a b = PTree { ptree :: FTree a b Int }
+  deriving Show
+
+treeDecoder :: (Binary a, Binary b, Binary f) => Int -> Heap (FTree a b f)
+treeDecoder = fmap decode . read
+
+tripletP :: (Binary a, Binary b) => a -> b -> a -> b -> a -> b -> Heap Int
+tripletP a0 b0 a1 b1 a2 b2 = persistentP (tripletA a0 b0 a1 b1 a2 b2)
+
+lookupP :: (Show b, Binary a, Binary b, Ord a) => a -> Int -> Heap (Maybe b)
+lookupP = monadicQ treeDecoder . lookupA
+
+-- countP :: (Binary a, Binary b, Binary f) => FTree a b f -> Int -> Heap Int
+-- countP _ = monadicQ (\x -> (treeDecoder x) :: Heap (FTree a b f)) countA
 

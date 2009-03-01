@@ -4,7 +4,6 @@ module Sample where
 
 import Data.Binary
 import Container.Tree
--- import Generic.Arbitrary
 import MovieDB
 import Prelude hiding (lookup)
 import qualified Data.ByteString.Lazy as B
@@ -19,10 +18,23 @@ mDB =
     insertWith title anchorMan
   $ insertWith title jurassicPark
   $ insertWith title zoolander
-  $ empty
+  $ emptyTree
 
 directorOf :: Title -> [Char]
 directorOf movie = ("not found" `maybe` director) (lookup movie mDB)
+
+t :: FTree String Movie ()
+t = Branch "Jura" jurassicPark () ()
+
+encodeDB :: B.ByteString
+encodeDB = encode t
+
+
+
+
+
+
+
 
 myCharList :: String
 myCharList = "The quick brown fox jumped over the lazy dog!"
@@ -35,10 +47,4 @@ mytest0 = traceLookup 'q' numDB :: (Maybe Integer, [Char])
 
 mytest1 :: IO (Maybe Integer)
 mytest1 = ioFixLookup 'q' numDB :: IO (Maybe Integer)
-
-t :: FTree String Movie ()
-t = Branch "Jura" jurassicPark () ()
-
-encodeDB :: B.ByteString
-encodeDB = encode t
 

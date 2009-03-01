@@ -5,10 +5,6 @@ import Generic.Core
 
 -- Tying the knots for recursive computations.
 
--- Modifications.
-fixM :: ((Fix f -> Fix f) -> f (Fix f) -> f (Fix f)) -> Fix f -> Fix f
-fixM m = In . m (fixM m) . out
-
 -- Queries.
 fixQ :: ((Fix f -> a) -> f (Fix f) -> a) -> Fix f -> a
 fixQ q = q (fixQ q) . out
@@ -59,4 +55,22 @@ ioFixQ
   -> Fix f
   -> IO b
 ioFixQ p = ioQ (p . out)
+
+-------------------------------------------------------------------------------
+
+-- Producers.
+fixP :: (Fix f -> f (Fix f)) -> Fix f
+fixP p = In (p (fixP p))
+
+monadicP p = p k
+  where k a = print a >> return "POINTER"
+
+
+
+
+
+
+-- Modifications.
+fixM :: ((Fix f -> Fix f) -> f (Fix f) -> f (Fix f)) -> Fix f -> Fix f
+fixM m = In . m (fixM m) . out
 

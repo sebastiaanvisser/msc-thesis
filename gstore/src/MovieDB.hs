@@ -5,7 +5,7 @@ module MovieDB where
 import Data.Binary
 import Container.Tree
 import Generic.Core
-import Data.Binary.Generic.Put
+import Data.Binary.Generic
 import Prelude hiding (lookup)
 
 type Title    = String
@@ -31,9 +31,8 @@ instance PFView Movie where
 
 instance Binary Movie where
   put = gput
-  get = undefined
+  get = gget
 
--- Compare movies by title.
 instance Eq Movie where
   a == b = title a == title b
 
