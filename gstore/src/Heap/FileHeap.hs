@@ -1,40 +1,35 @@
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE MultiParamTypeClasses, TemplateHaskell #-}
 
 module Heap.FileHeap (
     Heap
   , runHeap
-  , initHeap
-  , dumpHeap
-  , dumpAllocationMap
-
-  , Block
-  , block
-  , pointer
+  , location
 
   , allocate
   , free
   , write
   , read
+
+  , dump
+  , dumpAllocationMap
   ) where
 
 import Prelude hiding (read)
 import Control.Monad.State
 import Data.Int
 import Data.Maybe
+import Data.Word
 import Data.Record.Label
 import Heap.FileIO
 import System.IO
 import qualified Data.ByteString.Lazy as B
 import qualified Data.IntMap as I
 
+-- Data types.
+
 type Offset  = Int
 type Size    = Int
 type Header  = (Bool, Size)
-
-data Pointer =
-    PtrDirect Offset
-  | PtrBlock  Block
 
 data Block =
   Block {
@@ -50,42 +45,33 @@ data FileHeap =
   , _file     :: Handle
   } deriving Show
 
+type Heap m = StateT FileHeap IO m
+
 $(mkLabels [''Block, ''FileHeap])
 
 file     :: Label FileHeap Handle
-heapSize :: Label FileHeap Int
+heapSize :: Label FileHeap Size
 allocMap :: Label FileHeap (I.IntMap [Int])
 payload  :: Label Block (Maybe B.ByteString)
 size     :: Label Block Size
 offset   :: Label Block Offset
 
-type Heap m = StateT FileHeap IO m
+-- Helper functions.
 
-pointer :: Block -> Offset
-pointer = lget offset
-
-int2bool :: Int -> Bool
-int2bool 0 = False
-int2bool _ = True
-
-bool2int :: Bool -> Int
-bool2int False = 0
-bool2int True  = 1
+location :: Block -> Offset
+location = lget offset
 
 headerSize :: Size
 headerSize = 1 + 4
+
+splitThreshold :: Size
+splitThreshold = 4
 
 blockSize :: Block -> Size
 blockSize = (+headerSize) . lget size
 
 nextBlock :: Block -> Heap (Maybe Block)
 nextBlock b = readBlock (lget offset b + blockSize b)
-
-dumpHeap :: Heap ()
-dumpHeap = readBlock 0 >>= f
-  where
-    f Nothing  = return ()
-    f (Just b) = liftIO (print b) >> nextBlock b >>= f
 
 safeOffset :: Offset -> Heap a -> Heap (Maybe a)
 safeOffset o c = do
@@ -98,7 +84,7 @@ unsafeReadHeader o =
     hSeek h AbsoluteSeek (fromIntegral o)
     x <- read8 h
     s <- read32 h
-    return (int2bool x, s)
+    return (if x == 0 then False else True, s)
 
 readHeader :: Offset -> Heap (Maybe Header)
 readHeader o = safeOffset o (unsafeReadHeader o)
@@ -114,14 +100,11 @@ unsafeReadBlock o = do
 readBlock :: Offset -> Heap (Maybe Block)
 readBlock o = safeOffset o (unsafeReadBlock o)
 
-block :: Offset -> Heap Block
-block = unsafeReadBlock
-
 writeHeader :: Offset -> Header -> Heap ()
 writeHeader o (x, s) =
   accessFile $ \h -> do
     hSeek h AbsoluteSeek (fromIntegral o)
-    write8  h (bool2int x)
+    write8  h (if x then (1::Word8) else 0)
     write32 h s
 
 writeBlock :: Block -> Heap ()
@@ -143,23 +126,12 @@ delete s = modM allocMap (I.update f s)
   where f (_:x:xs) = Just (x:xs)
         f _        = Nothing
 
-grow, shrink :: Int -> Heap ()
+grow, shrink :: Size -> Heap ()
 grow   s = modM heapSize (+s)
 shrink s = modM heapSize (-s+)
 
 accessFile :: (Handle -> IO a) -> Heap a
 accessFile c = getM file >>= liftIO . c
-
-runHeap :: FilePath -> Heap a -> IO a
-runHeap f c = do
-  h <- openBinaryFile f ReadWriteMode
-  (a, _) <- runStateT (readAllocationMap 0 >> c) (emptyHeap h)
-  return a
-
-initHeap :: Heap ()
-initHeap = do
-  accessFile (\h -> hSetFileSize h 0)
-  writeBlock $ Block 0 0 Nothing
 
 readAllocationMap :: Offset -> Heap ()
 readAllocationMap o = do
@@ -179,11 +151,13 @@ findFreeBlock i = do
     Just ((s, o:_), _) -> Just (o, s)
     _                  -> Nothing
 
-dumpAllocationMap :: Heap ()
-dumpAllocationMap = get >>= liftIO . print
+-- Basic operations. 
 
-splitThreshold :: Int
-splitThreshold = 4
+runHeap :: FilePath -> Heap a -> IO a
+runHeap f c = do
+  h <- openBinaryFile f ReadWriteMode
+  (a, _) <- runStateT (readAllocationMap 0 >> c) (emptyHeap h)
+  return a
 
 allocate :: Size -> Heap Block
 allocate i = do
@@ -209,9 +183,8 @@ allocate i = do
           delete s
           return $ Block o s Nothing
 
-free :: Block -> Heap ()
-free p = do
-  let o = lget offset p
+free :: Offset -> Heap ()
+free o = do
   t <- getM heapSize
   s <- accessFile $ \h -> do
     hSeek h AbsoluteSeek (fromIntegral o)
@@ -231,5 +204,16 @@ read o = do
     Just pl -> return pl
 
 write :: B.ByteString -> Block -> Heap ()
-write bs b = writeBlock (lset payload (Just bs) b)
+write bs = writeBlock . lset payload (Just bs)
+
+-- Debug operations.
+
+dumpAllocationMap :: Heap ()
+dumpAllocationMap = get >>= liftIO . print
+
+dump :: Heap ()
+dump = readBlock 0 >>= f
+  where
+    f Nothing  = return ()
+    f (Just b) = liftIO (print b) >> nextBlock b >>= f
 

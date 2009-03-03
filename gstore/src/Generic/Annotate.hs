@@ -1,9 +1,25 @@
-{-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
+{-# LANGUAGE
+    FlexibleContexts
+  , UndecidableInstances
+  , TypeOperators
+ #-}
 module Generic.Annotate where
 
 import Generic.Core
+import Data.Binary
 
--- Tying the knots for recursive computations.
+-- Function composition at the type level.
+-- Compose :: (* -> *) -> (* -> *) -> * -> *
+infixr :.:
+newtype (f :.: g) a = C { unC :: f (g a) }
+  deriving Show
+
+instance Binary (f (g a)) => Binary ((f :.: g) a) where
+  get = C `fmap` get
+  put = put . unC
+
+-- Annotated fix points compose an annotation with the container.
+type AnnFix ann f = Fix (f :.: ann)
 
 -- Queries.
 fixQ :: ((Fix f -> a) -> f (Fix f) -> a) -> Fix f -> a
@@ -64,11 +80,6 @@ fixP p = In (p (fixP p))
 
 monadicP p = p k
   where k a = print a >> return "POINTER"
-
-
-
-
-
 
 -- Modifications.
 fixM :: ((Fix f -> Fix f) -> f (Fix f) -> f (Fix f)) -> Fix f -> Fix f

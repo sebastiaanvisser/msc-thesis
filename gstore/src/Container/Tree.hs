@@ -1,4 +1,9 @@
-{-# LANGUAGE TypeFamilies, ScopedTypeVariables #-}
+{-# LANGUAGE
+    TypeFamilies
+  , FlexibleContexts
+  , ScopedTypeVariables
+  , UndecidableInstances
+ #-}
 
 module Container.Tree where
 
@@ -8,9 +13,9 @@ import Data.Binary
 import Data.Binary.Generic
 import Generic.Annotate
 import Generic.Core hiding (left, right)
-import Heap.FileHeap
+import Heap.Storage
 import Generic.Persist
-import Prelude hiding (lookup, read)
+import Prelude hiding (lookup)
 
 -- Binary tree parametrized by key type, value type and recursive points.
 
@@ -51,9 +56,10 @@ ftriplet a0 b0 a1 b1 a2 b2 p =
     (p (Branch a2 b2 (p Leaf) (p Leaf)))
 
 tripletA
-  :: Monad m
+  :: (Monad m)
   => a -> b -> a -> b -> a -> b
-  -> (FTree a b f -> m f) -> m (FTree a b f)
+  -> (FTree a b f -> m f)
+  -> m (FTree a b f)
 tripletA a0 b0 a1 b1 a2 b2 p =
   do leaf  <- p $ Leaf
      left  <- p $ Branch a0 b0 leaf leaf
@@ -142,17 +148,27 @@ ioFixLookup a = ioFixQ proc (lookupA a) . ftree
 
 -------------------------- PERSISTENT
 
-newtype PTree a b = PTree { ptree :: FTree a b Int }
-  deriving Show
+type PTree a b = PFix (FTree a b)
 
-treeDecoder :: (Binary a, Binary b, Binary f) => Int -> Heap (FTree a b f)
-treeDecoder = fmap decode . read
+testTreePointer :: Persistent (PTree a b)
+testTreePointer = P 2134234
 
-tripletP :: (Binary a, Binary b) => a -> b -> a -> b -> a -> b -> Heap Int
-tripletP a0 b0 a1 b1 a2 b2 = persistentP (tripletA a0 b0 a1 b1 a2 b2)
+testPTree :: PTree Char Char
+testPTree = In $ C $ Branch 'a' 'b' testTreePointer testTreePointer
 
-lookupP :: (Show b, Binary a, Binary b, Ord a) => a -> Int -> Heap (Maybe b)
-lookupP = monadicQ treeDecoder . lookupA
+tripletP
+  :: (Binary a, Binary b)
+  => a -> b -> a -> b -> a -> b
+  -> Storage t (Persistent (PTree a b))
+tripletP a0 b0 a1 b1 a2 b2 = persistentP $ tripletA a0 b0 a1 b1 a2 b2
+
+
+
+-- tripletP :: Binary (PTree a b) => a -> b -> a -> b -> a -> b -> Storage t (Persistent (PTree a b))
+-- tripletP a0 b0 a1 b1 a2 b2 = persistentP (tripletA a0 b0 a1 b1 a2 b2)
+
+-- lookupP :: (Show b, Binary a, Binary b, Ord a) => a -> Int -> Heap (Maybe b)
+-- lookupP = monadicQ treeDecoder . lookupA
 
 -- countP :: (Binary a, Binary b, Binary f) => FTree a b f -> Int -> Heap Int
 -- countP _ = monadicQ (\x -> (treeDecoder x) :: Heap (FTree a b f)) countA

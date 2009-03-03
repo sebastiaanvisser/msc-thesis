@@ -7,6 +7,8 @@
 
 module Generic.Core where
 
+import Data.Binary
+
 -- Generic representation.
 
 data Id       r = Id   { unId :: r }                        deriving Show
@@ -25,6 +27,10 @@ newtype Fix f = In {out :: f (Fix f)}
 
 instance Show (f (Fix f)) => Show (Fix f) where
   show = ("[| " ++) . (++ " |]") . show . out
+
+instance Binary (f (Fix f)) => Binary (Fix f) where
+  get = In `fmap` get
+  put = put . out
 
 -- Generic recursive view on data types.
 

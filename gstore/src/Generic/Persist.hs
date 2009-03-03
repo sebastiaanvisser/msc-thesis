@@ -5,27 +5,18 @@ import Data.Binary
 import Data.Int
 import Generic.Annotate
 import Generic.Core
-import Heap.FileHeap
+import Heap.Storage
 import Prelude hiding (read)
 import qualified Data.ByteString.Lazy as B
 import Data.Record.Label
 
--- type PTree a b = FTree a b Pointer
+type PFix f = AnnFix Persistent f
 
 -- Persistent producer.
 
-persistentP :: Binary a => ((a -> Heap Int) -> Heap a) -> Heap Int
-persistentP p = p serializeWrite >>= serializeWrite
+persistentP
+  :: (Binary (f (Persistent (PFix f))))
+  => ((f (Persistent (PFix f)) -> Storage t (Persistent (PFix f))) -> Storage t (f (Persistent (PFix f))))
+  -> Storage t (Persistent (PFix f))
+persistentP p = let st = store . In . C in p st >>= st
 
-serializeWrite :: Binary a => a -> Heap Int
-serializeWrite a = 
-  do let bs = encode a
-     b <- allocate (fromIntegral (B.length bs))
-     write bs b
-     return (pointer b)
-
-
-
-
--- readF o = do
---   bs <- read o
