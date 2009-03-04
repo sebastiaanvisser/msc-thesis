@@ -4,7 +4,6 @@
   , FlexibleContexts
   , UndecidableInstances
   #-}
-
 module Generic.Core where
 
 import Data.Binary

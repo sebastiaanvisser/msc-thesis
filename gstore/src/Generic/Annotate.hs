@@ -10,16 +10,16 @@ import Data.Binary
 
 -- Function composition at the type level.
 -- Compose :: (* -> *) -> (* -> *) -> * -> *
-infixr :.:
-newtype (f :.: g) a = C { unC :: f (g a) }
+infixr :.
+newtype (f :. g) a = C { unC :: f (g a) }
   deriving Show
 
-instance Binary (f (g a)) => Binary ((f :.: g) a) where
+instance Binary (f (g a)) => Binary ((f :. g) a) where
   get = C `fmap` get
   put = put . unC
 
 -- Annotated fix points compose an annotation with the container.
-type AnnFix ann f = Fix (f :.: ann)
+type AnnFix f ann = Fix (f :. ann)
 
 -- Queries.
 fixQ :: ((Fix f -> a) -> f (Fix f) -> a) -> Fix f -> a

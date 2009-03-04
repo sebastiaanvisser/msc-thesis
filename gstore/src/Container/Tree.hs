@@ -56,15 +56,18 @@ ftriplet a0 b0 a1 b1 a2 b2 p =
     (p (Branch a2 b2 (p Leaf) (p Leaf)))
 
 tripletA
-  :: (Monad m)
+  :: Monad m
   => a -> b -> a -> b -> a -> b
   -> (FTree a b f -> m f)
-  -> m (FTree a b f)
+  -> m f
 tripletA a0 b0 a1 b1 a2 b2 p =
-  do leaf  <- p $ Leaf
-     left  <- p $ Branch a0 b0 leaf leaf
-     right <- p $ Branch a2 b2 leaf leaf
-     return $ Branch a1 b1 left right
+  do l0    <- p Leaf
+     l1    <- p Leaf
+     l2    <- p Leaf
+     l3    <- p Leaf
+     left  <- p $ Branch a0 b0 l0 l1
+     right <- p $ Branch a2 b2 l2 l3
+     p $ Branch a1 b1 left right
 
 finsert :: Ord a => a -> b -> (FTree a b f -> f) -> (f -> f) -> FTree a b f -> FTree a b f
 finsert a b p _ Leaf = Branch a b (p Leaf) (p Leaf)
@@ -157,7 +160,7 @@ testPTree :: PTree Char Char
 testPTree = In $ C $ Branch 'a' 'b' testTreePointer testTreePointer
 
 tripletP
-  :: (Binary a, Binary b)
+  :: (Show a, Show b, Binary a, Binary b)
   => a -> b -> a -> b -> a -> b
   -> Storage t (Persistent (PTree a b))
 tripletP a0 b0 a1 b1 a2 b2 = persistentP $ tripletA a0 b0 a1 b1 a2 b2

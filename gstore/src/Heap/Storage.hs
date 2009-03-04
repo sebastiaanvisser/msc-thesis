@@ -1,6 +1,6 @@
 module Heap.Storage (
-    Storage    {- temp -} (..)
-  , Persistent {- temp -} (..)
+    Storage    {- temp: -} (..)
+  , Persistent {- temp: -} (..)
   , run
   , store
   , retrieve
@@ -9,6 +9,7 @@ module Heap.Storage (
 
 import Prelude hiding (read)
 import Control.Monad
+import Control.Monad.Trans
 import Data.Binary
 import Heap.FileHeap
 import qualified Data.ByteString.Lazy as B
@@ -16,7 +17,9 @@ import qualified Data.ByteString.Lazy as B
 newtype Storage t a = S { unS :: Heap a }
 
 newtype Persistent a = P { unP :: Int }
-  deriving Show
+
+instance Show (Persistent a) where
+  show (P p) = "P:" ++ show p
 
 instance Binary (Persistent a) where
   get = P `fmap` get
@@ -25,6 +28,9 @@ instance Binary (Persistent a) where
 instance Monad (Storage t) where
   a >>= b  = S (unS a >>= (unS . b))
   return a = S (return a)
+
+instance MonadIO (Storage t) where
+  liftIO c = S (liftIO c)
 
 run      :: FilePath -> Storage t a -> IO a
 store    :: Binary a => a -> Storage t (Persistent a)

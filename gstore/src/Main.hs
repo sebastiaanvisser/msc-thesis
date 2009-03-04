@@ -14,17 +14,18 @@ import qualified Data.ByteString.Lazy.UTF8 as U
 --   let bs = U.fromString s in
 --   allocate (fromIntegral $ B.length bs) >>= write bs
 
--- tri :: Heap Int
--- tri = tripletP
---   "jura" jurassicPark
---   "anch" anchorMan
---   "zool" zoolander
+tri :: Storage t (Persistent (PTree String Movie))
+tri = tripletP
+  "jura" jurassicPark
+  "anch" anchorMan
+  "zool" zoolander
 
 main :: IO ()
-main = return ()
---   runHeap "../data/test.db" $ do
---     initHeap
---     tri 
+main = do
+  k <- run "../data/test.db" $ do
+    tri
+  print k
+
 -- 
 --     dumpAllocationMap
 --     dumpHeap
