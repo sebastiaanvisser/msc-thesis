@@ -5,6 +5,9 @@ module Heap.FileHeap (
   , runHeap
   , location
 
+  , unsafeReadSize
+  , writePayload
+
   , allocate
   , free
   , write
@@ -86,6 +89,12 @@ unsafeReadHeader o =
     s <- read32 h
     return (if x == 0 then False else True, s)
 
+unsafeReadSize :: Offset -> Heap Size
+unsafeReadSize o =
+  accessFile $ \h -> do
+    hSeek h AbsoluteSeek (fromIntegral (o + 4))
+    read32 h
+
 readHeader :: Offset -> Heap (Maybe Header)
 readHeader o = safeOffset o (unsafeReadHeader o)
 
@@ -102,10 +111,16 @@ readBlock o = safeOffset o (unsafeReadBlock o)
 
 writeHeader :: Offset -> Header -> Heap ()
 writeHeader o (x, s) =
-  accessFile $ \h -> do
-    hSeek h AbsoluteSeek (fromIntegral o)
-    write8  h (if x then (1::Word8) else 0)
-    write32 h s
+  accessFile $ \h ->
+    do hSeek h AbsoluteSeek (fromIntegral o)
+       write8  h (if x then (1::Word8) else 0)
+       write32 h s
+
+writePayload :: Offset -> Size -> B.ByteString -> Heap ()
+writePayload o s d = do
+  accessFile $ \h ->
+    do hSeek h AbsoluteSeek (fromIntegral (o + headerSize))
+       B.hPut h $ B.take (fromIntegral s) d
 
 writeBlock :: Block -> Heap ()
 writeBlock (Block o s d) = do

@@ -1,10 +1,16 @@
 module Heap.Storage (
+
     Storage    {- temp: -} (..)
   , Persistent {- temp: -} (..)
+  , nullP
+
   , run
   , store
   , retrieve
   , delete
+  , reuse
+  , debug
+
   ) where
 
 import Prelude hiding (read)
@@ -17,6 +23,8 @@ import qualified Data.ByteString.Lazy as B
 newtype Storage t a = S { unS :: Heap a }
 
 newtype Persistent a = P { unP :: Int }
+
+nullP = P 0
 
 instance Show (Persistent a) where
   show (P p) = "P:" ++ show p
@@ -36,6 +44,8 @@ run      :: FilePath -> Storage t a -> IO a
 store    :: Binary a => a -> Storage t (Persistent a)
 retrieve :: Binary a => Persistent a -> Storage t a
 delete   :: Persistent a -> Storage t ()
+reuse    :: Binary a => Persistent a -> a -> Storage t ()
+debug    :: Storage t ()
 
 -- Implementations.
 
@@ -50,4 +60,11 @@ store a = S $
 retrieve = S . liftM decode . read . unP
 
 delete = S . free . unP
+
+reuse (P p) a = S $
+  do s <- unsafeReadSize p
+     writePayload p s (encode a)
+     return ()
+
+debug = S $ dump
 

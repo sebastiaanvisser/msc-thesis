@@ -13,38 +13,38 @@ jurassicPark = Movie "Jurassic Park" "Steven Spielberg" ["Sam Neill", "Richard A
 anchorMan    = Movie "Anchorman"     "Adam McKay"       ["Will Ferell", "Christina Applegate", "Steve Carell"]
 zoolander    = Movie "Zoolander"     "Geen idee"        ["Ben Stiller"]
 
-mDB :: Tree Title Movie
-mDB = 
-    insertWith title anchorMan
-  $ insertWith title jurassicPark
-  $ insertWith title zoolander
-  $ emptyTree
+-- mDB :: Tree Title Movie
+-- mDB = 
+--     insertWith title anchorMan
+--   $ insertWith title jurassicPark
+--   $ insertWith title zoolander
+--   $ emptyTree
 
-directorOf :: Title -> [Char]
-directorOf movie = ("not found" `maybe` director) (lookup movie mDB)
+-- directorOf :: Title -> [Char]
+-- directorOf movie = ("not found" `maybe` director) (lookup movie mDB)
 
-t :: FTree String Movie ()
-t = Branch "Jura" jurassicPark () ()
+-- t :: FTree String Movie ()
+-- t = Branch "Jura" jurassicPark () ()
 
-encodeDB :: B.ByteString
-encodeDB = encode t
-
-
+-- encodeDB :: B.ByteString
+-- encodeDB = encode t
 
 
 
 
 
 
-myCharList :: String
-myCharList = "The quick brown fox jumped over the lazy dog!"
 
-numDB :: Tree Char Integer
-numDB = fromList $ zip myCharList [0..]
 
-mytest0 :: (Maybe Integer, String)
-mytest0 = traceLookup 'q' numDB :: (Maybe Integer, [Char])
+-- myCharList :: String
+-- myCharList = "The quick brown fox jumped over the lazy dog!"
 
-mytest1 :: IO (Maybe Integer)
-mytest1 = ioFixLookup 'q' numDB :: IO (Maybe Integer)
+-- numDB :: Tree Char Integer
+-- numDB = fromList $ zip myCharList [0..]
+
+-- mytest0 :: (Maybe Integer, String)
+-- mytest0 = traceLookup 'q' numDB :: (Maybe Integer, [Char])
+
+-- mytest1 :: IO (Maybe Integer)
+-- mytest1 = ioFixLookup 'q' numDB :: IO (Maybe Integer)
 

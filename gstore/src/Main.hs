@@ -14,17 +14,30 @@ import qualified Data.ByteString.Lazy.UTF8 as U
 --   let bs = U.fromString s in
 --   allocate (fromIntegral $ B.length bs) >>= write bs
 
-tri :: Storage t (Persistent (PTree String Movie))
+tri :: Storage t (Persistent (Tree Title Movie))
 tri = tripletP
-  "jura" jurassicPark
   "anch" anchorMan
+  "jura" jurassicPark
   "zool" zoolander
 
 main :: IO ()
-main = do
-  k <- run "../data/test.db" $ do
-    tri
-  print k
+main =
+  do run "../data/test.db" $
+       do o <- store nullP
+          p <- tri
+          reuse o p
+          debug
+
+          countP p >>= liftIO . print
+
+          k <- lookupP "anch" p
+          liftIO $ print (k :: Maybe Movie)
+
+          k <- lookupP "jura" p
+          liftIO $ print (k :: Maybe Movie)
+
+          k <- lookupP "zool" p
+          liftIO $ print (k :: Maybe Movie)
 
 -- 
 --     dumpAllocationMap

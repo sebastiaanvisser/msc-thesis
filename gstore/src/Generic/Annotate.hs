@@ -27,11 +27,11 @@ fixQ q = q (fixQ q) . out
 
 -- Annotated queries.
 annFixQ
-  :: (Fix f -> t)                          -- Container indexed lift function.
-  -> (Fix f -> b -> c)                     -- Container indexed post processor.
-  -> (t -> (Fix f -> c) -> f (Fix f) -> b) -- Real query function.
-  -> Fix f                                 -- Container to query in.
-  -> b                                     -- Annotate query result.
+  :: (Fix f -> t)                           -- Container indexed lift function.
+  -> (Fix f -> b -> c)                      -- Container indexed post processor.
+  -> (t -> (Fix f -> c) -> f (Fix f) -> b)  -- Real query function.
+  -> Fix f                                  -- Container to query in.
+  -> b                                      -- Annotate query result.
 annFixQ l p q c = q (l c) (p c . annFixQ l p q) (out c)
 
 -- Annotated query that tracks all nodes it traverses.
