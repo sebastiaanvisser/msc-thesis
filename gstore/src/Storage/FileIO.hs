@@ -1,8 +1,8 @@
 module Storage.FileIO where
 
 import Control.Monad
-import Data.Char
 import Data.Bits
+import Data.Char
 import System.IO
 
 infixl 1 <<

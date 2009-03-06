@@ -5,8 +5,8 @@
  #-}
 module Generic.Annotate where
 
-import Generic.Core
 import Data.Binary
+import Generic.Core
 
 -- Function composition at the type level.
 -- Compose :: (* -> *) -> (* -> *) -> * -> *
@@ -77,9 +77,6 @@ ioFixQ p = ioQ (p . out)
 -- Producers.
 fixP :: (Fix f -> f (Fix f)) -> Fix f
 fixP p = In (p (fixP p))
-
-monadicP p = p k
-  where k a = print a >> return "POINTER"
 
 -- Modifications.
 fixM :: ((Fix f -> Fix f) -> f (Fix f) -> f (Fix f)) -> Fix f -> Fix f

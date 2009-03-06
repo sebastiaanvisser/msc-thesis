@@ -39,7 +39,7 @@ fsingleton a b p = Branch a b (p Leaf) (p Leaf)
 
 finsert :: Ord a => a -> b -> (Tree a b f -> f) -> (f -> f) -> Tree a b f -> Tree a b f
 finsert a b p _ Leaf = Branch a b (p Leaf) (p Leaf)
-finsert a b _ f (Branch c d l r)
+finsert a _ _ f (Branch c d l r)
    | a > c     = Branch c d l (f r)
    | otherwise = Branch c d (f l) r
 
@@ -53,13 +53,13 @@ triplet
   -> (Tree a b f -> m f)
   -> m f
 triplet a0 b0 a1 b1 a2 b2 p =
-  do l0    <- p Leaf
-     l1    <- p Leaf
-     l2    <- p Leaf
-     l3    <- p Leaf
-     left  <- p (Branch a0 b0 l0 l1)
-     right <- p (Branch a2 b2 l2 l3)
-     p (Branch a1 b1 left right)
+  do l0 <- p Leaf
+     l1 <- p Leaf
+     l2 <- p Leaf
+     l3 <- p Leaf
+     lt <- p (Branch a0 b0 l0 l1)
+     rt <- p (Branch a2 b2 l2 l3)
+     p (Branch a1 b1 lt rt)
 
 lookup
   :: (Monad m, Monad n, Ord a)

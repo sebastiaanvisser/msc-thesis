@@ -2,39 +2,21 @@
 
 module Sample where
 
-import Data.Binary
 import Container.Tree
+import Storage.Storage
 import MovieDB
 import Prelude hiding (lookup)
-import qualified Data.ByteString.Lazy as B
+
+tri :: Storage t (Persistent (Tree Title Movie))
+tri = triplet
+  "anch" anchorMan
+  "jura" jurassicPark
+  "zool" zoolander
 
 jurassicPark, anchorMan, zoolander :: Movie
 jurassicPark = Movie "Jurassic Park" "Steven Spielberg" ["Sam Neill", "Richard Attenborough"]
 anchorMan    = Movie "Anchorman"     "Adam McKay"       ["Will Ferell", "Christina Applegate", "Steve Carell"]
 zoolander    = Movie "Zoolander"     "Geen idee"        ["Ben Stiller"]
-
--- mDB :: Tree Title Movie
--- mDB = 
---     insertWith title anchorMan
---   $ insertWith title jurassicPark
---   $ insertWith title zoolander
---   $ emptyTree
-
--- directorOf :: Title -> [Char]
--- directorOf movie = ("not found" `maybe` director) (lookup movie mDB)
-
--- t :: FTree String Movie ()
--- t = Branch "Jura" jurassicPark () ()
-
--- encodeDB :: B.ByteString
--- encodeDB = encode t
-
-
-
-
-
-
-
 
 -- myCharList :: String
 -- myCharList = "The quick brown fox jumped over the lazy dog!"

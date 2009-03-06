@@ -3,13 +3,10 @@ module Generic.Persist where
 
 import Control.Monad.State
 import Data.Binary
-import Data.Int
 import Generic.Annotate
 import Generic.Core
-import Storage.Storage
 import Prelude hiding (read)
-import qualified Data.ByteString.Lazy as B
-import Data.Record.Label
+import Storage.Storage
 
 type PFix  f = AnnFix f Persistent
 type PFixP f = Persistent (PFix f)

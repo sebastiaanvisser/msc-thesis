@@ -17,12 +17,11 @@ module Storage.FileHeap (
   , dumpAllocationMap
   ) where
 
-import Prelude hiding (read)
 import Control.Monad.State
-import Data.Int
 import Data.Maybe
-import Data.Word
 import Data.Record.Label
+import Data.Word
+import Prelude hiding (read)
 import Storage.FileIO
 import System.IO
 import qualified Data.ByteString.Lazy as B
@@ -87,7 +86,7 @@ unsafeReadHeader o =
     hSeek h AbsoluteSeek (fromIntegral o)
     x <- read8 h
     s <- read32 h
-    return (if x == 0 then False else True, s)
+    return (if (x :: Word8) == 0 then False else True, s)
 
 unsafeReadSize :: Offset -> Heap Size
 unsafeReadSize o =

@@ -13,17 +13,17 @@ module Storage.Storage (
 
   ) where
 
-import Prelude hiding (read)
 import Control.Monad
 import Control.Monad.Trans
 import Data.Binary
+import Prelude hiding (read)
 import Storage.FileHeap
 import qualified Data.ByteString.Lazy as B
 
-newtype Storage t a = S { unS :: Heap a }
-
+newtype Storage t  a = S { unS :: Heap a }
 newtype Persistent a = P { unP :: Int }
 
+nullP :: Persistent a
 nullP = P 0
 
 instance Show (Persistent a) where

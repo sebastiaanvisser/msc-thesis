@@ -1,9 +1,9 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 module Generic.Fixpoints where
 
-import Prelude
 import Control.Applicative
 import Generic.Core
+import Prelude
 
 data Tree a = Leaf a | Node (Tree a) (Tree a)
  deriving Show

@@ -1,11 +1,10 @@
 {-# LANGUAGE TypeFamilies #-}
-
 module MovieDB where
 
-import Data.Binary
 import Container.Tree
-import Generic.Core
+import Data.Binary
 import Data.Binary.Generic
+import Generic.Core
 import Prelude hiding (lookup)
 
 type Title    = String

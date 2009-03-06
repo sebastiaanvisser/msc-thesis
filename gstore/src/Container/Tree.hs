@@ -1,12 +1,9 @@
 module Container.Tree where
 
-import Data.Binary
 import Control.Monad
-import Generic.Annotate
-import Generic.Core hiding (left, right)
-import Storage.Storage
+import Data.Binary
 import Generic.Persist
-
+import Storage.Storage
 import qualified Container.Abstract.Tree as F
 
 -- A persistent Tree and a pointer to a persistent tree.
