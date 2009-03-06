@@ -1,4 +1,4 @@
-module Heap.Storage (
+module Storage.Storage (
 
     Storage    {- temp: -} (..)
   , Persistent {- temp: -} (..)
@@ -17,7 +17,7 @@ import Prelude hiding (read)
 import Control.Monad
 import Control.Monad.Trans
 import Data.Binary
-import Heap.FileHeap
+import Storage.FileHeap
 import qualified Data.ByteString.Lazy as B
 
 newtype Storage t a = S { unS :: Heap a }

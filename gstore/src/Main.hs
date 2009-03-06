@@ -1,9 +1,10 @@
 module Main where
 
+import Prelude hiding (lookup)
 import Container.Tree
 import Control.Monad.State
 import Generic.Persist
-import Heap.Storage
+import Storage.Storage
 import MovieDB
 import Sample
 import qualified Data.ByteString.Lazy as B
@@ -15,7 +16,7 @@ import qualified Data.ByteString.Lazy.UTF8 as U
 --   allocate (fromIntegral $ B.length bs) >>= write bs
 
 tri :: Storage t (Persistent (Tree Title Movie))
-tri = tripletP
+tri = triplet
   "anch" anchorMan
   "jura" jurassicPark
   "zool" zoolander
@@ -26,17 +27,18 @@ main =
        do o <- store nullP
           p <- tri
           reuse o p
-          debug
+--           debug
 
-          countP p >>= liftIO . print
+          count p >>= liftIO . print
+          liftIO $ putStrLn ""
 
-          k <- lookupP "anch" p
+          k <- lookup "anch" p
           liftIO $ print (k :: Maybe Movie)
 
-          k <- lookupP "jura" p
+          k <- lookup "jura" p
           liftIO $ print (k :: Maybe Movie)
 
-          k <- lookupP "zool" p
+          k <- lookup "zool" p
           liftIO $ print (k :: Maybe Movie)
 
 -- 

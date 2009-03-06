@@ -1,6 +1,6 @@
 {-# LANGUAGE MultiParamTypeClasses, TemplateHaskell #-}
 
-module Heap.FileHeap (
+module Storage.FileHeap (
     Heap
   , runHeap
   , location
@@ -23,7 +23,7 @@ import Data.Int
 import Data.Maybe
 import Data.Word
 import Data.Record.Label
-import Heap.FileIO
+import Storage.FileIO
 import System.IO
 import qualified Data.ByteString.Lazy as B
 import qualified Data.IntMap as I

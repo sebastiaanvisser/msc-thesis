@@ -37,18 +37,22 @@ fempty = Leaf
 fsingleton :: a -> b -> (Tree a b f -> f) -> Tree a b f
 fsingleton a b p = Branch a b (p Leaf) (p Leaf)
 
-ftriplet :: a -> b -> a -> b -> a -> b -> (Tree a b f -> f) -> Tree a b f
-ftriplet a0 b0 a1 b1 a2 b2 p =
-  Branch a1 b1
-    (p (Branch a0 b0 (p Leaf) (p Leaf)))
-    (p (Branch a2 b2 (p Leaf) (p Leaf)))
+finsert :: Ord a => a -> b -> (Tree a b f -> f) -> (f -> f) -> Tree a b f -> Tree a b f
+finsert a b p _ Leaf = Branch a b (p Leaf) (p Leaf)
+finsert a b _ f (Branch c d l r)
+   | a > c     = Branch c d l (f r)
+   | otherwise = Branch c d (f l) r
 
-tripletA
+
+
+
+
+triplet
   :: Monad m
   => a -> b -> a -> b -> a -> b
   -> (Tree a b f -> m f)
   -> m f
-tripletA a0 b0 a1 b1 a2 b2 p =
+triplet a0 b0 a1 b1 a2 b2 p =
   do l0    <- p Leaf
      l1    <- p Leaf
      l2    <- p Leaf
@@ -57,49 +61,22 @@ tripletA a0 b0 a1 b1 a2 b2 p =
      right <- p (Branch a2 b2 l2 l3)
      p (Branch a1 b1 left right)
 
-finsert :: Ord a => a -> b -> (Tree a b f -> f) -> (f -> f) -> Tree a b f -> Tree a b f
-finsert a b p _ Leaf = Branch a b (p Leaf) (p Leaf)
-finsert a b _ f (Branch c d l r)
-   | a > c     = Branch c d l (f r)
-   | otherwise = Branch c d (f l) r
-
-fLookup
-  :: (Ord a, Monad m)
-  => a
-  -> (f -> m b)
-  -> Tree a b f
-  -> m b
-fLookup _ _ Leaf = fail "element not found"
-fLookup a f (Branch c d l r) =
-  case a `compare` c of
-    EQ -> return d
-    LT -> f l
-    GT -> f r
-
--- lookupA
---   :: (Ord a, Monad m)
---   => a            -- key to search for
---   -> (m b -> m c)   -- lifter for query result
---   -> (f -> m c)     -- recursive annotated lookup
---   -> Tree a b f  -- tree to search in
---   -> c            -- lifted query result
-
-lookupA
+lookup
   :: (Monad m, Monad n, Ord a)
   => a
   -> (f -> m (n b))
   -> Tree a b f
   -> m (n b)
-lookupA _ _ Leaf = return $ fail "element not found"
-lookupA a f (Branch c d l r) =
+lookup _ _ Leaf = return $ fail "element not found"
+lookup a f (Branch c d l r) =
   case a `compare` c of
     EQ -> return (return d)
     LT -> f l
     GT -> f r
 
-countA :: (Num c, Monad m) => (f -> m c) -> Tree a b f -> m c
-countA _ Leaf = return 0
-countA f t =
+count :: (Num c, Monad m) => (f -> m c) -> Tree a b f -> m c
+count _ Leaf = return 0
+count f t =
   do a <- f (left  t)
      b <- f (right t)
      return (a + b + 1)

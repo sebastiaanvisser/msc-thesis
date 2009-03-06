@@ -6,7 +6,7 @@ import Data.Binary
 import Data.Int
 import Generic.Annotate
 import Generic.Core
-import Heap.Storage
+import Storage.Storage
 import Prelude hiding (read)
 import qualified Data.ByteString.Lazy as B
 import Data.Record.Label
@@ -24,18 +24,25 @@ persistentP p = p produce
 
 produce
   :: Binary (f (PFixP f))
-  => f (PFixP f) -> Storage t (PFixP f)
+  => f (PFixP f)
+  -> Storage t (PFixP f)
 produce = store . In . C
 
 -- Persistent query.
+
+persistentQ
+  :: (Binary (f (PFixP f)))
+  => ((PFixP f -> Storage t c) -> f (PFixP f) -> Storage t c)
+  -> PFixP f
+  -> Storage t c
+persistentQ q t = query t >>= worker
+  where worker = q (\v -> query v >>= worker)
 
 query
   :: Binary (f (PFixP f))
   => PFixP f
   -> Storage t (f (PFixP f))
 query p = (unC . out) `liftM` retrieve p
-
-
 
 ----------
 
