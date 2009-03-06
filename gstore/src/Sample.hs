@@ -1,5 +1,4 @@
 {-# LANGUAGE TypeFamilies #-}
-
 module Sample where
 
 import Container.Tree
@@ -9,13 +8,13 @@ import Prelude hiding (lookup)
 
 tri :: Storage t (Persistent (Tree Title Movie))
 tri = triplet
-  "anch" anchorMan
-  "jura" jurassicPark
+  "anch" anchorman
+  "jura" jurassicpark
   "zool" zoolander
 
-jurassicPark, anchorMan, zoolander :: Movie
-jurassicPark = Movie "Jurassic Park" "Steven Spielberg" ["Sam Neill", "Richard Attenborough"]
-anchorMan    = Movie "Anchorman"     "Adam McKay"       ["Will Ferell", "Christina Applegate", "Steve Carell"]
+jurassicpark, anchorman, zoolander :: Movie
+jurassicpark = Movie "Jurassic Park" "Steven Spielberg" ["Sam Neill", "Richard Attenborough"]
+anchorman    = Movie "Anchorman"     "Adam McKay"       ["Will Ferell", "Christina Applegate", "Steve Carell"]
 zoolander    = Movie "Zoolander"     "Geen idee"        ["Ben Stiller"]
 
 -- myCharList :: String

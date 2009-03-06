@@ -12,12 +12,21 @@ main :: IO ()
 main =
   run "../data/test.db" $
     do o <- store nullP
-       p <- tri
+
+       p <- empty
+            >>= insert "anch" anchorman
+            >>= insert "zool" zoolander
+            >>= insert "jura" zoolander
        reuse o p
---           debug
+--        p' <- 
+--        p'' <- insert "jura" jurassicpark p'
+--        p''' <- insert "zool" zoolander p''
+-- 
+--        reuse o p'''
+
+       debug
 
        count p >>= \(c :: Int) -> liftIO (print c)
-
        lookup "anch" p >>= \(k :: Maybe Movie) -> liftIO (print k)
        lookup "jura" p >>= \(k :: Maybe Movie) -> liftIO (print k)
        lookup "zool" p >>= \(k :: Maybe Movie) -> liftIO (print k)

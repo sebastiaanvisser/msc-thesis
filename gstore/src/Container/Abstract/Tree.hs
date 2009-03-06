@@ -31,21 +31,22 @@ instance (Binary a, Binary b, Binary f) => Binary (Tree a b f) where
 
 -- Basic functions.
 
-fempty :: Tree a b f
-fempty = Leaf
 
-fsingleton :: a -> b -> (Tree a b f -> f) -> Tree a b f
-fsingleton a b p = Branch a b (p Leaf) (p Leaf)
+empty
+  :: Monad m
+  => (Tree a b f -> m f)
+  -> m f
+empty p = p Leaf
 
-finsert :: Ord a => a -> b -> (Tree a b f -> f) -> (f -> f) -> Tree a b f -> Tree a b f
-finsert a b p _ Leaf = Branch a b (p Leaf) (p Leaf)
-finsert a _ _ f (Branch c d l r)
-   | a > c     = Branch c d l (f r)
-   | otherwise = Branch c d (f l) r
-
-
-
-
+singleton
+  :: Monad m
+  => a -> b
+  -> (Tree a b f -> m f)
+  -> m f
+singleton a b p =
+  do l0 <- p Leaf
+     l1 <- p Leaf
+     p (Branch a b l0 l1)
 
 triplet
   :: Monad m
@@ -80,6 +81,17 @@ count f t =
   do a <- f (left  t)
      b <- f (right t)
      return (a + b + 1)
+
+insert
+  :: (Monad m, Ord a)
+  => a -> b
+  -> (Tree a b f -> m f)
+  -> (f -> m f)
+  -> Tree a b f -> m f
+insert a b p _ Leaf = singleton a b p
+insert a _ p f (Branch c d l r)
+  | a > c     = f r >>= p .       Branch c d  l
+  | otherwise = f l >>= p . flip (Branch c d) r
 
 ---------------------- KNOTS TIED
 

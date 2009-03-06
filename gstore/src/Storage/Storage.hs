@@ -13,6 +13,7 @@ module Storage.Storage (
 
   ) where
 
+import Control.Applicative
 import Control.Monad
 import Control.Monad.Trans
 import Data.Binary
@@ -37,6 +38,13 @@ instance Monad (Storage t) where
   a >>= b  = S (unS a >>= (unS . b))
   return a = S (return a)
 
+instance Functor (Storage t) where
+  fmap f (S s) = S (fmap f s)
+
+instance Applicative (Storage t) where
+  pure  = return
+  (<*>) = ap
+
 instance MonadIO (Storage t) where
   liftIO c = S (liftIO c)
 
@@ -44,7 +52,7 @@ run      :: FilePath -> Storage t a -> IO a
 store    :: Binary a => a -> Storage t (Persistent a)
 retrieve :: Binary a => Persistent a -> Storage t a
 delete   :: Persistent a -> Storage t ()
-reuse    :: Binary a => Persistent a -> a -> Storage t ()
+reuse    :: Binary a => Persistent a -> a -> Storage t (Persistent a)
 debug    :: Storage t ()
 
 -- Implementations.
@@ -64,7 +72,7 @@ delete = S . free . unP
 reuse (P p) a = S $
   do s <- unsafeReadSize p
      writePayload p s (encode a)
-     return ()
+     return (P p)
 
-debug = S $ dump
+debug = S $ dump >> dumpAllocationMap
 

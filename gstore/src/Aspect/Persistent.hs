@@ -1,6 +1,7 @@
 {-# LANGUAGE TypeOperators, FlexibleContexts #-}
-module Generic.Persist where
+module Aspect.Persistent where
 
+import Control.Applicative
 import Control.Monad.State
 import Data.Binary
 import Generic.Annotate
@@ -15,31 +16,38 @@ type PFixP f = Persistent (PFix f)
 
 persistentP
   :: Binary (f (PFixP f))
-  => ((f (PFixP f) -> Storage t (PFixP f)) -> Storage t (PFixP f))
+  => Producer f (PFixP f) (Storage t)
   -> Storage t (PFixP f)
 persistentP p = p produce
 
 produce
   :: Binary (f (PFixP f))
-  => f (PFixP f)
-  -> Storage t (PFixP f)
+  => f (PFixP f) -> Storage t (PFixP f)
 produce = store . In . C
 
 -- Persistent query.
 
 persistentQ
   :: (Binary (f (PFixP f)))
-  => ((PFixP f -> Storage t c) -> f (PFixP f) -> Storage t c)
-  -> PFixP f
-  -> Storage t c
-persistentQ q t = query t >>= worker
-  where worker = q (\v -> query v >>= worker)
+  => Query f (PFixP f) (Storage t) c
+  -> PFixP f -> Storage t c
+persistentQ q f = query f >>= worker
+  where worker = q (\p -> query p >>= worker)
 
 query
   :: Binary (f (PFixP f))
   => PFixP f
   -> Storage t (f (PFixP f))
 query p = (unC . out) `liftM` retrieve p
+
+-- Persistent modifier.
+
+persistentM
+  :: Binary (f (PFixP f))
+  => Modifier f (PFixP f) (Storage t) c
+  -> PFixP f -> Storage t c
+persistentM m f = query f >>= worker
+  where worker = m produce (\p -> (query p <* delete p) >>= worker)
 
 ----------
 
