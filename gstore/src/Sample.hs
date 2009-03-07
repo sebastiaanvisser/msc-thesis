@@ -1,4 +1,4 @@
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeFamilies, FlexibleInstances #-}
 module Sample where
 
 import Container.Tree
@@ -6,7 +6,10 @@ import Storage.Storage
 import MovieDB
 import Prelude hiding (lookup)
 
-tri :: Storage t (Pointer (Tree Title Movie))
+instance TreeClass [Char]
+instance TreeClass Movie
+
+-- tri :: Storage t (Pointer (Tree Title Movie))
 tri = triplet
   "anch" anchorman
   "jura" jurassicpark

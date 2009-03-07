@@ -4,28 +4,27 @@
   , FlexibleContexts
   , TypeOperators
   #-}
-module Aspect.Aspect where
+module Generic.Aspect where
 
-import Control.Monad.State
-import Generic.Annotate
+import Control.Monad
 import Generic.Representation
-
-combine
-  :: Monad m
-  => (a -> m b)
-  -> (b -> m (f (g c)))
-  -> a -> m ((:.) f g c)
-combine a b = a >=> liftM C . b
 
 class Monad m => Aspect a f m where
   produce :: f -> m (a f)
+  query   :: a f -> m f
+  modify  :: (f -> m (a f), a f -> m f)
+  modify = (produce, query)
 
 -- Identity aspect, for demonstration only.
 
 instance Monad m => Aspect Id f m where
   produce = return . Id
+  query   = return . unId
+
+-- Combine two different aspects into one.
 
 instance (Monad m, Aspect a (b f) m, Aspect b f m)
       => Aspect (a :. b) f m where
-  produce = produce `combine` produce
+  produce = produce >=> liftM C . produce
+  query   = (query   >=> query) . unC
 

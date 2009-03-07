@@ -9,8 +9,8 @@ module Aspect.Debug where
 import Control.Applicative
 import Control.Monad.State hiding (get, put)
 import Data.Binary
-import Aspect.Aspect
 import Generic.Annotate
+import Generic.Aspect
 import Generic.Representation
 import Prelude hiding (read)
 import Storage.Storage
@@ -27,4 +27,8 @@ instance Binary a => Binary (Debug a) where
   put = put . unD
 
 instance (MonadIO m, Show f) => Aspect Debug f m where
-  produce f = liftIO (print f) >> return (D f)
+  produce f = liftIO (print ("produce:", f)) >> return (D f)
+  query   f = liftIO (print ("query:",   f)) >> return (unD f)
+
+  modify    = ( \f -> liftIO (print ("mod_p:", f)) >> return (D f)
+              , \f -> liftIO (print ("mod_q:",   f)) >> return (unD f))
