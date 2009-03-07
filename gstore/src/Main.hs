@@ -11,7 +11,10 @@ import Storage.Storage
 
 sep a b =
   do liftIO $ putStrLn ("\n----[  " ++ a ++ "  ]-----------------\n")
-     b
+     r <- b
+     liftIO $ putStrLn "- - - - - - -"
+     debug
+     return r
 
 main :: IO ()
 main =
@@ -20,23 +23,17 @@ main =
 
        
        p <-     (sep "empty")       empty
+            >>= (sep "ins jura") . insert "jura" jurassicpark
             >>= (sep "ins anch") . insert "anch" anchorman
             >>= (sep "ins zool") . insert "zool" zoolander
-            >>= (sep "ins jura") . insert "jura" zoolander
        reuse o (unC p)
---        p' <- 
---        p'' <- insert "jura" jurassicpark p'
---        p''' <- insert "zool" zoolander p''
--- 
---        reuse o p'''
 
---        debug
+       count p >>= \(c :: Int) -> liftIO (print c)
 
---        count p >>= \(c :: Int) -> liftIO (print c)
---        sep "lookup"
---        lookup "anch" p >>= \(k :: Maybe Movie) -> liftIO (print k)
---        lookup "jura" p >>= \(k :: Maybe Movie) -> liftIO (print k)
---        lookup "zool" p >>= \(k :: Maybe Movie) -> liftIO (print k)
+       
+       sep "anch" (lookup "anch" p >>= \(k :: Maybe Movie) -> liftIO (print k))
+       sep "jura" (lookup "jura" p >>= \(k :: Maybe Movie) -> liftIO (print k))
+       sep "zool" (lookup "zool" p >>= \(k :: Maybe Movie) -> liftIO (print k))
 
        return ()
 

@@ -30,5 +30,5 @@ instance (MonadIO m, Show f) => Aspect Debug f m where
   produce f = liftIO (print ("produce:", f)) >> return (D f)
   query   f = liftIO (print ("query:",   f)) >> return (unD f)
 
-  modify    = ( \f -> liftIO (print ("mod_p:", f)) >> return (D f)
-              , \f -> liftIO (print ("mod_q:",   f)) >> return (unD f))
+  modify    = ( \f -> liftIO (print ("modify_p:", f)) >> return (D f)
+              , \f -> liftIO (print ("modify_q:", f)) >> return (unD f))
