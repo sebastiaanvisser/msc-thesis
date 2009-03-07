@@ -4,7 +4,7 @@ module Data.Binary.Generic (gput, gget) where
 import Control.Applicative
 import Control.Monad
 import Data.Binary
-import Generic.Core
+import Generic.Representation
 
 class GBinary f where
   fput :: (a -> Put) -> f a -> Put

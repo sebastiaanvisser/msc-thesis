@@ -6,7 +6,7 @@
 module Generic.Annotate where
 
 import Data.Binary
-import Generic.Core
+import Generic.Representation
 
 -- Function composition at the type level.
 -- Compose :: (* -> *) -> (* -> *) -> * -> *

@@ -4,7 +4,7 @@
   , FlexibleContexts
   , UndecidableInstances
   #-}
-module Generic.Core where
+module Generic.Representation where
 
 import Data.Binary
 

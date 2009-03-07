@@ -3,7 +3,7 @@ module Container.Abstract.Tree where
 
 import Data.Binary
 import Data.Binary.Generic
-import Generic.Core hiding (left, right)
+import Generic.Representation hiding (left, right)
 
 -- Binary tree parametrized by key type, value type and recursive points.
 

@@ -4,7 +4,7 @@ module MovieDB where
 import Container.Tree
 import Data.Binary
 import Data.Binary.Generic
-import Generic.Core
+import Generic.Representation
 import Prelude hiding (lookup)
 
 type Title    = String
