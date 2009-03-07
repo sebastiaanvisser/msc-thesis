@@ -9,8 +9,8 @@ import Generic.Core
 import Prelude hiding (read)
 import Storage.Storage
 
-type PFix  f = AnnFix f Persistent
-type PFixP f = Persistent (PFix f)
+type PFix  f = Fix (f :. Pointer)
+type PFixP f = Pointer (PFix f)
 
 -- Persistent producer.
 
@@ -49,27 +49,3 @@ persistentM
 persistentM m f = query f >>= worker
   where worker = m produce (\p -> (query p <* delete p) >>= worker)
 
-----------
-
-{-produceDebug :: (MonadIO m, Show a) => a -> m a
-produceDebug ptr = liftIO (print ptr) >> return ptr
-
-produceId :: Monad m => a -> m a
-produceId = return
-
-producePersistentDebugId
-  :: (Binary (f (PFixP f))
-   , MonadIO ((->) (f (PFixP f)))
-   , Show (Storage t (PFixP f)))
-  => f (PFixP f)
-  -> Storage t (PFixP f) 
-producePersistentDebugId = producePersistent >>= produceDebug >>= produceId
-
-persistentDebugIdP
-  :: (Binary (f (PFixP f))
-   , MonadIO ((->) (f (PFixP f)))
-   , Show (Storage t (PFixP f)))
-  => ((f (PFixP f) -> Storage t (PFixP f)) -> Storage t (PFixP f))
-  -> Storage t (PFixP f)
-persistentDebugIdP p = p producePersistentDebugId
--}

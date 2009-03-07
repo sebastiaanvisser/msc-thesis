@@ -1,7 +1,7 @@
 module Storage.Storage (
 
-    Storage    {- temp: -} (..)
-  , Persistent {- temp: -} (..)
+    Storage {- temp: -} (..)
+  , Pointer {- temp: -} (..)
   , nullP
 
   , run
@@ -22,15 +22,15 @@ import Storage.FileHeap
 import qualified Data.ByteString.Lazy as B
 
 newtype Storage t  a = S { unS :: Heap a }
-newtype Persistent a = P { unP :: Int }
+newtype Pointer a = P { unP :: Int }
 
-nullP :: Persistent a
+nullP :: Pointer a
 nullP = P 0
 
-instance Show (Persistent a) where
+instance Show (Pointer a) where
   show (P p) = "P:" ++ show p
 
-instance Binary (Persistent a) where
+instance Binary (Pointer a) where
   get = P `fmap` get
   put = put . unP
 
@@ -49,10 +49,10 @@ instance MonadIO (Storage t) where
   liftIO c = S (liftIO c)
 
 run      :: FilePath -> Storage t a -> IO a
-store    :: Binary a => a -> Storage t (Persistent a)
-retrieve :: Binary a => Persistent a -> Storage t a
-delete   :: Persistent a -> Storage t ()
-reuse    :: Binary a => Persistent a -> a -> Storage t (Persistent a)
+store    :: Binary a => a -> Storage t (Pointer a)
+retrieve :: Binary a => Pointer a -> Storage t a
+delete   :: Pointer a -> Storage t ()
+reuse    :: Binary a => Pointer a -> a -> Storage t (Pointer a)
 debug    :: Storage t ()
 
 -- Implementations.

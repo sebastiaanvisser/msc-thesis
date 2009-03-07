@@ -6,7 +6,7 @@ import Storage.Storage
 import MovieDB
 import Prelude hiding (lookup)
 
-tri :: Storage t (Persistent (Tree Title Movie))
+tri :: Storage t (Pointer (Tree Title Movie))
 tri = triplet
   "anch" anchorman
   "jura" jurassicpark

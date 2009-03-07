@@ -18,25 +18,21 @@ instance Binary (f (g a)) => Binary ((f :. g) a) where
   get = C `fmap` get
   put = put . unC
 
--- Annotated fix points compose an annotation with the container.
-type AnnFix f ann = Fix (f :. ann)
-
 type Producer f g m   = (f g -> m g) -> m g
 type Query    f g m c = (g -> m c) -> f g -> m c
 type Modifier f g m c = (f g -> m g) -> (g -> m c) -> f g -> m c
 
+
+
+
+
+
+
+
+{-
 -- Queries.
 fixQ :: ((Fix f -> a) -> f (Fix f) -> a) -> Fix f -> a
 fixQ q = q (fixQ q) . out
-
-
-
-
-
-
-
-
-
 
 -- Annotated queries.
 annFixQ
@@ -94,4 +90,4 @@ fixP p = In (p (fixP p))
 -- Modifications.
 fixM :: ((Fix f -> Fix f) -> f (Fix f) -> f (Fix f)) -> Fix f -> Fix f
 fixM m = In . m (fixM m) . out
-
+-}

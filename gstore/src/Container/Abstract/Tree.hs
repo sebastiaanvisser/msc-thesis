@@ -31,7 +31,6 @@ instance (Binary a, Binary b, Binary f) => Binary (Tree a b f) where
 
 -- Basic functions.
 
-
 empty
   :: Monad m
   => (Tree a b f -> m f)
@@ -92,49 +91,4 @@ insert a b p _ Leaf = singleton a b p
 insert a _ p f (Branch c d l r)
   | a > c     = f r >>= p .       Branch c d  l
   | otherwise = f l >>= p . flip (Branch c d) r
-
----------------------- KNOTS TIED
-
-{-
-newtype Tree a b = Tree { ftree :: Fix (Tree a b) }
-  deriving Show
-
-withFTree :: (Fix (Tree a b) -> Fix (Tree c d)) -> Tree a b -> Tree c d
-withFTree f = Tree . f . ftree
-
-emptyTree :: Tree a b
-emptyTree = Tree $ In fempty
-
-singleton :: a -> b -> Tree a b
-singleton a b = Tree . In $ fsingleton a b In
-
-triplet :: a -> b -> a -> b -> a -> b -> Tree a b
-triplet a0 b0 a1 b1 a2 b2 = Tree . In $ ftriplet a0 b0 a1 b1 a2 b2 In
-
-insert :: Ord a => a -> b -> Tree a b -> Tree a b
-insert a b = withFTree $ fixM $ finsert a b In
-
-fromList :: Ord a => [(a, b)] -> Tree a b
-fromList = foldr (uncurry insert) emptyTree
-
--}
-
--------------------------- ANNOTATED TESTS
-
-{-
-insertWith :: Ord a => (b -> a) -> b -> Tree a b -> Tree a b
-insertWith f a = insert (f a) a
-
---
-
-lookup :: (Ord a, Monad m) => a -> Tree a b -> m b
-lookup a = fixQ (fLookup a) . ftree
-
-traceLookup :: (Ord a, Monad m) => a -> Tree a b -> (m b, [a])
-traceLookup a = traceQ (lookupA a) key . ftree
-
-ioFixLookup :: (Ord a, Monad m, Show a, Show b) => a -> Tree a b -> IO (m b)
-ioFixLookup a = ioFixQ proc (lookupA a) . ftree
-  where proc c = print c >> return c
--}
 
