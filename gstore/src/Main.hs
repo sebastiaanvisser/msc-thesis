@@ -12,8 +12,8 @@ import Storage.Storage
 sep a b =
   do liftIO $ putStrLn ("\n----[  " ++ a ++ "  ]-----------------\n")
      r <- b
-     liftIO $ putStrLn "- - - - - - -"
-     debug
+--      liftIO $ putStrLn "- - - - - - -"
+--      debug
      return r
 
 main :: IO ()
@@ -29,6 +29,7 @@ main =
        reuse o (unC p)
 
        count p >>= \(c :: Int) -> liftIO (print c)
+       depth p >>= \(c :: Int) -> liftIO (print c)
 
        
        sep "anch" (lookup "anch" p >>= \(k :: Maybe Movie) -> liftIO (print k))

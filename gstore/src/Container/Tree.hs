@@ -46,6 +46,11 @@ count
   => TreeP a b -> Storage t c
 count = mkQuery F.count
 
+depth
+  :: (Ord c, Num c, TreeClass a, TreeClass b)
+  => TreeP a b -> Storage t c
+depth = mkQuery F.depth
+
 insert
   :: (Ord a, TreeClass a, TreeClass b)
   => a -> b

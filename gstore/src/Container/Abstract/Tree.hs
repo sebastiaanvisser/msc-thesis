@@ -79,7 +79,14 @@ count _ Leaf = return 0
 count f t =
   do a <- f (left  t)
      b <- f (right t)
-     return (a + b + 1)
+     return (1 + a + b)
+
+depth :: (Ord c, Num c, Monad m) => (f -> m c) -> Tree a b f -> m c
+depth _ Leaf = return 0
+depth f t =
+  do a <- f (left  t)
+     b <- f (right t)
+     return (1 + max a b)
 
 insert
   :: (Monad m, Ord a)
