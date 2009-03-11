@@ -6,14 +6,11 @@
  #-}
 module Aspect.Debug where
 
-import Control.Applicative
 import Control.Monad.State hiding (get, put)
 import Data.Binary
-import Generic.Annotate
 import Generic.Aspect
 import Generic.Representation
 import Prelude hiding (read)
-import Storage.Storage
 
 newtype Debug a = D { unD :: a }
   deriving Show

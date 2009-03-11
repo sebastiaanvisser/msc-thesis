@@ -34,9 +34,9 @@ instance Binary (f (Fix f)) => Binary (Fix f) where
 
 -- Generic recursive view on data types.
 
-class TyView a where
-  name  :: a -> String
-  ctors :: a -> [String]
+-- class TyView a where
+--   name  :: a -> String
+--   ctors :: a -> [String]
 
 class PFView a where
   type PF a :: * -> *

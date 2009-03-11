@@ -48,31 +48,29 @@ instance Applicative (Storage t) where
 instance MonadIO (Storage t) where
   liftIO c = S (liftIO c)
 
-run      :: FilePath -> Storage t a -> IO a
-store    :: Binary a => a -> Storage t (Pointer a)
-retrieve :: Binary a => Pointer a -> Storage t a
-delete   :: Pointer a -> Storage t ()
-reuse    :: Binary a => Pointer a -> a -> Storage t (Pointer a)
-debug    :: Storage t ()
-
--- Implementations.
-
+run :: FilePath -> Storage t a -> IO a
 run f = runHeap f . unS
 
+store :: Binary a => a -> Storage t (Pointer a)
 store a = S $
   do let bs = encode a
      block <- allocate $ fromIntegral $ B.length bs
      write bs block
      return $ P (location block)
 
+retrieve :: Binary a => Pointer a -> Storage t a
 retrieve = S . liftM decode . read . unP
 
+delete :: Pointer a -> Storage t ()
 delete = S . free . unP
 
+reuse :: Binary a => Pointer a -> a -> Storage t (Pointer a)
 reuse (P p) a = S $
   do s <- unsafeReadSize p
+     liftIO $ print ("REUSE", p, s)
      writePayload p s (encode a)
      return (P p)
 
+debug :: Storage t ()
 debug = S $ dump >> dumpAllocationMap
 

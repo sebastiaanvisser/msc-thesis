@@ -1,40 +1,99 @@
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE ScopedTypeVariables, TypeSynonymInstances #-}
 module Main where
 
 import Container.Tree
 import Control.Monad.State
-import Generic.Representation
-import MovieDB
+import Data.Char
+import Data.List hiding (insert, lookup)
+import Data.OBO
 import Prelude hiding (lookup)
-import Sample
 import Storage.Storage
+import System.IO
+import System.Posix.Files
+import System.Environment
 
+instance TreeClass String
+instance TreeClass Entry
+
+trim :: String -> String
+trim =
+    reverse
+  . dropWhile isSpace
+  . reverse
+  . dropWhile isSpace
+
+insertEntry :: Entry -> TreeP String Entry -> Storage t (TreeP String Entry)
+insertEntry b p = do
+  liftIO $ (putChar '.' >> hFlush stdout)
+  insert (name b) b p
+
+sep :: Show b => String -> Storage t b -> Storage t b
 sep a b =
   do liftIO $ putStrLn ("\n----[  " ++ a ++ "  ]-----------------\n")
      r <- b
---      liftIO $ putStrLn "- - - - - - -"
---      debug
+     liftIO $ print (":::", r)
+     liftIO $ putStrLn "- - - - - - -"
+     debug
      return r
 
+fromList :: [Entry] -> Storage t (TreeP String Entry)
+fromList xs = foldl' (\a b -> a >>= insertEntry b) empty xs
+
 main :: IO ()
-main =
-  run "../data/test.db" $
-    do o <- store nullP
+main = 
+  do args <- getArgs
+     case args of
+       ["build", source, db] -> build source db
+       ["query", db]         -> query db
+       ["stats", db]         -> stats db
+       ["dump",  db]         -> dump  db
+       _  ->
+         do putStrLn "[ERROR] Invalid arguments, try one of the following:"
+            putStrLn "  main build <source.obo> <database.db>"
+            putStrLn "  main query <database.db>"
+            putStrLn "  main stats <database.db>"
+            putStrLn "  main dump  <database.db>"
 
-       
-       p <-     (sep "empty")       empty
-            >>= (sep "ins jura") . insert "jura" jurassicpark
-            >>= (sep "ins anch") . insert "anch" anchorman
-            >>= (sep "ins zool") . insert "zool" zoolander
-       reuse o (unC p)
+build :: FilePath -> FilePath -> IO ()
+build source db = do
+  file <- readFile source
+  let k = parseOBO file
+  case k of
+    Left e    -> print e
+    Right doc -> 
+      do let stanzas = docStanzas doc
+             entries = map stanzaToEntry stanzas
+         setFileSize db 0
+         run db $
+           do o <- store nullP
+              p <- fromList entries
+              liftIO $ putStrLn []
+              liftIO $ print (o, p)
+              reuse o p
+              liftIO $ print "done"
 
-       count p >>= \(c :: Int) -> liftIO (print c)
-       depth p >>= \(c :: Int) -> liftIO (print c)
+              return ()
 
-       
-       sep "anch" (lookup "anch" p >>= \(k :: Maybe Movie) -> liftIO (print k))
-       sep "jura" (lookup "jura" p >>= \(k :: Maybe Movie) -> liftIO (print k))
-       sep "zool" (lookup "zool" p >>= \(k :: Maybe Movie) -> liftIO (print k))
+query :: FilePath -> IO ()
+query db = 
+  run db $
+    do p <- retrieve nullP
+       liftIO $ print p
+       loop p
+  where
+    loop p =
+      do s <- liftIO $ (putStr "query> " >> hFlush stdout >> getLine)
+         lookup (trim s) p >>= \a -> liftIO (print (a :: Maybe Entry))
+         loop p
 
-       return ()
+stats :: FilePath -> IO ()
+stats db = 
+  run db $
+    do p <- (retrieve nullP :: Storage t (TreeP String Entry))
+       liftIO $ print p
+       count p >>= \(c :: Int) -> liftIO (putStr "count: " >> print c)
+       depth p >>= \(c :: Int) -> liftIO (putStr "depth: " >> print c)
+
+dump :: FilePath -> IO ()
+dump db = run db debug
 

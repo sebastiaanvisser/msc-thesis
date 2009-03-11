@@ -7,10 +7,8 @@
 module Aspect.Persistent where
 
 import Control.Applicative
-import Control.Monad.State hiding (modify)
 import Data.Binary
 import Generic.Aspect
-import Generic.Annotate
 import Generic.Representation
 import Prelude hiding (read)
 import Storage.Storage

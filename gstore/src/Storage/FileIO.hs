@@ -1,5 +1,6 @@
 module Storage.FileIO where
 
+import Control.Applicative
 import Control.Monad
 import Data.Bits
 import Data.Char
@@ -15,13 +16,13 @@ b << a = a >> b
 
 read8, read16, read32 :: Integral a => Handle -> IO a
 
-read8  h = (fromIntegral . ord) `liftM` hGetChar h
-read16 h = liftM2 (+) (liftM (*0xFF)   (read8  h)) (read8  h)  
-read32 h = liftM2 (+) (liftM (*0xFFFF) (read16 h)) (read16 h)
+read8  h = fromIntegral . ord <$> hGetChar h
+read16 h = (\a b -> a * 0x100   + b) <$> read8  h <*> read8  h
+read32 h = (\a b -> a * 0x10000 + b) <$> read16 h <*> read16 h
 
 write8, write16, write32 :: (Bits a, Integral a) => Handle -> a -> IO ()
 
-write8  h   = hPutChar h . chr . fromIntegral
+write8  h   = hPutChar h . chr . (.&. 0xFF) . fromIntegral
 write16 h i = write8  h i << write8  h (i `shiftR` 8)
 write32 h i = write16 h i << write16 h (i `shiftR` 16)
  

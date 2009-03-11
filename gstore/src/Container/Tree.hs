@@ -6,12 +6,12 @@ import Data.Binary
 import Storage.Storage
 import Generic.Representation
 import Generic.Annotate
-import Aspect.Persistent
-import Aspect.Debug
-import qualified Aspect.Debug            as D
+import Generic.Aspect ()
+import Aspect.Persistent ()
+-- import Aspect.Debug ()
 import qualified Container.Abstract.Tree as F
 
-type TreeAspects = Pointer :. Debug :. Id
+type TreeAspects = Pointer -- :. Debug :. Id
 
 class (Show a, Binary a) => TreeClass a
 

@@ -78,7 +78,7 @@ nextBlock b = readBlock (lget offset b + blockSize b)
 safeOffset :: Offset -> Heap a -> Heap (Maybe a)
 safeOffset o c = do
   fs <- accessFile $ \h -> fromIntegral `liftM` hFileSize h
-  if fs > o then Just `liftM` c else return Nothing
+  if fs > o + headerSize then Just `liftM` c else return Nothing
 
 unsafeReadHeader :: Offset -> Heap Header
 unsafeReadHeader o =
@@ -91,7 +91,7 @@ unsafeReadHeader o =
 unsafeReadSize :: Offset -> Heap Size
 unsafeReadSize o =
   accessFile $ \h -> do
-    hSeek h AbsoluteSeek (fromIntegral (o + 4))
+    hSeek h AbsoluteSeek (fromIntegral (o + 1))
     read32 h
 
 readHeader :: Offset -> Heap (Maybe Header)
@@ -112,7 +112,7 @@ writeHeader :: Offset -> Header -> Heap ()
 writeHeader o (x, s) =
   accessFile $ \h ->
     do hSeek h AbsoluteSeek (fromIntegral o)
-       write8  h (if x then (1::Word8) else 0)
+       write8  h (if x then (35::Word8) else 0)
        write32 h s
 
 writePayload :: Offset -> Size -> B.ByteString -> Heap ()
@@ -168,10 +168,9 @@ findFreeBlock i = do
 -- Basic operations. 
 
 runHeap :: FilePath -> Heap a -> IO a
-runHeap f c = do
-  h <- openBinaryFile f ReadWriteMode
-  (a, _) <- runStateT (readAllocationMap 0 >> c) (emptyHeap h)
-  return a
+runHeap f c =
+  withBinaryFile f ReadWriteMode $ \h ->
+    fst `fmap` runStateT (readAllocationMap 0 >> c) (emptyHeap h)
 
 allocate :: Size -> Heap Block
 allocate i = do
@@ -188,7 +187,6 @@ allocate i = do
     Just (o, s) -> do
       if s > headerSize + i + headerSize + splitThreshold
         then do
-          liftIO (print i)
           delete s
           writeBlock $ Block (o + headerSize + i) (s - headerSize - i) Nothing
           insert (s - headerSize - i) (o + headerSize + i)
