@@ -1,0 +1,83 @@
+-------------------------------------------------------------------------------
+
+TCache: A Transactional data cache with configurable persistence
+
+Data.Tcache is a transactional cache with configurable persistence. It tries to
+simulate Hibernate for Java or Rails for Ruby. The main difference is that
+transactions are done in memory trough STM. There are transactional cache
+implementations for some J2EE servers like JBOSS. TCache uses STM. It can
+atomically apply a function to a list of cached objects. The resulting objects
+go back to the cache (withResources). It also can retrieve these objects
+(getResources). Persistence can be syncronous (syncCache) or asyncronous, wtih
+configurable time between cache writes and configurable cache clearance
+strategy. the size of the cache can be configured too . All of this can be done
+trough clearSyncCacheProc. Even the TVar variables can be accessed directly
+(getTVar) to acceess all the semantic of atomic blocks while maintaining the
+persistence of the TVar updates. Persistence can be defined for each object:
+Each object must have a defined key, a default filename path (if applicable).
+Persistence is pre-defined in files, but the readResource writeResource and
+delResource methods can be redefined to persist in databases or whatever. There
+are Samples here that explain the main features. In this release: Added a
+Data.TCache.Dynamic. (SEE dynamicsample.hs) - Can handle, transact, and
+serialize to disk many datatypes simultaneously and incrementally - Dynamic
+uses the same interface than TCache and add *DResource(s) calls - Safe dynamic
+data handling trough a lighter, indexable and serializable version of
+Data.Dynamic - Added KEY object for retrieving any object of any type. 
+
+http://hackage.haskell.org/cgi-bin/hackage-scripts/package/TCache
+
+http://haskell-web.blogspot.com/2006/11/transactional-cache-for-haskell.html
+
+Related: STM benchmark: Dissecting Transactional Executions in Haskell.pdf
+
+-------------------------------------------------------------------------------
+
+Effcient and Type-Safe Generic Data Storage 
+
+Sjaak Smetsers1 Arjen van Weelden1 Rinus Plasmeijer1 
+Institute for Computing and Information Sciences, 
+Radboud University Nijmegen, The Netherlands 
+
+In this paper we present an elegant method for sequentializing arbitrary data
+using the generic language extension of the functional programming language
+Clean. We show how the proposed operations can be used to store values of any
+concrete data type in several kinds of IO containers (such as ﬁles or arrays of
+characters), and how to manipulate stored data efficiently. Moreover, by
+extending stored data with encoded type information, data manipulation will be
+type-safe. Deﬁning these operations generically has the advantage that speciﬁc
+instances for user deﬁned data types can be generated fully automatically.
+Compared to traditional sequentialization methods (or to common data
+manipulation, using relational data bases) our operations are an order of
+magnitude faster.  Keywords: Polytypic/generic programming, functional
+programming, data storage/sequentialization, type inference 
+
+See: Effcient and Type-Safe Generic Data Storage
+
+-------------------------------------------------------------------------------
+
+Persistent Haskell 
+Juan Quintela and Juan J. Sanchez 
+
+LFCIA Lab, Department of Computer Science, Universidade da Coru ˜ na, 
+Campus de Elvi ˜ na, S/N, 15071, A Coru ˜ 
+na, SPAIN {quintela,juanjo}@lfcia.org, http://www.lfcia.org 
+
+Persistent programming offers the prospect of seamless integration of programs
+with long-lived data, offering the prospect of constructing systems that allow
+more rapid program development, and also simplifying the process of writing
+applications whose purpose is to handle long-lived data.  While there have been
+some previous attempts to produce persistent functional languages, the majority
+of these have been interpreted, and performance has gen- erally been seriously
+compromised. It has therefore become something of a shib- boleth that
+persistence cannot be implemented efﬁciently in a purely functional language.
+This paper offers the ﬁrst systematic study of this claim.  This paper
+describes the ﬁrst-ever implementation of orthogonal persistence for a compiled
+purely functional language, based on an existing St Andrews persistent object
+store. Preliminary performance results show that it is possible to imple- ment
+orthogonal persistence efﬁciently and there is hope that the result is more
+efﬁcient than more straightforward approaches such as binary I/O. 
+
+TODO: get full paper.
+http://www.springerlink.com/content/8617m6rwcl2ea0am/
+
+-------------------------------------------------------------------------------
