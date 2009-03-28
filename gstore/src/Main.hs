@@ -1,7 +1,7 @@
 {-# LANGUAGE ScopedTypeVariables, TypeSynonymInstances #-}
 module Main where
 
-import Container.Tree
+import Container.Tree.Persistent
 import Control.Monad.State
 import Data.Char
 import Data.List hiding (insert, lookup)

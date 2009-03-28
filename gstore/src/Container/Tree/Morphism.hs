@@ -1,7 +1,7 @@
-module Container.Abstract.Algebra where
+module Container.Tree.Morphism where
 
 import Generic.Representation
-import qualified Container.Abstract.Tree as F
+import qualified Container.Tree.Abstract as F
 
 type Catamorphism a b c = (c, a -> b -> c -> c -> c)
 type Paramorphism a b c = (Fix (F.Tree a b) -> Fix (F.Tree a b) -> c, a -> b -> c -> c -> Fix (F.Tree a b) -> Fix (F.Tree a b) -> c)
@@ -15,6 +15,7 @@ para c@(x, _) (In F.Leaf)             = x (In F.Leaf) (In F.Leaf)
 para c@(_, y) (In (F.Branch a b l r)) = y a b (para c l) (para c r) l r
 
 algCount :: Catamorphism a b Integer
+rphism.hsG
 algCount = (0, (const . const) (\l r -> 1 + l + r))
 
 algDepth :: Catamorphism a b Integer

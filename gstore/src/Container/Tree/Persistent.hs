@@ -1,5 +1,5 @@
 {-# LANGUAGE TypeOperators #-}
-module Container.Tree where
+module Container.Tree.Persistent where
 
 import Control.Monad
 import Data.Binary
@@ -9,7 +9,7 @@ import Generic.Annotate
 import Generic.Aspect ()
 import Aspect.Persistent ()
 -- import Aspect.Debug ()
-import qualified Container.Abstract.Tree as F
+import qualified Container.Tree.Abstract as F
 
 type TreeAspects = Pointer -- :. Debug :. Id
 

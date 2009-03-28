@@ -1,5 +1,5 @@
 {-# LANGUAGE TypeFamilies #-}
-module Container.Abstract.Tree where
+module Container.Tree.Abstract where
 
 import Data.Binary
 import Data.Binary.Generic
