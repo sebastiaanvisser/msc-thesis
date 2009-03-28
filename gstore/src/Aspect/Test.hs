@@ -7,7 +7,7 @@ import Aspect.Debug
 import Aspect.Persistent
 import Generic.Annotate
 import Generic.Representation
-import Storage.Storage
+import Storage.FileStorage
 
 type MyAspects = Pointer :. Debug :. Id
 type MyFix  f = Fix (f :. MyAspects)

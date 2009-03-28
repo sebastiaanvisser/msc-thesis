@@ -1,76 +1,79 @@
-module Storage.Storage (
+{-# LANGUAGE ExistentialQuantification, RankNTypes #-}
+module Storage.Storage where
 
-    Storage {- temp: -} (..)
-  , Pointer {- temp: -} (..)
-  , nullP
-
-  , run
-  , store
-  , retrieve
-  , delete
-  , reuse
-  , debug
-
-  ) where
-
+import Codec.Compression.GZip
 import Control.Applicative
 import Control.Monad
 import Control.Monad.Trans
+import Control.Monad.State
 import Data.Binary
-import Prelude hiding (read)
-import Storage.FileHeap
 import qualified Data.ByteString.Lazy as B
 
-newtype Storage t  a = S { unS :: Heap a }
-newtype Pointer a = P { unP :: Int }
+newtype Storage a = S { unS :: a }
+newtype Pointer a = P { unP :: a }
 
-nullP :: Pointer a
-nullP = P 0
+-- instance Show (Pointer a) where
+--   show (P p) = "P:" ++ show p
 
-instance Show (Pointer a) where
-  show (P p) = "P:" ++ show p
+-- instance Binary (Pointer a) where
+--   get = P `fmap` get
+--   put = put . unP
 
-instance Binary (Pointer a) where
-  get = P `fmap` get
-  put = put . unP
+instance Monad Storage where
+  a >>= b  = undefined -- S (unS a >>= (unS . b))
+  return a = undefined -- S (return a)
 
-instance Monad (Storage t) where
-  a >>= b  = S (unS a >>= (unS . b))
-  return a = S (return a)
+instance Functor Pointer where
+  fmap f (P s) = P (f s)
 
-instance Functor (Storage t) where
+{-instance Functor Storage where
   fmap f (S s) = S (fmap f s)
 
-instance Applicative (Storage t) where
+instance Applicative Storage where
   pure  = return
   (<*>) = ap
 
-instance MonadIO (Storage t) where
+instance MonadIO Storage where
   liftIO c = S (liftIO c)
+-} 
 
-run :: FilePath -> Storage t a -> IO a
-run f = runHeap f . unS
+data Store m a = forall b.
+  Store {
+    store    :: b -> m (Pointer b)
+  , retrieve :: Pointer b -> m b
+  }
 
-store :: Binary a => a -> Storage t (Pointer a)
-store a = S $
-  do let bs = encode a
-     block <- allocate $ fromIntegral $ B.length bs
-     write bs block
-     return $ P (location block)
+mkFileStore :: FilePath -> Store Storage B.ByteString
+mkFileStore _ = Store stBin rtBin
 
-retrieve :: Binary a => Pointer a -> Storage t a
-retrieve = S . liftM decode . read . unP
+stBin :: B.ByteString -> Storage (Pointer B.ByteString)
+stBin = undefined
 
-delete :: Pointer a -> Storage t ()
-delete = S . free . unP
+rtBin :: Pointer B.ByteString -> Storage B.ByteString
+rtBin = undefined
 
-reuse :: Binary a => Pointer a -> a -> Storage t (Pointer a)
-reuse (P p) a = S $
-  do s <- unsafeReadSize p
-     liftIO $ print ("REUSE", p, s)
-     writePayload p s (encode a)
-     return (P p)
 
-debug :: Storage t ()
-debug = S $ dump >> dumpAllocationMap
+
+
+mkProfilingStore :: Monad m => Store m a -> Store (StateT Int m) a
+mkProfilingStore (Store s r) = Store
+  (\k -> do v <- lift (s k) ; modify (+1) ; return v)
+  (\k -> do v <- lift (r k) ; modify (+1) ; return v)
+
+mkEncodedStore :: (Monad m, Binary a) => Store m B.ByteString -> Store m a
+mkEncodedStore (Store s r) = Store
+  (\v -> s (     encode v) >>= return . fmap decode)
+  (\v -> r (fmap encode v) >>= return .      decode)
+
+-- mkCompressedStore :: Monad m => Store m B.ByteString -> Store m B.ByteString
+-- mkCompressedStore (Store s r) = Store
+--   (\v -> s (compress v))
+--   (\v -> r v >>= return . decompress)
+
+-- myStorage :: Store (StateT Int Storage) B.ByteString
+-- myStorage = 
+--     mkProfilingStore
+--   $ mkCompressedStore
+--   $ mkEncodedStore
+--   $ mkFileStore "data/test.db"
 

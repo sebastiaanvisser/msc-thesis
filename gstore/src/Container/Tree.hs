@@ -3,7 +3,7 @@ module Container.Tree where
 
 import Control.Monad
 import Data.Binary
-import Storage.Storage
+import Storage.FileStorage
 import Generic.Representation
 import Generic.Annotate
 import Generic.Aspect ()

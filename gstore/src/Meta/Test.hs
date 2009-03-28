@@ -24,18 +24,25 @@ $(convert
   lookup a (Branch c d l r) =
     case a `compare` c of
       EQ -> return d
-      LT -> lookup l
-      GT -> lookup r
+      LT -> lookup a l
+      GT -> lookup a r
 
   count :: Num c => Tree a b -> c
   count Leaf = 0
   count t    = 1 + count (left t) + count (right t)
 
-  depth :: Num c => Tree a b -> c
+  depth :: (Ord c, Num c) => Tree a b -> c
   depth Leaf = 0
   depth t    = 1 + depth (left t) `max` depth (right t)
 
   |])
+
+depth' :: (Ord c, Num c, Monad m) => Query (Tree a b) f m c
+depth' _ Leaf = return 0
+depth' f t =
+  do a <- f (left  t)
+     b <- f (right t)
+     return (1 + max a b)
 
 {-
 
@@ -50,12 +57,5 @@ count f t =
   do a <- f (left  t)
      b <- f (right t)
      return (1 + a + b)
-
-depth :: (Ord c, Num c, Monad m) => Query (Tree a b) f m c
-depth _ Leaf = return 0
-depth f t =
-  do a <- f (left  t)
-     b <- f (right t)
-     return (1 + max a b)
 
 -}

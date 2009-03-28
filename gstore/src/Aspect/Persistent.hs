@@ -11,7 +11,7 @@ import Data.Binary
 import Generic.Aspect
 import Generic.Representation
 import Prelude hiding (read)
-import Storage.Storage
+import Storage.FileStorage
 
 type PFix  f = Fix (f :. Pointer)
 type PFixP f = Pointer (PFix f)

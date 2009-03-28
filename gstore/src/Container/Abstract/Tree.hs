@@ -4,6 +4,7 @@ module Container.Abstract.Tree where
 import Data.Binary
 import Data.Binary.Generic
 import Generic.Representation hiding (left, right)
+import Generic.Annotate
 
 -- Binary tree parametrized by key type, value type and recursive points.
 
@@ -31,27 +32,16 @@ instance (Binary a, Binary b, Binary f) => Binary (Tree a b f) where
 
 -- Basic functions.
 
-empty
-  :: Monad m
-  => (Tree a b f -> m f)
-  -> m f
+empty :: Monad m => Producer (Tree a b) f m
 empty p = p Leaf
 
-singleton
-  :: Monad m
-  => a -> b
-  -> (Tree a b f -> m f)
-  -> m f
+singleton :: Monad m => a -> b -> Producer (Tree a b) f m
 singleton a b p =
   do l0 <- p Leaf
      l1 <- p Leaf
      p (Branch a b l0 l1)
 
-triplet
-  :: Monad m
-  => a -> b -> a -> b -> a -> b
-  -> (Tree a b f -> m f)
-  -> m f
+triplet :: Monad m => a -> b -> a -> b -> a -> b -> Producer (Tree a b) f m
 triplet a0 b0 a1 b1 a2 b2 p =
   do l0 <- p Leaf
      l1 <- p Leaf
@@ -61,12 +51,7 @@ triplet a0 b0 a1 b1 a2 b2 p =
      rt <- p (Branch a2 b2 l2 l3)
      p (Branch a1 b1 lt rt)
 
-lookup
-  :: (Monad m, Monad n, Ord a)
-  => a
-  -> (f -> m (n b))
-  -> Tree a b f
-  -> m (n b)
+lookup :: (Monad m, Monad n, Ord a) => a -> Query (Tree a b) f m (n b)
 lookup _ _ Leaf = return $ fail "element not found"
 lookup a f (Branch c d l r) =
   case a `compare` c of
@@ -81,19 +66,14 @@ count f t =
      b <- f (right t)
      return (1 + a + b)
 
-depth :: (Ord c, Num c, Monad m) => (f -> m c) -> Tree a b f -> m c
+depth :: (Ord c, Num c, Monad m) => Query (Tree a b) f m c
 depth _ Leaf = return 0
 depth f t =
   do a <- f (left  t)
      b <- f (right t)
      return (1 + max a b)
 
-insert
-  :: (Monad m, Ord a)
-  => a -> b
-  -> (Tree a b f -> m f)
-  -> (f -> m f)
-  -> Tree a b f -> m f
+insert :: (Monad m, Ord a) => a -> b -> Modifier (Tree a b) f m f
 insert a b p _ Leaf = singleton a b p
 insert a _ p f (Branch c d l r)
   | a > c     = f r >>= p .       Branch c d  l

@@ -7,7 +7,7 @@ import Data.Char
 import Data.List hiding (insert, lookup)
 import Data.OBO
 import Prelude hiding (lookup)
-import Storage.Storage
+import Storage.FileStorage
 import System.IO
 import System.Posix.Files
 import System.Environment

@@ -102,6 +102,33 @@ fullTypeFromDataDecl (DataD ctx nm ps cs ds) =
 undefinedClause :: ClauseQ
 undefinedClause = clause [] (return $ NormalB (VarE 'undefined)) []
 
+
+-- Replace and deliver expressions.
+
+{-searchExp :: (Exp -> Bool) -> Exp -> Q [Exp]
+searchExp m exp =
+  let ret r = r >>= return . if m exp then (exp:) else id
+      rec e = searchExp m e
+  in case exp of
+    AppE e f       -> ret (rec e) -- (rec f)
+    InfixE me f mg -> ret undefined
+    LamE pt e      -> ret undefined
+    TupE es        -> ret undefined
+    CondE e f g    -> ret undefined
+    LetE ds e      -> ret undefined
+    CaseE e ms     -> ret undefined
+    ListE es       -> ret undefined
+    SigE e t       -> ret undefined
+    RecUpdE e fs   -> ret undefined
+    RecConE n es   -> ret undefined
+
+    VarE n         -> ret undefined
+    ConE n         -> ret undefined
+    LitE l         -> ret undefined
+    DoE ss         -> ret undefined
+    CompE ss       -> ret undefined
+    ArithSeqE r    -> ret undefined-}
+
 -------------------------------------------------------------------------------
 
 -- Real world stuff we need to know.
@@ -152,8 +179,6 @@ openupDataDecl dec@(DataD ctx nm ps cs ds) = do
   return (DataD ctx nm ps' cs' ds)
 openupDataDecl dec = return dec
 
--------------------------------------------------------------------------------
-
 monadifyQuery :: (Dec, Dec) -> Q [Dec]
 monadifyQuery (sig, fun) = do
   fun' <- changeFunction fun
@@ -161,16 +186,34 @@ monadifyQuery (sig, fun) = do
   runIO (print (ppr sig'))
   return [sig', fun']
 
+-------------------------------------------------------------------------------
+
 changeFunction :: Dec -> Q Dec
 changeFunction (FunD nm clauses) = do
 --   cs <- mapM changeClause clauses
-  cs <- undefinedClause
+  cs <- clause [] (normalB [| return undefined |]) []
   return (FunD nm [cs])
 
 changeClause :: Clause -> Q Clause
 changeClause (Clause pats body decs) =
   return (Clause pats body decs)
 
+-- matcher (AppE (VarE "count") iets Tree 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-------------------------------------------------------------------------------
 
 -- Turn a type signature for a query function into a monadic variant.
 
@@ -179,18 +222,19 @@ mkQueryType (SigD nm tp) = do
   let (QueryType vs cx t g c) = parseQuerySig tp
   m <- newName "m"
   f <- newName "f"
-  let q     = ConT (mkName "Query") `AppT` g `AppT` (VarT f) `AppT` (VarT m) `AppT` c
-      monad = AppT (ConT (mkName "Monad")) (VarT m)
+  let q     = t (ConT ''Query `AppT` g `AppT` (VarT f) `AppT` (VarT m) `AppT` c)
+      monad = AppT (ConT ''Monad) (VarT m)
       vs'   = m : f : vs
   return (SigD nm (ForallT vs' (monad : cx) q))
 
-parseQuerySig :: Type -> QueryType
-parseQuerySig tp =
-  fromMaybe (error "processing non-query function") (rec tp)
-  where
-    rec (ForallT v c t)          = fmap (\qt -> qt { qtVars = v, qtCxt = c}) (rec t)
-    rec (AppT (AppT ArrowT a) b) = rec b <|> Just (QueryType [] [] a a b)
-    rec _                        = Nothing
+data QueryType =
+  QueryType {
+    qtVars :: [Name]
+  , qtCxt  :: Cxt
+  , qtType :: Type -> Type
+  , qtCont :: Type
+  , qtRes  :: Type
+  }
 
 {-
 Select the container type and the query result type from a query type
@@ -205,12 +249,13 @@ Where `f' is the container data type.
 Where `c' is the query result.
 -}
 
-data QueryType =
-  QueryType {
-    qtVars  :: [Name]
-  , qtCxt   :: Cxt
-  , qtType  :: Type
-  , qtCont  :: Type
-  , qtRes   :: Type
-  }
+parseQuerySig :: Type -> QueryType
+parseQuerySig tp =
+  fromMaybe (error "processing non-query function") (rec tp tp)
+  where
+    rec (ForallT v c t)          k = fmap (\qt -> qt { qtVars = v, qtCxt = c}) (rec t k)
+    rec (AppT (AppT ArrowT a) b) k = fmap (comp (AppT (AppT ArrowT a))) (rec b k)
+                                     <|> Just (QueryType [] [] id a b)
+    rec _                        k = Nothing
+    comp f qt = qt { qtType = f . qtType qt }
 
