@@ -104,10 +104,11 @@
   transactions for the access to shared memory. In their paper \emph{Composable
   Memory Transactions} Harris, Marlow, Peyton Jones and Herlihy\cite{stm}
   describe an implementation of transactional memory for Haskell on top of
-  \emph{Concurrent Haskell}. The STM implementation for Haskell is composable,
-  which means that separate block of atomic code can be composed into one
-  larger block of atomic code. These atomic blocks of code can be used to give
-  separate threads/processes exclusive access to certain memory variables.
+  \emph{Concurrent Haskell}\cite{conchask}. The STM implementation for Haskell
+  is composable, which means that separate block of atomic code can be composed
+  into one larger block of atomic code. These atomic blocks of code can be used
+  to give separate threads/processes exclusive access to certain memory
+  variables.
 
   STM can not only be used to manage atomic actions to shared resources in
   memory, the abstraction can also be lifted to manage other program resources.

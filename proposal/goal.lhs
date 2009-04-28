@@ -1,39 +1,40 @@
 %include polycode.fmt
 
-\section{Goals}
+\section{Thesis Project}
 
-  The main goal of this project is to create a framework for the programming
-  language Haskell which enables transparent persistence of values of arbitrary
-  data types to an external storage device.
-
-  The key aspects of this framework will be:
+  For this thesis project to succeed at the least the following topics should
+  have been researched and implemented as part of the framework.
 
   \begin{itemize}
-    \item The mapping of arbitrary data structures to disk.
-    \item Use lifted version of pure data structures. 
-    \item High performance by incremental reads/writes.
-    \item Generic marshalling of values to binary data.
-    \item No dependency on third-party database tools.
+
+    \item An efficient file-based storage heap that can grow and shrink on demand.
+
+    \item An aspect oriented framework to lift data structures to persistent
+    variants. Space and time complexity should be respected.
+
+    \item At least one reasonably fast general purpose data structure, e.g.
+    finger-tree or b-tree.
+
+    \item At least one domain specific data structure, e.g. space partition
+    tree.
+
+    \item An transactional memory cache to allow concurrent access.
+
+    \item An example application and database to show the possibilities and
+    benchmark.
+
   \end{itemize}
 
-  \subsection{Domain specific containers}
+  \subsection{Heap}
 
-  The framework should not make any assumptions on the structure of the
-  information that is made persistent. This allows the usage of arbitrary
-  domain specific data structures which their own time and space complexity
-  optimized for a specific application.
+  \subsection{Persistency framework}
+  
+  \subsection{General purpose data structure}
 
-  \subsection{Pure algorithms}
+  \subsection{Domain specific data structure}
 
-  Developers writing container data types to be used in the persistence
-  framework should not be bothered with the inner workings of the system. It is
-  the responsibility of th framework to lift pure data structures into the IO
-  monad with the correct read and write operations, not the responsibility of
-  the programmer.
+  \subsection{Transactional cache}
 
-  \subsection{Incremental IO access}
+  \subsection{Example application}
 
-  \subsection{Generic binary serialization}
-
-  \subsection{Domain specific containers}
 
