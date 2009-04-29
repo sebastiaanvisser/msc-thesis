@@ -67,7 +67,7 @@
   will also be extensively used in this project. By writing algebras for data
   type specific folds, the container data remain open for annotation.
 
-  \subsubsection{Attribute Grammars}
+\subsection{Attribute Grammars}
 
   Attribute grammars can be seen as a way of writing catamorphisms. The
   attribute grammar system for Haskell\cite{ag} (\emph{UUAGC}) allows users to

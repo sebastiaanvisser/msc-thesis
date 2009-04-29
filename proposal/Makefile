@@ -1,7 +1,7 @@
 all: proposal.pdf
 	open $<
 
-proposal.pdf: intro.tex overview.tex framework.tex motivation.tex goal.tex related-work.tex proposal.tex
+proposal.pdf: intro.tex overview.tex framework.tex motivation.tex goal.tex extras.tex related-work.tex proposal.tex
 
 %.tex: %.lhs
 	lhs2Tex -o $@ $<

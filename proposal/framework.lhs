@@ -107,17 +107,13 @@
   \subsection{Persistent data}
 
     By annotating the recursive points of the data structure with pointers to
-    locations on a storage heap on disk instead of real sub structures you can
-    save the structure to disk.
-
-    By annotating the recursive functions that operate on the data structure
-    with additional actions that read or write the recursive structures from or
-    to disk, you can also project the functions to operate on disk.
-
-    Because all the data structures and functions are written without the
-    explicit recursion, all of this happens transparently to the writers of the
-    data structure.
-
+    locations in the storage heap instead of the real sub structures it can be
+    made persistent on disk. By annotating the recursive functions that operate
+    on the data structure with additional actions that read or write the
+    recursive structures from or to disk, you can also project the functions to
+    operate on disk. Because all the data structures and functions are written
+    without the explicit recursion, all of this happens transparently to the
+    writers of the data structure.
 
   \subsection{Storage heap}
 
