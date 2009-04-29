@@ -1,5 +1,5 @@
 %\documentclass[10pt,twocolumn,serif,xcolor=dvipsnames]{article}
-\documentclass[12pt,serif,xcolor=dvipsnames]{article}
+\documentclass[10pt,serif,xcolor=dvipsnames]{article}
 
 %include polycode.fmt
 
@@ -11,7 +11,7 @@
 
 \usepackage{draft}
 
-\pagestyle{fancy}
+%\pagestyle{fancy}
 
 \rhead{\emph{PROPOSAL}}
 \lhead{Generic persistency of Haskell data types}
@@ -50,6 +50,7 @@
   \input{framework}    % \pagebreak
   \input{motivation}   % \pagebreak
   \input{goal}         % \pagebreak
+  \input{planning}     % \pagebreak
   \input{extras}       % \pagebreak
   \input{related-work} % \pagebreak
 

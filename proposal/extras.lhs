@@ -2,7 +2,9 @@
 
 \section{Additional topics.}
 
-When the time allows for more extensiont to the project.
+Because it is hard to predict how much time it will take to implement an
+initial basic framework and the additional possibilities are near infinite,
+here is a list of additional work that can be done.
 
 \subsection{Encoding type hashes into serialized data}
 
@@ -67,5 +69,4 @@ Make the storage heap extendible in a nice way to allow custom variations on
 how data is saved. This should allow users to encrypt or compress individual
 data blocks. This extensions should also be able to incorporate the type hashes
 as described above.
-
 
