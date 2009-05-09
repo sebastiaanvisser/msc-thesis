@@ -48,3 +48,47 @@
     big data structures into pieces that can be freely navigated without
     touching the entire structure.
 
+  \subsection{Storing and querying domain specific data structures}
+
+    The advantage of relational database mapping is the generality when it
+    comes to storing data. Using or misusing the table based layout of an RDMS
+    will almost always ensure that your application data can be saved in some
+    structure. The problem is that it is not always easy to perform fast
+    queries over your data when the real structure of data is not entirely
+    isomorph to the table layout chosen to store the data in the RDMS.
+
+    An example is this is a mapping from two-dimensional coordinates to
+    business relations. Storing such a mapping in a database is very simple and
+    does not take a very complicated structure. The problem arises when one
+    wants to perform efficient spatial queries over the data, like getting the
+    |n| nearest business relations to the city center of Utrecht. Writing
+    efficient queries that perform these tasks are hard to write. 
+
+    On the other hand, there are several data structures very capable of
+    performing such a query very efficiently.  A quadtree is a domain specific
+    data structure specialized for efficient indexing of spatial information.
+    Quadtrees are specializations of multidimensional search
+    trees\cite{multitree}.  Elements inside a quadtree are saved and indexed
+    based on their geometrical coordinates which results in very efficient
+    spatial lookups.  Finding the |k| elements nearest to a specific elements
+    using a quadtree can be done in not more than $O(k$ log $(n))$ time.
+    Performing the same task with the same asymptotic running time using SQL
+    queries on an RDMS is very difficult and probably requires a lot of
+    knowledge about the internals of the database.
+
+    Storing data is something most databases are very good at, performing
+    efficient domain specific queries over a collection of elements is probably
+    best done using a specialized data structure.  Storing a large collection
+    of data outside application memory and still being able to perform
+    specialized queries over this data is still an unsolved problem in most
+    programming languages and accompanying storage libraries.
+
+    This framework tends to solve this problem by separating the concerns of
+    data storage and that of specialized data structures. By projecting the
+    internal structure of container data types to an isomorphic variant on disk
+    specialized algorithms will still be applicable with the same time and
+    space complexities. The framework enables developers over container
+    libraries to focus on the internal structure and allows for writing
+    efficient algorithms without worrying about the internals of the storage
+    layer.
+
