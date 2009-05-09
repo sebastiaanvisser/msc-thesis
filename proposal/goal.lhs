@@ -29,6 +29,8 @@
 
   \subsection{Heap}
 
+    todo: move to framework.lhs
+
     The storage heap will be the back-end of the persistence framework a will
     manage all low level IO operations. The interface of the heap should at
     least contain the following functions.

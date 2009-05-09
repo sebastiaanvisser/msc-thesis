@@ -42,6 +42,16 @@
   used for improving the type safety of our Haskell framework.
   }
 
+\subsection{Relational Database Management Systems}
+
+  \draft{
+  adhshjadshjklasdhjkadshjkadsadhjksadhjksadhjksadhjks adhjks adshjk adshjk
+  adshjkadshjkadshjk adshjk adshjk adsjkdhadjksdhjksfgadhjsfg hjasdfg hjasdgf
+  jkk;jtopyirtyopuirtyouk rtoypkuckmvm,bvahjugriyewhr tipfgmbanw
+  efiorutwbipjansdjkbfiorbnmx,.cn ,bzcouahwdfha sdichv ksgdjknrgasdkk d dokksd
+  lhkv..jurjacx jdfjfdofo
+  }
+
 \subsection{Binary serialization}
 
   \fancy{
