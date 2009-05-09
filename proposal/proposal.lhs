@@ -53,7 +53,7 @@
   \input{goal}         % \pagebreak
   \input{planning}     % \pagebreak
   \input{extras}       % \pagebreak
-  \input{related-work}   \pagebreak
+  \input{related-work} % \pagebreak
 
   \bibliographystyle{plain}
   \bibliography{proposal}

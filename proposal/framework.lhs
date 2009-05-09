@@ -233,7 +233,7 @@
   parametrized with an additional function \emph{rec} that takes care of the
   recursion. By using a specialized fixed point combinator we can tie the knot
   and perform an additional task where the function recurses.  For example, we
-  can print out the sub structure we are processing:
+  can print out the sub structures we are processing:
   }
 
 >makePrintingQuery
