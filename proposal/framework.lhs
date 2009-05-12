@@ -55,8 +55,8 @@
   Finding the right level of abstraction is crucial when building a generic
   programs.  Several generic views on data exist in Haskell, most of which use
   type classes to access them.  Examples of these are monoids, (applicative)
-  functors and monads.  Others generic views can be obtained by abstracting
-  away concrete patterns, like the fixed point view on data types which
+  functors and monads.  Other generic views can be obtained by abstracting away
+  concrete patterns, like the fixed point view on data types which
   abstracts away from recursion.
   }
 
@@ -273,20 +273,6 @@
   of this happens transparently to the writers of the data structure.
   }
 
-  \subsection{Storage heap}
-
-  \fancy{
-  Mimicking what is going on in memory on disk requires a data structure tho
-  handle the allocation and deallocation of blocks of persistent storage.  A
-  heap just like the one in regular application memory with the ability to
-  allocate, free and reuse blocks of data will fit our demands. This heap will
-  be stored in a single file on disk and should be a able to grow and shrink on
-  demand. To allow the algorithms used on data structures to perform on disk
-  with the same asymptotic time and space complexity as in application memory,
-  seeking for and reading data from a storage block should work in constant
-  time.
-  }
-
   \subsection{Binary serialization}
 
   \fancy{
@@ -299,5 +285,51 @@
   data structures themselves.  Such boilerplate code should be taken care of by
   the generic programming library. The section on related work gives a more
   detailed view of possible techniques.
+  }
+
+  \subsection{Storage heap}
+
+  \fancy{
+  Mimicking what is going on in memory on disk requires a data structure tho
+  handle the allocation and deallocation of blocks of persistent storage.  A
+  heap just like the one in regular application memory with the ability to
+  allocate, free and reuse blocks of data will fit our demands. This heap will
+  be stored in a single file on disk and should be a able to grow and shrink on
+  demand.
+  }
+
+  \fancy{
+  The interface of the heap should at least contain the following functions:
+  }
+
+>store     :: Binary a =>  a ->               Storage t (Pointer a)
+>retrieve  :: Binary a =>  Pointer a ->       Storage t a
+>delete    ::              Pointer a ->       Storage t ()
+>reuse     :: Binary a =>  Pointer a -> a ->  Storage t (Pointer a)
+
+  \fancy{
+  All these functions operate inside the |Storage| monad, which runs inside the
+  |IO| monad and has access to the underlying heap structure using a |State|
+  monad. There is quite some freedom in the exact implementations of these
+  functions which may significantly affect performance.  We expect all of these
+  function to run with the same time and space complexity as there in-memory
+  equivalents so the expected running time of persistent algorithms matches the
+  running time of the in-memory algorithms.
+  }
+
+  \fancy{
+  The |Store| function takes a value of any type that we can generically
+  serialize to a binary representation and allocates a fresh block on the heap,
+  stores the binary representation and returns a pointer to this block.  The
+  |Pointer| data type is indexed with the type that is stored so we can later
+  on use it only to read back the value of the correct type.  The |Retrieve|
+  function takes pointer to a value of some type that we know of we can
+  deserialize from a binary representation and reads the value from the heap.
+  Internally it will read the binary representation from the heap and
+  deserialize the stream to a real value of the right type.  The |delete|
+  functions frees an existing block, making the previously occupied space
+  available for future allocations. The |reuse| functions tries to reuse the
+  existing space for a new value when possible, or reallocates a new block when
+  the existing block does not contain enough space.
   }
 

@@ -44,12 +44,22 @@
 
 \subsection{Relational Database Management Systems}
 
-  \draft{
-  adhshjadshjklasdhjkadshjkadsadhjksadhjksadhjksadhjks adhjks adshjk adshjk
-  adshjkadshjkadshjk adshjk adshjk adsjkdhadjksdhjksfgadhjsfg hjasdfg hjasdgf
-  jkk;jtopyirtyopuirtyouk rtoypkuckmvm,bvahjugriyewhr tipfgmbanw
-  efiorutwbipjansdjkbfiorbnmx,.cn ,bzcouahwdfha sdichv ksgdjknrgasdkk d dokksd
-  lhkv..jurjacx jdfjfdofo
+  \fancy{
+  There are several connectors available for Haskell to existing relational
+  database management systems. These connectors allow developers to directly
+  query relational databases using the SQL query language. This gives
+  developers the complete power of databases, like fast querying, indexing,
+  transactions etc. Examples of packages for connecting to database management
+  systems are the general Haskell Database Connection\cite{hdbc} and the
+  binding to the SQLite database system\cite{sqlite}.
+  }
+
+  \fancy{
+  Others libraries build on top of these RDBMS bindings and allow marshalling
+  of Haskell data generically. Using generic programming libraries these
+  connectors allow mapping values of arbitrary Haskell types to database rows
+  and vice versa. These system really add some power, because developers do
+  not have to write the marshalling code manually.
   }
 
 \subsection{Binary serialization}

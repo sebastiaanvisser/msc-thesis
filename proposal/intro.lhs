@@ -12,7 +12,7 @@ help of my supervisor Andres L\"oh.
 This document contains a proposal for a framework for transparent persistence
 of arbitrary data structures in the pure and functional programming language
 Haskell. The proposed framework stresses the reuse of existing Haskell data
-types and algorithms for long term storage on external storage devices.
+types and algorithms for long term storage on external devices.
 }
 
 \fancy{
