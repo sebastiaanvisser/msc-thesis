@@ -44,20 +44,20 @@
 
 \begin{document}
 
-  \maketitle
-  \input{overview}       \pagebreak
-  \tableofcontents       \pagebreak
+\maketitle
+\input{overview}       \pagebreak
+\tableofcontents       \pagebreak
 
-  \label{intro}        \input{intro}        % \pagebreak
-  \label{framework}    \input{framework}    % \pagebreak
-  \label{motivation}   \input{motivation}   % \pagebreak
-  \label{goal}         \input{goal}         % \pagebreak
-  \label{planning}     \input{planning}     % \pagebreak
-  \label{extras}       \input{extras}       % \pagebreak
-  \label{related-work} \input{related-work}   \pagebreak
+\label{intro}        \input{intro}        % \pagebreak
+\label{framework}    \input{framework}    % \pagebreak
+\label{motivation}   \input{motivation}   % \pagebreak
+\label{goal}         \input{goal}         % \pagebreak
+\label{planning}     \input{planning}     % \pagebreak
+\label{extras}       \input{extras}       % \pagebreak
+\label{related-work} \input{related-work}   \pagebreak
 
-  \bibliographystyle{plain}
-  \bibliography{proposal}
+\bibliographystyle{plain}
+\bibliography{proposal}
 
 \end{document}
 

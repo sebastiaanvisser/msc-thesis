@@ -2,20 +2,15 @@
 
 \section{Introduction}
 
-\fancy{
 This document describes the background, motivation, goals and planning of my
 MSc thesis project.  The next months I will be working on this project with the
 help of my supervisor Andres L\"oh.
-}
 
-\fancy{
 This document contains a proposal for a framework for transparent persistence
 of arbitrary data structures in the pure and functional programming language
 Haskell. The proposed framework stresses the reuse of existing Haskell data
 types and algorithms for long term storage on external devices.
-}
 
-\fancy{
 The second section will give a brief technical introduction on the
 possibilities of data type generic programming with a fixed point view on data
 types. This section demonstrates how to create data structures that are open to
@@ -30,5 +25,4 @@ planning for the upcoming months.  The sixth section summarizes the additional
 work that can be done to extend this framework.  The last section on related
 work gives a broad overview of things already achieved in the field related to
 this topic and explicitly states what we can learn from it.
-}
 
