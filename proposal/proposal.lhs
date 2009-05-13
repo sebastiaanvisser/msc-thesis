@@ -4,24 +4,24 @@
 
 %include polycode.fmt
 
-%\usepackage{fancyhdr}
+\usepackage{fancyhdr}
 \usepackage{amsmath}
-%\usepackage{pxfonts}
-%\usepackage{eulervm}
+\usepackage{pxfonts}
+\usepackage{eulervm}
 \usepackage[usenames]{color}
 
 \usepackage{draft}
 
-%\pagestyle{fancy}
+\pagestyle{fancy}
 
-%\rhead{\emph{PROPOSAL}}
-%\lhead{Generic persistency of Haskell data types}
-%\renewcommand{\headrulewidth}{0.4pt}
+\rhead{\emph{PROPOSAL}}
+\lhead{Generic persistence of Haskell data types}
+\renewcommand{\headrulewidth}{0.4pt}
 
-% \addtolength{\textheight}{1.2in}
-% \addtolength{\voffset}{ -0.6in}
-% \addtolength{\textwidth}{1.2in}
-% \addtolength{\hoffset}{ -0.6in}
+\addtolength{\textheight}{0.6in}
+%\addtolength{\voffset}{ -0.6in}
+%\addtolength{\textwidth}{0.6in}
+%\addtolength{\hoffset}{ -0.3in}
 
 % \setlength{\parindent}{0in}
 % \setlength{\parskip}{\baselineskip}
@@ -36,7 +36,7 @@
 \definecolor{stress}{rgb}{0.50,0.50,0.50} 
 \newcommand{\stress}[1]{\textcolor{stress}{#1}}
 
-\title{PROPOSAL: Generic persistency of Haskell data types}
+\title{PROPOSAL: Generic persistence of Haskell data types}
 \author{Sebastiaan Visser}
 \date{\today}
 
@@ -45,7 +45,7 @@
 \begin{document}
 
 \maketitle
-\input{overview}       \pagebreak
+\input{abstract}       \pagebreak
 \tableofcontents       \pagebreak
 
 \label{intro}        \input{intro}        % \pagebreak

@@ -1,7 +1,18 @@
-all: proposal.pdf
+DOC=proposal
+
+all: ${DOC}.pdf
 	open $<
 
-proposal.pdf: intro.tex overview.tex framework.tex motivation.tex goal.tex planning.tex extras.tex related-work.tex proposal.tex
+${DOC}.pdf: \
+	intro.tex \
+	abstract.tex \
+	framework.tex \
+	motivation.tex \
+	goal.tex \
+	planning.tex \
+	extras.tex \
+	related-work.tex \
+	${DOC}.tex
 
 %.tex: %.lhs
 	lhs2Tex -o $@ $<
@@ -9,11 +20,20 @@ proposal.pdf: intro.tex overview.tex framework.tex motivation.tex goal.tex plann
 %.pdf: %.tex %.bib
 	latexmk -pdf $<
 
-#pre-proposal.bbl: pre-proposal.bib
-#	bibtex pre-proposal
+#${DOC}.bbl: ${DOC}.bib
+#	bibtex ${DOC}
 
 .PHONY: clean
 
 clean: .
-	rm -f *.aux *.bbl *.blg *.dvi *.fdb_latexmk *.log *.pdf *.ptb *.tex
+	rm -f \
+	*.aux \
+	*.bbl \
+	*.blg \
+	*.dvi \
+	*.fdb_latexmk \
+	*.log \
+	*.pdf \
+	*.ptb \
+	*.tex
 
