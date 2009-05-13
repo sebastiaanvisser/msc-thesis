@@ -14,7 +14,7 @@
 
 \pagestyle{fancy}
 
-\rhead{\emph{PROPOSAL}}
+\rhead{\emph{proposal}}
 \lhead{Generic persistence of Haskell data types}
 \renewcommand{\headrulewidth}{0.4pt}
 
@@ -23,8 +23,8 @@
 %\addtolength{\textwidth}{0.6in}
 %\addtolength{\hoffset}{ -0.3in}
 
-% \setlength{\parindent}{0in}
-% \setlength{\parskip}{\baselineskip}
+%\setlength{\parindent}{0in}
+%\setlength{\parskip}{\baselineskip}
 % \setlength{\columnsep}{0.4in}
 
 % \setlength{\columnseprule}{0.001in}
@@ -36,7 +36,7 @@
 \definecolor{stress}{rgb}{0.50,0.50,0.50} 
 \newcommand{\stress}[1]{\textcolor{stress}{#1}}
 
-\title{PROPOSAL: Generic persistence of Haskell data types}
+\title{\emph{proposal:}\\Generic persistence of\\ Haskell data types}
 \author{Sebastiaan Visser}
 \date{\today}
 

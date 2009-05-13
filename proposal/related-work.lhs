@@ -18,7 +18,7 @@ structure at the recursive points but at the points where the actual element
 values are stored. This means that every record value is stored in its own
 chunk, while they entire data structure itself is stored in one single chunk.
 Destructive updates of individual record values can now be done efficiently
-without touching the entire collection. But, for every change in the structure
+without touching the entire collection. But for every change in the structure
 of the collection the chunk containing the data structure itself --- they call
 this the \emph{Root chunk} --- has to be read in and written back as a whole.
 

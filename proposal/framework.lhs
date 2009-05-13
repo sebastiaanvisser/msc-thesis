@@ -17,21 +17,20 @@ and additional functionality can be done by abstraction away from recursion in
 their definitions.  By annotating the recursive point in the data values with
 pointers to locations on a storage heap on disk and annotating the functions
 with actions to read and write the data from or to disk, we can transparently
-persist data structures on disk.  Because we cut the data structures into
-separate non-recursive pieces, the algorithms can work on persistent data
-without reading and writing the entire structure from or to disk.  Because we
-can freely navigate individual parts of the persistent structures the time and
-space complexity of the algorithms is the same as it would be when running in
-memory.  This makes this framework useful for the use of both general purpose
-and domain specific data structures.
+persist data structures on disk.  Cutting the data structures into separate
+non-recursive pieces allows the algorithms to work on persistent data without
+reading or writing the entire structure from or to disk.  The time and space
+complexity of the algorithms remains equivalent to the original version running
+in memory, because we can freely access individual parts of the persistent data
+structure.  This makes this framework useful for persisting both general
+purpose and domain specific data structures.
 
 This section sketches the technical outline on how to use generic programming
-techniques to annotate the behaviour of functional data structures. Generic
-annotation will be the basis of the persistence framework.
-
-The techniques described in this proposal have far more practical implications
-than will described in this section. The goal of this project includes research
-to the exploitation of this technique.
+techniques to annotate the behaviour of functional data structures.  Generic
+annotation will be the basis of the persistence framework.  The techniques
+described in this proposal have far more practical implications than will be
+described in this section.  The goal of this project includes research to the
+exploitation of this technique.
 
 \subsection{Data type generic programming}
 
@@ -43,12 +42,12 @@ can be processed by the same function.  By making more assumptions about the
 structure of data more knowledge can be exploited when processing it, but
 values of less data structures can be used.
 
-Finding the right level of abstraction is crucial when building a generic
+Finding the right level of abstraction is crucial when building generic
 programs.  Several generic views on data exist in Haskell, most of which use
 type classes to access them.  Examples of these are monoids, (applicative)
 functors and monads.  Other generic views can be obtained by abstracting away
 concrete patterns, like the fixed point view on data types which abstracts away
-from recursion.
+from recursion.  This last view is very useful in this project.
 
 \subsection{Fixed point view on data types}
 
@@ -59,14 +58,15 @@ more than one element.
 
 To allow the persistence framework to cut large data structures into separate
 non-recursive pieces we assume a fixed point view on the data types we process.
-By having an explicit notion of the recursion we can efficiently marshal the
-non-recursive pieces to disk without further knowledge of our domain.
+By having an explicit notion of the recursive positions in the data we can
+efficiently marshal the non-recursive pieces to disk without further knowledge
+of our domain.
 
 Abstracting away from recursion is a common pattern in the field of generic
 programming and can be done by parametrizing data types with a recursive
 variable.  To illustrate this, we take the following inductive data type that
-represents a binary search tree. Every |Tree| is either a |Leaf| or a |Branch|
-with one value and two sub-|Tree|s:
+represents a binary search tree.  Every |Tree| is either a |Leaf| or a |Branch|
+with one value and two sub trees:
 
 >data Tree a = Leaf | Branch a (Tree a) (Tree a)
 
@@ -77,9 +77,9 @@ with one value and two sub-|Tree|s:
 %endif
 
 By parametrizing the |Tree| data type with an additional type parameter for the
-recursive point we come up with the following data type:
+recursive points we come up with the following data type:
 
->data FTree a f = FLeaf | FBranch a f f
+>data TreeF a f = LeafF | BranchF a f f
 
 %if False
 
@@ -90,7 +90,7 @@ recursive point we come up with the following data type:
 Applying a type level fixed point combinator to such an open data type gives us
 back something isomorphic to the original:
 
->data Fix f = In { out :: f (Fix f) }
+>newtype Fix f = In { out :: f (Fix f) }
 
 %if False
 
@@ -99,7 +99,7 @@ back something isomorphic to the original:
 
 %endif
 
->type FixTree a = Fix (FTree a)
+>type FixTree a = Fix (TreeF a)
 
 Opening up recursive data types as shown above is a rather easy and mechanical
 process that can easily be done automatically and generically using several
@@ -109,7 +109,7 @@ The same is not the case for the recursive functions working on these data
 types.  Abstracting out the recursion in the function working on our recursive
 data structures demands some changes in the way a function is written.  Several
 techniques can be thought of to achieve this, all of which demands some changes
-in the way the developer writes the algorithms. Three possible ways of
+in the way the developer writes the algorithms.  Three possible ways of
 abstraction away from recursion in function definitions are:
 
 \begin{itemize}
@@ -124,35 +124,39 @@ on the type level.
 
 \item
 
-Functions can be described as algebras or coalgebras and be lifted to true
-cata- and ana- and paramorphisms using specialized folds and unfolds.  This
-technique is very well documented in literature\cite{bananas} and should be
-powerful enough to express all functions on our data types\cite{paramorphisms}.
+Functions can be described as algebras or coalgebras and be lifted to
+catamorphisms, anamorphisms, and paramorphisms using specialized folds and
+unfolds.  This technique is very well documented in literature\cite{bananas}
+and should be powerful enough to express all functions on our data
+types\cite{paramorphisms}.
 
 \item
 
-Another option is to use program transformations to convert existing recursive
-function into open variants. While this is possible in theory is requires a lot
-of meta programming to achieve this, e.g. using Template Haskell\cite{th}.
+Program transformations can be used to convert existing recursive function into
+open variants.  While this is possible in theory is requires a lot of meta
+programming to achieve this, e.g. using Template Haskell\cite{th}.  The main
+advantage of this technique is that this can in theory be used to persist
+\emph{existing} Haskell container data types.  The main disadvantage is that
+this rather ad-hoc meta programming approach is not very easy and elegant.
 
 \end{itemize}
 
-So, there are several ways to factor out the recursion from the functions that
-operate on the recursive data structures and it is not inherently clear which
-of these is the best. An interesting research topic for this project will be to
+So there are several ways to factor out the recursion from the functions that
+operate on the inductive data types and it is not inherently clear which of
+these is the best.  An interesting research topic for this project will be to
 figure out what approach is the most transparent and easy to use.
 
 \subsection{Annotated fixed points}
 
-As illustrated above, when we abstract away from all the recursive positions in
-both our data types and the functions working on our data we can get back our
-original definitions by tying the knot using a fixed point combinator.  The
-control over recursion is now shifted from the definition of the data structure
-to the framework. This can be used to generically annotate the behaviour.
+As illustrated above, when abstracting away from all the recursive positions in
+both the data types and the functions working on them, the original definitions
+can be obtained again by tying the knot using a fixed point combinator.  The
+control over recursion is now shifted away from the definitions to the
+framework.  This can be used to generically annotate the behaviour.
 
 The fixed point combinator at the data type level can be used to store
-additional information inside the recursive points of our data types. This can
-be done using an annotated fixed point combinator. First we have to define
+additional information inside the recursive points of these data types.  This
+can be done using an annotated fixed point combinator.  First we have to define
 composition on type level.
 
 >infixr :.:
@@ -164,21 +168,22 @@ composition on type level.
 
 %endif
 
-The annotated fixed point can now be defined like this:
+The annotated fixed point can now be defined by embedding a composition of an
+open container with an annotation inside the fixed point combinator.
 
 >type AnnFix f ann = Fix (f :.: ann)
 
 The fixed point combinator at the value level can be used to perform additional
 actions when the original function would otherwise have gone into recursion
-directly. One way to do this is to write an \emph{open} and \emph{lifted}
+directly.  One way to do this is to write an \emph{open} and \emph{lifted}
 variant of such a function, like the following example of the function |count|
-on our |Tree| data type. The |Query| type synonym is used to hide some details.
+on our |Tree| data type.  The |Query| type synonym is used to hide some details.
 
 >type Query g f m c = (f -> m c) -> g f -> m c
 
->count :: Applicative g => Query (FTree a) f g Int
->count _    FLeaf            = pure 0
->count rec  (FBranch _ l r)  = (\a b -> a + b + 1) <$> rec l <*> rec r
+>count :: Applicative g => Query (TreeF a) f g Int
+>count _    LeafF            = pure 0
+>count rec  (BranchF _ l r)  = (\a b -> a + b + 1) <$> rec l <*> rec r
 
 %if False
 
@@ -186,23 +191,24 @@ on our |Tree| data type. The |Query| type synonym is used to hide some details.
 
 %endif
 
-This function operates inside \emph{some} applicative functor and is
-parametrized with an additional function \emph{rec} that takes care of the
-recursion. By using a specialized fixed point combinator we can tie the knot
-and perform an additional task where the function recurses.  For example, we
-can print out the sub structures we are processing:
+This function is lifted to operate inside \emph{some} applicative functor and
+is open because it is parametrized with an additional function \emph{rec} that
+takes care of the recursion.  By using a specialized fixed point combinator we
+can tie the knot and perform an additional task where the function recurses.
+For example, we can print out the sub structures we are processing:
 
 >makePrintingQuery
 >  ::  Show (f (Fix f))
 >  =>  Query f (Fix f) IO c
 >  ->  Fix f -> IO c
->makePrintingQuery q f  = liftM out (m f) >>= w
->  where  w     = q (m >=> w . out)
->         m a   = print a >> return a
+>makePrintingQuery q f = liftM out (m f) >>= w
+>  where  w    = q (m >=> w . out)
+>         m a  = print a >> return a
 
 With this function we can annotate all open lifted query functions to print out
-all intermediate sub structures. For the |count| function defined above this
-becomes:
+all intermediate sub structures.  Note that this function does not assume any
+annotations in the recursive points, something which is in practice possible.
+We can now annotate the |count| function, this now becomes:
 
 >printCount :: Show a => FixTree a -> IO Int
 >printCount = makePrintingQuery count
@@ -214,14 +220,15 @@ algorithms.
 \subsection{Persistent data}
 
 By annotating the recursive points of the data structure with pointers to
-locations in a file-based storage heap instead of the real sub structures it
-can be made persistent on disk. Every non-recursive part of the structure can
-be handled individually without having the entire structure in memory. By
-annotating the recursive functions that operate on the data structure with
-additional actions that read or write the recursive structures from or to disk,
-you can also project the functions to operate on disk. Because all the data
-structures and functions are written without the explicit recursion, all of
-this happens transparently to the writers of the data structure.
+locations in a file-based storage heap instead of the real sub structures,
+individual parts can be made persistent on disk without losing the connection
+to sub structures.  Every non-recursive part of the structure can be handled
+individually without having the entire structure in memory.  By annotating the
+recursive functions that operate on the data structure with additional actions
+that read the recursive structures from or write them to disk, you can also
+project the functions to operate on disk.  Because all the data structures and
+functions are written without the explicit recursion, all of this happens
+transparently to the writers of the data structure.
 
 \subsection{Binary serialization}
 
@@ -230,17 +237,17 @@ generically serialize values to and deserialize from binary streams.  Generic
 binary serialization is well described in literature and can be done using
 several generic programming techniques\cite{databinary, derive, emgm, syb,
 multirec, compgen, printparse, clean}.  Ideally users of this framework do not
-have to write their binary serialization code or a generic views on their data
+have to write their binary serialization code and generic views on their data
 structures themselves.  Such boilerplate code should be taken care of by the
-generic programming library. The section on related work gives a more detailed
+generic programming library.  The section on related work gives a more detailed
 view of possible techniques.
 
 \subsection{Storage heap}
 
-Mimicking what is going on in memory on disk requires a data structure tho
-handle the allocation and deallocation of blocks of persistent storage.  A heap
+Mimicking what is going on in memory on disk requires a data structure to
+handle the allocation and deallocation of blocks of persistent data.  A heap
 just like the one in regular application memory with the ability to allocate,
-free and reuse blocks of data will fit our demands. This heap will be stored in
+free and reuse blocks of data will fit our demands.  This heap will be stored in
 a single file on disk and should be a able to grow and shrink on demand.
 
 The interface of the heap should at least contain the following functions:
@@ -252,10 +259,10 @@ The interface of the heap should at least contain the following functions:
 
 All these functions operate inside the |Storage| monad, which runs inside the
 |IO| monad and has access to the underlying heap structure using a |State|
-monad. There is quite some freedom in the exact implementations of these
+monad.  There is quite some freedom in the exact implementations of these
 functions which may significantly affect performance.  We expect all of these
-function to run with the same time and space complexity as there in-memory
-equivalents so the expected running time of persistent algorithms matches the
+function to run with the same time and space complexity as their in-memory
+equivalents, so the expected running time of persistent algorithms matches the
 running time of the in-memory algorithms.
 
 The |Store| function takes a value of any type that we can generically
@@ -268,7 +275,7 @@ deserialize from a binary representation and reads the value from the heap.
 Internally it will read the binary representation from the heap and deserialize
 the stream to a real value of the right type.  The |delete| functions frees an
 existing block, making the previously occupied space available for future
-allocations. The |reuse| functions tries to reuse the existing space for a new
+allocations.  The |reuse| functions tries to reuse the existing space for a new
 value when possible, or reallocates a new block when the existing block does
 not contain enough space.
 

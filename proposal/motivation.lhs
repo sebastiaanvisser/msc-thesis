@@ -3,25 +3,25 @@
 \section{Motivation}
 
 There are currently several ways of making Haskell data structure persistent on
-an external storage devices. Long-lived information storage is an essential
-ingredient in a large amount of modern applications. Although there is a lot to
-learn from existing tools, there are currently no work available that allow
-both incremental access and modifications to the persistent structure and work
-nicely with real functional data structures\cite{okasaki}.
+an external storage devices. Management of long-lived information is an
+essential ingredient of a large amount of modern applications. Although there
+is a lot to learn from existing tools, there is currently no work available
+that allow both incremental access and modifications to the persistent
+structure and work nicely with real functional data structures.
 
-This section described the two most common techniques for data persistence
-currently used and Haskell and sketches an example application that motivates
-the need for the proposed framework.
+This section describes the two most common techniques for data persistence
+currently used and Haskell and subsequently sketches an example application
+that motivates the need for the proposed framework.
 
 \subsection{Relational Database Management Systems}
 
 There are several packages available for Haskell that use connections to
-existing relationae database management systems (RDMS'es) to store Haskell
+existing relational database management systems (RDMSes) to store Haskell
 values.  Generic views on algebraic data types provide enough information to
-generically map values of arbitrary types to database rows.
+automatically map values of arbitrary types to database rows.
 
-Unfortunately, the mapping from algebraic data types to the table based layout
-of RDMS'es without losing any structural information tends to be rather
+Unfortunately the mapping from algebraic data types to the table based layout
+of RDMSes without losing any structural information tends to be rather
 inefficient. Relying on a such a heavy dependency as an external RDMS system
 only for making your Haskell values persistent outside application memory
 unnecessarily increases the complexity of the program architecture.  This is
@@ -47,21 +47,23 @@ The big disadvantage of these libraries is that values can only be written and
 read as a whole, which does not scale well when dealing with very large amount
 of data. That is why there is a need for a framework that can use the same
 generic serialization techniques, but can cut the big data structures into
-pieces that can be freely navigated without touching the entire structure.
+pieces that can be freely navigated without touching the entire structure. Such
+a framework can still use these serialisation libraries internally for the
+individual non recursive pieces.
 
 \subsection{Example domain: spatial indexing}
 
 The advantage of relational databases is the generality when it comes to
 storing data. Using (or misusing) the table based layout of an RDMS will almost
 always ensure that your application data can be saved in \emph{some} structure.
-Unfortunately, it is not always easy to perform fast queries over data when the
+Unfortunately it is not always easy to perform fast queries over data when the
 structure of information in the table based RDMS layout does not nicely fit the
-algebriac layout of your original ADT.
+algebriac layout of the original ADT.
 
 To illustrate this, consider an application that stores a mapping from
 two-dimensional geometrical coordinates to business relations.  Storing such a
 mapping in a database is very simple and does not take a very complicated
-structure. The problem arises when one wants to perform efficient spatial
+structure. The problem arises when you want to perform efficient spatial
 queries over the data, like getting the |n| nearest business relations to the
 city center of Utrecht. Efficient SQL queries that perform such specific tasks
 might be very hard to write. 

@@ -1,0 +1,37 @@
+\contentsline {section}{\numberline {1}The framework}{3}
+\contentsline {subsection}{\numberline {1.1}Data type generic programming}{3}
+\contentsline {subsection}{\numberline {1.2}Fixed point view on data types}{4}
+\contentsline {subsection}{\numberline {1.3}Annotated fixed points}{5}
+\contentsline {subsection}{\numberline {1.4}Persistent data}{6}
+\contentsline {subsection}{\numberline {1.5}Binary serialization}{6}
+\contentsline {subsection}{\numberline {1.6}Storage heap}{7}
+\contentsline {section}{\numberline {2}Motivation}{7}
+\contentsline {subsection}{\numberline {2.1}Relational Database Management Systems}{7}
+\contentsline {subsection}{\numberline {2.2}Binary serialization}{8}
+\contentsline {subsection}{\numberline {2.3}Example domain: spatial indexing}{8}
+\contentsline {section}{\numberline {3}Goals}{9}
+\contentsline {subsection}{\numberline {3.1}Heap}{9}
+\contentsline {subsection}{\numberline {3.2}Persistence framework}{9}
+\contentsline {subsection}{\numberline {3.3}General purpose data structure}{10}
+\contentsline {subsection}{\numberline {3.4}Domain specific data structure}{10}
+\contentsline {subsection}{\numberline {3.5}Garbage collector}{10}
+\contentsline {subsection}{\numberline {3.6}Transactional cache}{11}
+\contentsline {subsection}{\numberline {3.7}Example application}{11}
+\contentsline {section}{\numberline {4}Planning}{11}
+\contentsline {section}{\numberline {5}Additional topics.}{12}
+\contentsline {subsection}{\numberline {5.1}Encoding type hashes into serialized data}{12}
+\contentsline {subsection}{\numberline {5.2}Nested data structures}{13}
+\contentsline {subsection}{\numberline {5.3}Incremental folds}{13}
+\contentsline {subsection}{\numberline {5.4}Using attribute grammars to write queries}{13}
+\contentsline {subsection}{\numberline {5.5}Parallel access to independent sub structures}{13}
+\contentsline {subsection}{\numberline {5.6}Aspect oriented storage framework}{13}
+\contentsline {subsection}{\numberline {5.7}Fixed point based optimizations}{14}
+\contentsline {section}{\numberline {6}Related work}{14}
+\contentsline {subsection}{\numberline {6.1}Clean}{14}
+\contentsline {subsection}{\numberline {6.2}Relational Database Management Systems}{14}
+\contentsline {subsection}{\numberline {6.3}Binary serialization}{15}
+\contentsline {subsection}{\numberline {6.4}Algebras}{15}
+\contentsline {subsection}{\numberline {6.5}Attribute Grammars}{16}
+\contentsline {subsection}{\numberline {6.6}Iteratee based IO}{16}
+\contentsline {subsection}{\numberline {6.7}Sharing / Garbage Collection}{16}
+\contentsline {subsection}{\numberline {6.8}Software Transactional Memory}{16}
