@@ -4,19 +4,8 @@ module Data.OBO.Parser (parseOBO) where
 
 import Data.Char
 import Data.OBO.Document
-import Control.Monad
 import Control.Applicative
 import Text.ParserCombinators.Parsec hiding (many, optional, (<|>))
-
--- Make parsec Applicative and Alternative.
-
-instance Applicative (GenParser s a) where
-  pure  = return
-  (<*>) = ap
-
-instance Alternative (GenParser s a) where
-  empty = mzero
-  (<|>) = mplus
 
 -- OBO format parser.
 

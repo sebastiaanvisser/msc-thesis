@@ -22,14 +22,12 @@ mkProducer
   :: Aspect g (AnnFix f g) m
   => Producer f (AnnFixF f g) m
   -> m (AnnFixF f g)
-
 mkProducer p = p (produce . In . C) 
 
 mkQuery
   :: Aspect g (AnnFix f g) m
   => Query f (AnnFixF f g) m c
   -> AnnFixF f g -> m c
-
 mkQuery q f = liftM (unC . out) (query f) >>= w
   where w = q (query >=> w . unC . out)
 
@@ -37,7 +35,6 @@ mkModifier
   :: Aspect g (AnnFix f g) m
   => Modifier f (AnnFixF f g) m c
   -> AnnFixF f g -> m c
-
 mkModifier m = q >=> w . unC . out
   where w = m (p . In . C) (q >=> w . unC . out)
         (p, q) = modify

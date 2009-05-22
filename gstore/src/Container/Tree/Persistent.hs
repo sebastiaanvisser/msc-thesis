@@ -8,7 +8,7 @@ import Generic.Representation
 import Generic.Annotate
 import Generic.Aspect ()
 import Aspect.Persistent ()
--- import Aspect.Debug ()
+import Aspect.Debug ()
 import qualified Container.Tree.Abstract as F
 
 type TreeAspects = Pointer -- :. Debug :. Id

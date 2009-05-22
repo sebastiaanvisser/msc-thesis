@@ -6,6 +6,8 @@
   #-}
 module Generic.Aspect where
 
+import Prelude hiding ((.), id)
+import Control.Category
 import Control.Monad
 import Generic.Representation
 
@@ -26,7 +28,7 @@ instance Monad m => Aspect Id f m where
 instance (Monad m, Aspect a (b f) m, Aspect b f m)
       => Aspect (a :. b) f m where
   produce = produce >=> produce >=> return . C
-  query   = (query   >=> query) . unC
+  query   = (query >=> query) . unC
   modify  = ( fst modify >=> fst modify >=> return . C
             ,(snd modify >=> snd modify) . unC)
 
