@@ -1,10 +1,10 @@
 {-# LANGUAGE FlexibleContexts, ScopedTypeVariables #-}
-module Generic.Arbitrary where
+module Generics.Arbitrary where
 
 import Control.Applicative
 import Control.Monad
 import Generic.Core
-import Generic.Fixpoints
+import Generics.Fixpoints
 import Prelude hiding (sum)
 import Test.QuickCheck
 

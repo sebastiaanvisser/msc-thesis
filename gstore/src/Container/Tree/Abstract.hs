@@ -12,7 +12,7 @@
 module Container.Tree.Abstract where
 
 import Data.Binary
-import Generic.Annotate
+import Generics.Annotate
 import Generics.Regular
 import Generics.Regular.Binary
 import Generics.Regular.TH

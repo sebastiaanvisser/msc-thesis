@@ -2,11 +2,11 @@
 module Aspect.Test where
 
 import Data.Binary
-import Generic.Aspect
+import Generics.Aspect
 import Aspect.Debug
 import Aspect.Persistent
-import Generic.Annotate
-import Generic.Representation
+import Generics.Annotate
+import Generics.Representation
 import Storage.FileStorage
 
 type MyAspects = Pointer :. Debug :. Id

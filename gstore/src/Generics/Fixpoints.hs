@@ -1,5 +1,5 @@
 {-# LANGUAGE ScopedTypeVariables #-}
-module Generic.Fixpoints where
+module Generics.Fixpoints where
 
 import Control.Applicative
 import Generic.Core

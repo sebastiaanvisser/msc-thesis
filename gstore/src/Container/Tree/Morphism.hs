@@ -1,7 +1,7 @@
 module Container.Tree.Morphism where
 
 import Prelude hiding (replicate, lookup)
-import Generic.Representation
+import Generics.Representation
 import qualified Container.Tree.Abstract as F
 
 -- Tree morphism type signatures.

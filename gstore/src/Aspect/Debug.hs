@@ -9,7 +9,7 @@ module Aspect.Debug where
 
 import Control.Monad.State hiding (get, put)
 import Data.Binary
-import Generic.Aspect
+import Generics.Aspect
 import Generics.Regular
 import Prelude hiding (read)
 

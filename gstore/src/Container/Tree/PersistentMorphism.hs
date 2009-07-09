@@ -4,8 +4,8 @@ module Container.Tree.PersistentMorphism where
 import Aspect.Debug
 import Aspect.Persistent
 import Data.Binary
-import Generic.Aspect
-import Generic.Representation
+import Generics.Aspect
+import Generics.Representation
 import Prelude hiding (replicate, lookup)
 import Storage.FileStorage
 import qualified Container.Tree.Abstract as F

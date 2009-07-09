@@ -6,12 +6,12 @@
   , TypeOperators
   , ScopedTypeVariables
   #-}
-module Generic.Aspect where
+module Generics.Aspect where
 
 import Prelude hiding ((.), id)
 import Control.Category
 import Control.Monad
-import Generic.Representation
+import Generics.Representation
 import Generics.Regular.Base
 
 class Monad m => Aspect a f m where

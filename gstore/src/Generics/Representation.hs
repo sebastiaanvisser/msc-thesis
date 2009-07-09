@@ -6,7 +6,7 @@
   , TypeOperators
   , GeneralizedNewtypeDeriving
   #-}
-module Generic.Representation where
+module Generics.Representation where
 
 import Generics.Regular.Base
 import Data.Binary

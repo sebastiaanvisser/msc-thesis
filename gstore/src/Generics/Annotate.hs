@@ -3,13 +3,13 @@
   , UndecidableInstances
   , TypeOperators
  #-}
-module Generic.Annotate where
+module Generics.Annotate where
 
 import Control.Monad
 import Data.Binary
-import Generic.Aspect
+import Generics.Aspect
 import Generics.Regular.Base
-import Generic.Representation
+import Generics.Representation
 
 instance Binary (f (g a)) => Binary ((f :. g) a) where
   get = O `fmap` get

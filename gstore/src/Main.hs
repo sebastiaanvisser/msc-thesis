@@ -6,7 +6,7 @@ import Control.Monad.State
 import Data.Char
 import Data.List hiding (insert, lookup)
 import Data.OBO
-import Generic.Aspect (unwrap)
+import Generics.Aspect (unwrap)
 import Prelude hiding (lookup)
 import Storage.FileStorage
 import System.Environment

@@ -4,9 +4,9 @@ module Container.Tree.Persistent where
 import Control.Monad
 import Data.Binary
 import Storage.FileStorage
-import Generic.Representation
+import Generics.Representation
 import Generics.Regular.Base ()
-import Generic.Annotate
+import Generics.Annotate
 import Aspect.Persistent ()
 import Aspect.Debug ()
 import qualified Container.Tree.Abstract as F
