@@ -8,12 +8,13 @@ import Data.List hiding (insert, lookup)
 import Data.OBO
 import Prelude hiding (lookup)
 import Storage.FileStorage
+import System.Environment
 import System.IO
 import System.Posix.Files
-import System.Environment
 
 instance TreeClass String
 instance TreeClass Entry
+type OBO_DB = TreeP String Entry
 
 trim :: String -> String
 trim =
@@ -22,7 +23,7 @@ trim =
   . reverse
   . dropWhile isSpace
 
-insertEntry :: Entry -> TreeP String Entry -> Storage t (TreeP String Entry)
+insertEntry :: Entry -> OBO_DB  -> Storage t OBO_DB
 insertEntry b p = do
   liftIO $ (putChar '.' >> hFlush stdout)
   insert (name b) b p
@@ -36,7 +37,7 @@ sep a b =
      debug
      return r
 
-fromList :: [Entry] -> Storage t (TreeP String Entry)
+fromList :: [Entry] -> Storage t OBO_DB
 fromList xs = foldl' (\a b -> a >>= insertEntry b) empty xs
 
 main :: IO ()
@@ -63,13 +64,13 @@ build source db = do
     Right doc -> 
       do let stanzas = docStanzas doc
              entries = map stanzaToEntry stanzas
-         setFileSize db 0
+         setFileSize db 0 -- reset DB.
          run db $
            do o <- store nullP
               p <- fromList entries
               liftIO $ putStrLn []
               liftIO $ print (o, p)
-              reuse o p
+              reuse o (tree p)
               liftIO $ print "done"
 
               return ()
@@ -89,7 +90,7 @@ query db =
 stats :: FilePath -> IO ()
 stats db = 
   run db $
-    do p <- (retrieve nullP :: Storage t (TreeP String Entry))
+    do p <- (retrieve nullP :: Storage t OBO_DB)
        liftIO $ print p
        count p >>= \(c :: Int) -> liftIO (putStr "count: " >> print c)
        depth p >>= \(c :: Int) -> liftIO (putStr "depth: " >> print c)

@@ -3,29 +3,35 @@
   , FlexibleContexts
   , MultiParamTypeClasses
   , FlexibleInstances
+  , TypeFamilies
  #-}
 module Aspect.Debug where
 
 import Control.Monad.State hiding (get, put)
 import Data.Binary
 import Generic.Aspect
-import Generic.Representation
+import Generics.Regular
 import Prelude hiding (read)
 
-newtype Debug a = D { unD :: a }
+newtype Debug a = Debug { unDebug :: a }
   deriving Show
 
-instance Binary a => Binary (Id a) where
-  get = Id `fmap` get
-  put = put . unId
+instance Binary a => Binary (I a) where
+  get = I `fmap` get
+  put = put . unI
 
 instance Binary a => Binary (Debug a) where
-  get = D `fmap` get
-  put = put . unD
+  get = Debug `fmap` get
+  put = put . unDebug
 
 instance (MonadIO m, Show f) => Aspect Debug f m where
-  produce f = liftIO (print ("produce:", f)) >> return (D f)
-  query   f = liftIO (print ("query:",   f)) >> return (unD f)
+  produce f = liftIO (print ("produce:", f)) >> return (Debug f)
+  query   f = liftIO (print ("query:",   f)) >> return (unDebug f)
 
-  modify    = ( \f -> liftIO (print ("modify_p:", f)) >> return (D f)
-              , \f -> liftIO (print ("modify_q:", f)) >> return (unD f))
+  modify    = ( \f -> liftIO (print ("modify_p:", f)) >> return (Debug f)
+              , \f -> liftIO (print ("modify_q:", f)) >> return (unDebug f))
+
+instance Unwrap (Debug f) where
+  type UW (Debug f) = f
+  unwrap = unDebug
+

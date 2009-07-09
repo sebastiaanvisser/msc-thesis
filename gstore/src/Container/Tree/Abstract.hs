@@ -1,28 +1,34 @@
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE
+    TypeFamilies
+  , TypeOperators
+  , TemplateHaskell
+  , GADTs
+  , KindSignatures
+  , EmptyDataDecls
+  , TypeSynonymInstances
+  , MultiParamTypeClasses
+  , RankNTypes
+  #-}
 module Container.Tree.Abstract where
 
 import Data.Binary
-import Data.Binary.Generic
-import Generic.Representation hiding (left, right)
 import Generic.Annotate
+import Generics.Regular
+import Generics.Regular.Binary
+import Generics.Regular.TH
 
 -- Binary tree parametrized by key type, value type and recursive points.
 
 data Tree a b f =
     Leaf
-  | Branch {key :: a, val :: b, left :: f, right :: f}
+  | Branch {key :: a, val :: b, leftT :: f, rightT :: f}
   deriving (Eq, Ord, Show, Read)
 
--- Generic pattern functor view.
+-- Generic view.
 
-instance PFView (Tree a b f) where
-  type PF (Tree a b f) = Sum Unit (Prod (Prod (K a) (K b)) (Prod (K f) (K f)))
-
-  from Leaf             = Inl Unit
-  from (Branch a b f g) = Inr (Prod (Prod (K a) (K b)) (Prod (K f) (K g)))
-
-  to (Inl Unit)                                         = Leaf
-  to (Inr (Prod (Prod (K a) (K b)) (Prod (K f) (K g)))) = Branch a b f g
+$(deriveConstructors ''Tree)
+$(deriveRegular ''Tree "PFTree")
+type instance PF (Tree a b f) = PFTree a b f
 
 -- Generically derived binary instance.
 
@@ -62,15 +68,15 @@ lookup a f (Branch c d l r) =
 count :: (Num c, Monad m) => (f -> m c) -> Tree a b f -> m c
 count _ Leaf = return 0
 count f t =
-  do a <- f (left  t)
-     b <- f (right t)
+  do a <- f (leftT  t)
+     b <- f (rightT t)
      return (1 + a + b)
 
 depth :: (Ord c, Num c, Monad m) => Query (Tree a b) f m c
 depth _ Leaf = return 0
 depth f t =
-  do a <- f (left  t)
-     b <- f (right t)
+  do a <- f (leftT  t)
+     b <- f (rightT t)
      return (1 + max a b)
 
 insert :: (Monad m, Ord a) => a -> b -> Modifier (Tree a b) f m f

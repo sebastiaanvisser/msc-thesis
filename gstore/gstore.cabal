@@ -16,8 +16,11 @@ Build-Depends:    QuickCheck,
                   utf8-string,
                   containers,
                   fclabels,
-                  parsec,
-                  mtl,
+                  parsec ==3.0.*,
+                  monads-fd,
+                  transformers,
+                  regular,
+                  regular-binary,
                   unix
 
 Executable:       main

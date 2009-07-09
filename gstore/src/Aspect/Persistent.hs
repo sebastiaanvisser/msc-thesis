@@ -9,6 +9,7 @@ module Aspect.Persistent where
 import Control.Applicative
 import Data.Binary
 import Generic.Aspect
+import Generics.Regular.Base
 import Generic.Representation
 import Prelude hiding (read)
 import Storage.FileStorage
