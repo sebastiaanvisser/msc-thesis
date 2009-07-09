@@ -3,6 +3,7 @@
   , MultiParamTypeClasses
   , FlexibleContexts
   , FlexibleInstances
+  , TypeFamilies
  #-}
 module Aspect.Persistent where
 
@@ -21,4 +22,8 @@ instance Binary f => Aspect Pointer f (Storage t) where
   produce = store
   query   = retrieve
   modify  = (store, \p -> query p <* delete p)
+
+instance Unwrap (Pointer a) where
+  type UW (Pointer a) = Pointer a
+  unwrap = id
 

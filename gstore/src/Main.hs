@@ -6,6 +6,7 @@ import Control.Monad.State
 import Data.Char
 import Data.List hiding (insert, lookup)
 import Data.OBO
+import Generic.Aspect (unwrap)
 import Prelude hiding (lookup)
 import Storage.FileStorage
 import System.Environment
@@ -70,7 +71,7 @@ build source db = do
               p <- fromList entries
               liftIO $ putStrLn []
               liftIO $ print (o, p)
-              reuse o (tree p)
+              reuse o (unwrap p)
               liftIO $ print "done"
 
               return ()

@@ -5,22 +5,18 @@ import Control.Monad
 import Data.Binary
 import Storage.FileStorage
 import Generic.Representation
-import Generics.Regular.Base
+import Generics.Regular.Base ()
 import Generic.Annotate
-import Generic.Aspect
 import Aspect.Persistent ()
-import Aspect.Debug
+import Aspect.Debug ()
 import qualified Container.Tree.Abstract as F
 
-type TreeAspects = I :. Debug :. Pointer
+type TreeAspects = {-I :. Debug :.-} Pointer
 
 class (Show a, Binary a) => TreeClass a
 
 type Tree  a b = AnnFix  (F.Tree a b) TreeAspects
 type TreeP a b = AnnFixF (F.Tree a b) TreeAspects
-
-tree :: TreeAspects a -> Pointer a
-tree = unwrap . unwrap
 
 triplet :: (TreeClass a, TreeClass b) => a -> b -> a -> b -> a -> b -> Storage t (TreeP a b)
 triplet a0 b0 a1 b1 a2 b2 = mkProducer (F.triplet a0 b0 a1 b1 a2 b2)

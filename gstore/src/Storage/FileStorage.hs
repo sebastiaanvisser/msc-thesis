@@ -29,9 +29,6 @@ newtype Pointer a   = P { unP :: Int }
 nullP :: Pointer a
 nullP = P 0
 
--- instance Unpack (Pointer a) Int where
---   unpack = unP
-
 instance Show (Pointer a) where
   show (P p) = "P:" ++ show p
 

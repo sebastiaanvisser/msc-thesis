@@ -38,11 +38,11 @@ class Unwrap a where
   type UW a :: *
   unwrap :: a -> UW a
 
-instance Unwrap (I f) where
-  type UW (I f) = f
-  unwrap = unI
+instance Unwrap f => Unwrap (I f) where
+  type UW (I f) = UW f
+  unwrap = unwrap . unI
 
 instance Unwrap (a (b f)) => Unwrap ((a :. b) f) where
-  type UW ((a :. b) f) = UW (a (b f))
-  unwrap = unwrap . unO
+   type UW ((a :. b) f) = UW (a (b f))
+   unwrap = unwrap . unO
 

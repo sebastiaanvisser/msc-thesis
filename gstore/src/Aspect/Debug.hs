@@ -31,7 +31,7 @@ instance (MonadIO m, Show f) => Aspect Debug f m where
   modify    = ( \f -> liftIO (print ("modify_p:", f)) >> return (Debug f)
               , \f -> liftIO (print ("modify_q:", f)) >> return (unDebug f))
 
-instance Unwrap (Debug f) where
-  type UW (Debug f) = f
-  unwrap = unDebug
+instance Unwrap f => Unwrap (Debug f) where
+  type UW (Debug f) = UW f
+  unwrap = unwrap . unDebug
 

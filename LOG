@@ -87,3 +87,32 @@ Tue May 12
 14.00-18.00
 Finishing up proposal.
 
+Wed May 20
+13.00-17.00
+Playing with multirec.
+Creating multirec TH adapation.
+
+Fri May 22
+11.00-18.00
+Playing with multirec.
+Generic Binary instances.
+
+Sun May 24
+12.30-18.30
+Playing with multirec.
+Generic Binary instances. Fixes + release.
+
+Wed Jul 8
+09.30-17:30
+Regular instead of multirec.
+Played with generic binary derivation without boilerplate.
+
+Thu Jul 9
+10.00-17:00
+Now really using regular instead of multirec.
+Made some changes to regular-TH, made branch to submit to Pedro.
+Created type class for unwrapping layers of annotations more easily.
+Transitivity now allows automated unwrap.
+
+
+
