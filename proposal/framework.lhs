@@ -13,58 +13,66 @@
 \section{The framework}
 
 Transparently annotating purely functional data structures with additional data
-and additional functionality can be done by abstraction away from recursion in
-their definitions.  By annotating the recursive point in the data values with
-pointers to locations on a storage heap on disk and annotating the functions
-with actions to read and write the data from or to disk, we can transparently
-persist data structures on disk.  Cutting the data structures into separate
-non-recursive pieces allows the algorithms to work on persistent data without
-reading or writing the entire structure from or to disk.  The time and space
-complexity of the algorithms remains equivalent to the original version running
-in memory, because we can freely access individual parts of the persistent data
-structure.  This makes this framework useful for persisting both general
+and additional functionality can be done by abstracting away from the recursion
+in their definitions.  By annotating the recursive point in the data values
+with pointers to locations on a storage heap on disk and annotating the
+functions with actions to read and write the data from or to disk, we can
+transparently persist data structures on disk.  Cutting the data structures
+into separate non-recursive pieces allows the algorithms to work on persistent
+data without reading or writing the entire structure from or to disk at once.
+The time and space complexity of the algorithms remains equivalent to the
+original version running in memory, because we can freely access individual
+parts of the persistent data structure.  Because the complexity of the
+algorithms working on persistent data structures remains equivalent to their
+in-memory counterparts, the framework is useful for persistence of both general
 purpose and domain specific data structures.
 
-This section sketches the technical outline on how to use generic programming
+We will now sketch the technical outline on how to use generic programming
 techniques to annotate the behaviour of functional data structures.  Generic
-annotation will be the basis of the persistence framework.  The techniques
-described in this proposal have far more practical implications than will be
-described in this section.  The goal of this project includes research to the
-exploitation of this technique.
+annotation will be the basis of the persistence framework.  Annotation of data
+structures is a very general technique that is not solely useful for data
+persistence. Other project may benefit from generic annotation as well.  The
+goal of this project includes research to the exploitation of generic
+annotation.
 
-\subsection{Data type generic programming}
+\subsection{Datatype generic programming}
 
-Data type generic programming in Haskell can be used to write functions to
+Datatype generic programming in Haskell can be used to write functions to
 process values of different types.  Different levels of generality can be
 achieved by making more or less assumptions about the layout of data.  Making
-less assumptions about the structure of data means values of more data types
+less assumptions about the structure of data means values of more datatypes
 can be processed by the same function.  By making more assumptions about the
 structure of data more knowledge can be exploited when processing it, but
 values of less data structures can be used.
 
 Finding the right level of abstraction is crucial when building generic
-programs.  Several generic views on data exist in Haskell, most of which use
-type classes to access them.  Examples of these are monoids, (applicative)
-functors and monads.  Other generic views can be obtained by abstracting away
-concrete patterns, like the fixed point view on data types which abstracts away
-from recursion.  This last view is very useful in this project.
+programs.  Haskell type classes can be used to do some form of generic
+programming by providing different implementations for common concepts based on
+the types involved. Examples of these type classes are monoids, (applicative)
+functors and monads.  Data type generic programming can be used to write
+functions that work for all types by exploiting the structure of algebraic
+datatypes. By only looking at structural properties like the constructors,
+fields, type variables and recursion, generic functions can be written that
+make no assumptions about the actual datatypes.  Abstracting away from the
+recursive points in a datatype is sometimes called the fixed point view on
+datatypes and is really useful to this project.
 
-\subsection{Fixed point view on data types}
+\subsection{Fixed points of datatypes}
 
 Most container data structures used in computer science are based on recursive
-data types.  Recursively -- or inductively -- defined data types contain at
+datatypes.  Recursively -- or inductively -- defined datatypes contain at
 least one reference to itself in their definition, this way managing to store
 more than one element.
 
 To allow the persistence framework to cut large data structures into separate
-non-recursive pieces we assume a fixed point view on the data types we process.
+non-recursive pieces we assume a fixed point view on the datatypes we process.
 By having an explicit notion of the recursive positions in the data we can
 efficiently marshal the non-recursive pieces to disk without further knowledge
 of our domain.
 
 Abstracting away from recursion is a common pattern in the field of generic
-programming and can be done by parametrizing data types with a recursive
-variable.  To illustrate this, we take the following inductive data type that
+programming and can be done by parametrizing datatypes with a recursive
+variable.  To illustrate this, we take the following inductive datatype that
 represents a binary search tree.  Every |Tree| is either a |Leaf| or a |Branch|
 with one value and two sub trees:
 
@@ -76,8 +84,8 @@ with one value and two sub trees:
 
 %endif
 
-By parametrizing the |Tree| data type with an additional type parameter for the
-recursive points we come up with the following data type:
+By parametrizing the |Tree| datatype with an additional type parameter for the
+recursive points we come up with the following datatype:
 
 >data TreeF a f = LeafF | BranchF a f f
 
@@ -87,7 +95,7 @@ recursive points we come up with the following data type:
 
 %endif
 
-Applying a type level fixed point combinator to such an open data type gives us
+Applying a type level fixed point combinator to such an open datatype gives us
 back something isomorphic to the original:
 
 >newtype Fix f = In { out :: f (Fix f) }
@@ -101,7 +109,7 @@ back something isomorphic to the original:
 
 >type FixTree a = Fix (TreeF a)
 
-Opening up recursive data types as shown above is a rather easy and mechanical
+Opening up recursive datatypes as shown above is a rather easy and mechanical
 process that can easily be done automatically and generically using several
 generic programming libraries.
 
@@ -136,26 +144,26 @@ Program transformations can be used to convert existing recursive function into
 open variants.  While this is possible in theory is requires a lot of meta
 programming to achieve this, e.g. using Template Haskell\cite{th}.  The main
 advantage of this technique is that this can in theory be used to persist
-\emph{existing} Haskell container data types.  The main disadvantage is that
+\emph{existing} Haskell container datatypes.  The main disadvantage is that
 this rather ad-hoc meta programming approach is not very easy and elegant.
 
 \end{itemize}
 
 So there are several ways to factor out the recursion from the functions that
-operate on the inductive data types and it is not inherently clear which of
+operate on the inductive datatypes and it is not inherently clear which of
 these is the best.  An interesting research topic for this project will be to
 figure out what approach is the most transparent and easy to use.
 
 \subsection{Annotated fixed points}
 
 As illustrated above, when abstracting away from all the recursive positions in
-both the data types and the functions working on them, the original definitions
+both the datatypes and the functions working on them, the original definitions
 can be obtained again by tying the knot using a fixed point combinator.  The
 control over recursion is now shifted away from the definitions to the
 framework.  This can be used to generically annotate the behaviour.
 
-The fixed point combinator at the data type level can be used to store
-additional information inside the recursive points of these data types.  This
+The fixed point combinator at the datatype level can be used to store
+additional information inside the recursive points of these datatypes.  This
 can be done using an annotated fixed point combinator.  First we have to define
 composition on type level.
 
@@ -177,7 +185,7 @@ The fixed point combinator at the value level can be used to perform additional
 actions when the original function would otherwise have gone into recursion
 directly.  One way to do this is to write an \emph{open} and \emph{lifted}
 variant of such a function, like the following example of the function |count|
-on our |Tree| data type.  The |Query| type synonym is used to hide some details.
+on our |Tree| datatype.  The |Query| type synonym is used to hide some details.
 
 >type Query g f m c = (f -> m c) -> g f -> m c
 
@@ -232,7 +240,7 @@ transparently to the writers of the data structure.
 
 \subsection{Binary serialization}
 
-In order to store values of arbitrary data types to disk a tool is needed to
+In order to store values of arbitrary datatypes to disk a tool is needed to
 generically serialize values to and deserialize from binary streams.  Generic
 binary serialization is well described in literature and can be done using
 several generic programming techniques\cite{databinary, derive, emgm, syb,
@@ -268,7 +276,7 @@ running time of the in-memory algorithms.
 The |Store| function takes a value of any type that we can generically
 serialize to a binary representation and allocates a fresh block on the heap,
 stores the binary representation and returns a pointer to this block.  The
-|Pointer| data type is indexed with the type that is stored so we can later on
+|Pointer| datatype is indexed with the type that is stored so we can later on
 use it only to read back the value of the correct type.  The |Retrieve|
 function takes pointer to a value of some type that we know of we can
 deserialize from a binary representation and reads the value from the heap.
