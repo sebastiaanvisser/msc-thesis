@@ -48,6 +48,14 @@ endoparaM alg@(x, _) (In (C  F.Leaf)) = let xx = x (In (C F.Leaf)) (In (C F.Leaf
 
 
 
+
+
+
+
+
+
+
+
 type TreeAspects = Pointer :. Debug :. Id
 
 class (Show a, Binary a) => TreeClass a

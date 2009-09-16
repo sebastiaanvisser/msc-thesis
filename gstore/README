@@ -6,3 +6,7 @@ Use the Haskell cabal-install to install this library:
 
 Please report problems to: sfvisser@cs.uu.nl
 
+
+
+todo:
+  - benchmarking on solid state disk

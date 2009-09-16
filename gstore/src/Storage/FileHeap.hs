@@ -17,7 +17,9 @@ module Storage.FileHeap (
   , dumpAllocationMap
   ) where
 
-import Control.Monad.State
+import Control.Monad
+import Control.Monad.Trans
+import qualified Control.Monad.State as T
 import Data.Maybe
 import Data.Record.Label
 import Data.Word
@@ -47,21 +49,21 @@ data FileHeap =
   , _file     :: Handle
   } deriving Show
 
-type Heap m = StateT FileHeap IO m
+type Heap m = T.StateT FileHeap IO m
 
 $(mkLabels [''Block, ''FileHeap])
 
-file     :: Label FileHeap Handle
-heapSize :: Label FileHeap Size
-allocMap :: Label FileHeap (I.IntMap [Int])
-payload  :: Label Block (Maybe B.ByteString)
-size     :: Label Block Size
-offset   :: Label Block Offset
+file     :: FileHeap :-> Handle
+heapSize :: FileHeap :-> Size
+allocMap :: FileHeap :-> I.IntMap [Int]
+payload  :: Block :-> Maybe B.ByteString
+size     :: Block :-> Size
+offset   :: Block :-> Offset
 
 -- Helper functions.
 
 location :: Block -> Offset
-location = lget offset
+location = get offset
 
 headerSize :: Size
 headerSize = 1 + 4
@@ -70,10 +72,10 @@ splitThreshold :: Size
 splitThreshold = 4
 
 blockSize :: Block -> Size
-blockSize = (+headerSize) . lget size
+blockSize = (+headerSize) . get size
 
 nextBlock :: Block -> Heap (Maybe Block)
-nextBlock b = readBlock (lget offset b + blockSize b)
+nextBlock b = readBlock (get offset b + blockSize b)
 
 safeOffset :: Offset -> Heap a -> Heap (Maybe a)
 safeOffset o c = do
@@ -170,7 +172,7 @@ findFreeBlock i = do
 runHeap :: FilePath -> Heap a -> IO a
 runHeap f c =
   withBinaryFile f ReadWriteMode $ \h ->
-    fst `fmap` runStateT (readAllocationMap 0 >> c) (emptyHeap h)
+    fst `fmap` T.runStateT (readAllocationMap 0 >> c) (emptyHeap h)
 
 allocate :: Size -> Heap Block
 allocate i = do
@@ -211,17 +213,17 @@ free o = do
 read :: Offset -> Heap B.ByteString
 read o = do
   p <- unsafeReadBlock o
-  case lget payload p of
+  case get payload p of
     Nothing -> error "reading from unoccupied block"
     Just pl -> return pl
 
 write :: B.ByteString -> Block -> Heap ()
-write bs = writeBlock . lset payload (Just bs)
+write bs = writeBlock . set payload (Just bs)
 
 -- Debug operations.
 
 dumpAllocationMap :: Heap ()
-dumpAllocationMap = get >>= liftIO . print
+dumpAllocationMap = T.get >>= liftIO . print
 
 dump :: Heap ()
 dump = readBlock 0 >>= f

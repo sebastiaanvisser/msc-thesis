@@ -10,6 +10,7 @@ import Generics.Annotate
 import Aspect.Persistent ()
 import Aspect.Debug ()
 import qualified Container.Tree.Abstract as F
+import qualified Container.Tree.Apo      as P
 
 type TreeAspects = {-I :. Debug :.-} Pointer
 

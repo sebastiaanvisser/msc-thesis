@@ -35,8 +35,7 @@ data Entry =
   , xref         :: String
   } deriving Show
 
-$(deriveConstructors ''Entry)
-$(deriveRegular ''Entry "PFEntry")
+$(deriveAll ''Entry "PFEntry")
 type instance PF Entry = PFEntry
 
 instance Eq Entry where

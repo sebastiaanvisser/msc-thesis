@@ -11,8 +11,12 @@
   #-}
 module Container.Tree.Abstract where
 
+import Control.Applicative
 import Data.Binary
-import Generics.Annotate
+import Data.Foldable
+import Data.Monoid
+import Data.Traversable
+-- import Generics.Annotate
 import Generics.Regular
 import Generics.Regular.Binary
 import Generics.Regular.TH
@@ -26,8 +30,7 @@ data Tree a b f =
 
 -- Generic view.
 
-$(deriveConstructors ''Tree)
-$(deriveRegular ''Tree "PFTree")
+$(deriveAll ''Tree "PFTree")
 type instance PF (Tree a b f) = PFTree a b f
 
 -- Generically derived binary instance.
@@ -36,8 +39,23 @@ instance (Binary a, Binary b, Binary f) => Binary (Tree a b f) where
   put = gput
   get = gget
 
--- Basic functions.
+instance Functor (Tree a b) where
+  fmap _ Leaf             = Leaf
+  fmap f (Branch a b l r) = Branch a b (f l) (f r)
 
+instance Foldable (Tree a b) where
+  foldMap _ Leaf             = mempty
+  foldMap f (Branch _ _ l r) = f l `mappend` f r
+
+instance Traversable (Tree a b) where
+  traverse _ Leaf             = pure Leaf
+  traverse f (Branch k v l r) = Branch k v <$> f l <*> f r
+
+instance (Show a, Show b) => Show (Fix (Tree a b)) where
+  show k = "[| " ++ show (out k) ++ " |]"
+
+-- Basic functions.
+{-
 empty :: Monad m => Producer (Tree a b) f m
 empty p = p Leaf
 
@@ -84,4 +102,4 @@ insert a b p _ Leaf = singleton a b p
 insert a _ p f (Branch c d l r)
   | a > c     = f r >>= p .       Branch c d  l
   | otherwise = f l >>= p . flip (Branch c d) r
-
+-}

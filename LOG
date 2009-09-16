@@ -114,5 +114,14 @@ Made some changes to regular-TH, made branch to submit to Pedro.
 Created type class for unwrapping layers of annotations more easily.
 Transitivity now allows automated unwrap.
 
+-- some more .. --
 
+Wed Sep 9
+9.30-17.30
+Fixed annotated Apo morphism.
+
+tue-fri
+
+Wed Sep 16
+ci
 
