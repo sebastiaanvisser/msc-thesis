@@ -1,8 +1,8 @@
 {-# LANGUAGE TypeOperators, FlexibleContexts #-}
 module Container.Tree.PersistentMorphism where
 
-import Aspect.Debug
-import Aspect.Persistent
+import Annotation.Debug
+import Annotation.Persistent
 import Data.Binary
 import Generics.Aspect
 import Generics.Representation

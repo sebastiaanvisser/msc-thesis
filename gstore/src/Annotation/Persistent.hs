@@ -5,7 +5,7 @@
   , FlexibleInstances
   , TypeFamilies
  #-}
-module Aspect.Persistent where
+module Annotation.Persistent where
 
 import Control.Applicative
 import Data.Binary

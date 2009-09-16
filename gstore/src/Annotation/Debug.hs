@@ -1,4 +1,4 @@
-module Aspect.Debug where
+module Annotation.Debug where
 
 import Control.Arrow
 import Control.Category

@@ -7,8 +7,8 @@ import Storage.FileStorage
 import Generics.Representation
 import Generics.Regular.Base ()
 import Generics.Annotate
-import Aspect.Persistent ()
-import Aspect.Debug ()
+import Annotation.Persistent ()
+import Annotation.Debug ()
 import qualified Container.Tree.Abstract as F
 import qualified Container.Tree.Apo      as P
 
