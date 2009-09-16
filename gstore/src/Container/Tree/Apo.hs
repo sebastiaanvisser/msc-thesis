@@ -18,7 +18,7 @@ insert ((a, b), t) =
 
 insertA
   :: tree ~ FixT1 g (F.Tree a b)
-  => (Ord a, Applicative m, Annotation g (F.Tree a b) (FixT g (F.Tree a b)) m)
+  => (Ord a, Applicative m, Annotation g (F.Tree a b) m)
   => (a, b) -> tree -> m tree
 insertA = apoT insert
 
