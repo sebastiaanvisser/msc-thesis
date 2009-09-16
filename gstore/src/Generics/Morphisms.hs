@@ -15,6 +15,8 @@ type Stop   a f = Either (FixT a f) (f (FixT a f))
 type Psi' s a f = Seed s a f -> f (Either (Stop a f) (s, Stop a f))
 type Psi  s   f = forall a. Psi' s a f
 
+-- TODO: Aspect (renamed to annotation) should already have FixT in it!!)
+
 apoT
   :: (Traversable f, Applicative m, Aspect a f (FixT a f) m)
   => Psi' s a f -> s -> a f (FixT a f) -> m (a f (FixT a f))

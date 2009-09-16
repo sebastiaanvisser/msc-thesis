@@ -1,37 +1,23 @@
-{-# LANGUAGE
-    TypeOperators
-  , FlexibleContexts
-  , MultiParamTypeClasses
-  , FlexibleInstances
-  , TypeFamilies
- #-}
 module Aspect.Debug where
 
-import Control.Monad.State hiding (get, put)
+import Control.Arrow
+import Control.Category
+import Control.Monad.Trans
 import Data.Binary
-import Generics.Aspect
-import Generics.Regular
-import Prelude hiding (read)
+import Generics.Annotation
+import Prelude hiding ((.), id, read)
 
-newtype Debug a = Debug { unDebug :: a }
+newtype Debug f c = Debug { unDebug :: f c }
   deriving Show
 
-instance Binary a => Binary (I a) where
-  get = I `fmap` get
-  put = put . unI
-
-instance Binary a => Binary (Debug a) where
+instance Binary (f a) => Binary (Debug f a) where
   get = Debug `fmap` get
   put = put . unDebug
 
-instance (MonadIO m, Show f) => Aspect Debug f m where
-  produce f = liftIO (print ("produce:", f)) >> return (Debug f)
-  query   f = liftIO (print ("query:",   f)) >> return (unDebug f)
+instance (MonadIO m, Show (f c)) => Annotation Debug f c m where
+  produce = printer "produce:" . arr Debug
+  query   = printer "query:"   . arr unDebug
 
-  modify    = ( \f -> liftIO (print ("modify_p:", f)) >> return (Debug f)
-              , \f -> liftIO (print ("modify_q:", f)) >> return (unDebug f))
-
-instance Unwrap f => Unwrap (Debug f) where
-  type UW (Debug f) = UW f
-  unwrap = unwrap . unDebug
+printer :: (MonadIO m, Show b) => String -> Kleisli m b b
+printer s = Kleisli (\f -> liftIO (print (s, f)) >> return f)
 

@@ -1,35 +1,20 @@
 module Generics.Representation where
 
-import Data.Foldable
--- import Generics.Regular.Base
--- import Data.Binary
-
--- deriving instance Show f           => Show (I f)
--- deriving instance Show (f (Fix f)) => Show (Fix f)
-
--- instance Binary (f (Fix f)) => Binary (Fix f) where
---   put = put . out
---   get = In `fmap` get
-
--- Function composition at the type level.
--- Compose :: (* -> *) -> (* -> *) -> * -> *
-infixr :.:
-newtype (f :.: g) a = O { unO :: f (g a) }
-  deriving Show
-
-instance (Functor f, Functor g) => Functor (f :.: g) where
-  fmap f = O . fmap (fmap f) . unO
-
-instance (Foldable f, Foldable g) => Foldable (f :.: g) where
-  foldMap f = foldMap (foldMap f) . unO
-
--- Identity aspect.
+-- Identity annotation.
 
 newtype Id f a = Id { unId :: f a }
+  deriving Show
+
+-- Fixed point combinators and combinator transformers.
+
+type Fix f = FixT Id f
+type Fix1 f = f (FixT Id f)
 
 newtype FixT (a :: (* -> *) -> (* -> *)) f = In { out :: a f (FixT a f) }
-type Fix f = FixT Id f
+type FixT1 a f = a f (FixT a f)
 
--- type AnnFixF a                           f = (a f) (Fix (a f))
--- type MuF f = Id f (FixT Id f)
+-- Value level fixed point.
+
+fix :: (a -> a) -> a
+fix f = f (fix f)
 

@@ -12,6 +12,22 @@ import Aspect.Debug ()
 import qualified Container.Tree.Abstract as F
 import qualified Container.Tree.Apo      as P
 
+{-
+
+from the future:
+
+test
+  :: (Functor m, Annotation a (Tree k v) (FixT a (Tree k v)) m)
+  => m (FixT a (Tree k v))
+test = mkProducer empty
+
+test2
+  :: (Annotation a (Tree k v) (FixT a (Tree k v)) m, Functor m) =>
+     k -> v -> m (FixT a (Tree k v))
+test2 k v = mkProducer (singleton k v)
+
+-}
+
 type TreeAspects = {-I :. Debug :.-} Pointer
 
 class (Show a, Binary a) => TreeClass a
