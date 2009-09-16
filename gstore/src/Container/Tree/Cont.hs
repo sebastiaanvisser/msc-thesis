@@ -4,9 +4,6 @@ import Prelude hiding (lookup)
 import Generics.Cont
 import Container.Tree.Abstract
 
-import Generics.Annotation
-import Generics.Representation
-
 empty :: ProduceC a (Tree k v) m
 empty p = p Leaf
 

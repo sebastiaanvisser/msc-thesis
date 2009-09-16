@@ -1,12 +1,17 @@
 module Generics.Morphisms where
 
+import Prelude hiding ((.), id)
+import Control.Category
+import Control.Arrow
 import Control.Monad
 import Control.Monad.Identity
 import Control.Applicative
 import Data.Traversable
-import Generics.Aspect
+import Generics.Annotation
 import Generics.Representation
-import Prelude hiding (sequence)
+
+instance Monad m => Functor (Kleisli m a) where
+  fmap f (Kleisli m) = Kleisli (liftM f . m)
 
 -- | Apomorphism for functors with annotated fixpoint in an monadic context.
 
@@ -18,16 +23,16 @@ type Psi  s   f = forall a. Psi' s a f
 -- TODO: Aspect (renamed to annotation) should already have FixT in it!!)
 
 apoT
-  :: (Traversable f, Applicative m, Aspect a f (FixT a f) m)
+  :: (Traversable f, Applicative m, Annotation a f (FixT a f) m)
   => Psi' s a f -> s -> a f (FixT a f) -> m (a f (FixT a f))
-apoT psi s = produce <=< sequenceA . fmap my . psi . (,) s <=< query
+apoT psi s = runKleisli . modify . Kleisli $ sequenceA . fmap rec . psi . (,) s
   where
-  my e =
+  rec e =
     case e of
       Left      (Left  x)  -> return x
-      Left      (Right x)  -> In <$> produce x
+      Left      (Right x)  -> In <$> runKleisli produce x
       Right (t, (Left  x)) -> In <$> apoT psi t (out x)
-      Right (t, (Right x)) -> In <$> (produce x >>= apoT psi t)
+      Right (t, (Right x)) -> In <$> (runKleisli produce x >>= apoT psi t)
 
 -- | Apomorphism for functors with fixpoint in an applicative context.
 
