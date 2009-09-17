@@ -1,19 +1,19 @@
 module Container.Tree.Cont where
 
 import Prelude hiding (lookup)
-import Generics.Cont
 import Container.Tree.Abstract
+import qualified Generics.Cont as C
 
-empty :: ProduceC a (Tree k v) m
+empty :: C.Produce a (Tree k v) m
 empty p = p Leaf
 
-singleton :: Monad m => k -> v -> ProduceC a (Tree k v) m
+singleton :: Monad m => k -> v -> C.Produce a (Tree k v) m
 singleton k v p =
   do l0 <- p Leaf
      l1 <- p Leaf
      p (Branch k v l0 l1)
 
-triplet :: Monad m => k -> v -> k -> v -> k -> v -> ProduceC a (Tree k v) m
+triplet :: Monad m => k -> v -> k -> v -> k -> v -> C.Produce a (Tree k v) m
 triplet a0 b0 a1 b1 a2 b2 p =
   do l0 <- p Leaf
      l1 <- p Leaf
@@ -23,7 +23,7 @@ triplet a0 b0 a1 b1 a2 b2 p =
      rt <- p (Branch a2 b2 l2 l3)
      p (Branch a1 b1 lt rt)
 
-lookup :: (Monad m, Ord k) => k -> QueryC a (Tree k v) m (Maybe v)
+lookup :: (Monad m, Ord k) => k -> C.Query a (Tree k v) m (Maybe v)
 lookup _ _ Leaf = return Nothing
 lookup k q (Branch c d l r) =
   case k `compare` c of
@@ -31,21 +31,21 @@ lookup k q (Branch c d l r) =
     LT -> q l
     GT -> q r
 
-count :: (Num c, Monad m) => QueryC a (Tree k b) m c
+count :: (Num c, Monad m) => C.Query a (Tree k b) m c
 count _ Leaf = return 0
 count q t =
   do k <- q (leftT  t)
      v <- q (rightT t)
      return (1 + k + v)
 
-depth :: (Ord c, Num c, Monad m) => QueryC a (Tree k v) m c
+depth :: (Ord c, Num c, Monad m) => C.Query a (Tree k v) m c
 depth _ Leaf = return 0
 depth q t =
   do k <- q (leftT  t)
      v <- q (rightT t)
      return (1 + max k v)
 
-insert :: (Monad m, Ord k) => k -> v -> ModifyC a (Tree k v) m
+insert :: (Monad m, Ord k) => k -> v -> C.Modify a (Tree k v) m
 insert k v _ p Leaf = singleton k v p
 insert k _ q p (Branch c d l r)
   | k > c     = q r >>= p .       Branch c d  l
