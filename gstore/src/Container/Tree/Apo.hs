@@ -1,24 +1,24 @@
 module Container.Tree.Apo where
 
-import Control.Applicative
 import Generics.Annotation
 import Generics.Morphisms
 import Generics.Representation
 import qualified Container.Tree.Abstract as F
 
-insert :: Ord a => Psi (a, b) (F.Tree a b)
-insert ((a, b), t) =
+insertPsi :: Ord k => Psi (k, v) (F.Tree k v)
+insertPsi (s@(k, v), t) =
   case t of
-    F.Branch c d l r ->
-      case a `compare` c of
-        LT -> F.Branch c d (Right ((a, b), Left l)) (Left (Left r))
-        EQ -> F.Branch a b (Left (Left l))          (Left (Left r))
-        GT -> F.Branch c d (Left (Left l))          (Right ((a, b), Left r))
-    F.Leaf -> F.Branch a b (Left (Right F.Leaf))    (Left (Right F.Leaf))
+    F.Branch m w l r ->
+      case k `compare` m of
+        LT -> F.Branch m w (Right (s, Left l))   (Left (Left r))
+        EQ -> F.Branch k v (Left (Left l))       (Left (Left r))
+        GT -> F.Branch m w (Left (Left l))       (Right (s, Left r))
+    F.Leaf -> F.Branch k v (Left (Right F.Leaf)) (Left (Right F.Leaf))
 
-insertA
-  :: tree ~ FixT1 g (F.Tree a b)
-  => (Ord a, Applicative m, Annotation g (F.Tree a b) m)
-  => (a, b) -> tree -> m tree
-insertA = apoT insert
+insert
+  :: treeF ~ F.Tree k v
+  => tree  ~ FixT1 a treeF
+  => (Ord k, Annotation a treeF m)
+  => (k, v) -> tree -> m tree
+insert = apoT insertPsi
 

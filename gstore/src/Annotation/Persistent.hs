@@ -1,32 +1,17 @@
-{-# LANGUAGE
-    TypeOperators
-  , MultiParamTypeClasses
-  , FlexibleContexts
-  , FlexibleInstances
-  , TypeFamilies
- #-}
+{-# LANGUAGE UndecidableInstances #-}
 module Annotation.Persistent where
 
-import Control.Applicative
+import Control.Monad
+import Control.Arrow
 import Data.Binary
-import Generics.Aspect
--- import Generics.Regular.Base
--- import Generics.Representation
-import Prelude hiding (read)
+import Generics.Annotation
+import Generics.Representation
 import Storage.FileStorage
 
+instance Binary (f (FixT Pointer f)) => Annotation Pointer f (Storage t) where
+  query   = Kleisli retrieve
+  produce = Kleisli store
 
-data Ptr f a = Ptr { unPtr :: Pointer (f a) }
-
--- type PFix  f = AnnFix Ptr
--- type PFixP f = Pointer (PFix f)
-
-instance Binary (f c) => Aspect Ptr f c (Storage t) where
-  produce a = Ptr <$> store a
-  query     = retrieve . unPtr
---   modify    = (produce, \p -> query p <* delete p)
-
--- instance Unwrap (Pointer a) where
---   type UW (Pointer a) = Pointer a
---   unwrap = id
-
+instance Binary (a f (FixT a f)) => Binary (FixT a f) where
+  put = put . out
+  get = In `liftM` get

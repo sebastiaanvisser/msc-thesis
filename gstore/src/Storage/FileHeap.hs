@@ -1,7 +1,6 @@
-{-# LANGUAGE MultiParamTypeClasses, TemplateHaskell #-}
-
-module Storage.FileHeap (
-    Heap
+{-# LANGUAGE TemplateHaskell #-}
+module Storage.FileHeap
+  ( Heap
   , runHeap
   , location
 
@@ -15,17 +14,18 @@ module Storage.FileHeap (
 
   , dump
   , dumpAllocationMap
-  ) where
+  )
+where
 
 import Control.Monad
 import Control.Monad.Trans
-import qualified Control.Monad.State as T
 import Data.Maybe
 import Data.Record.Label
 import Data.Word
 import Prelude hiding (read)
 import Storage.FileIO
 import System.IO
+import qualified Control.Monad.State as T
 import qualified Data.ByteString.Lazy as B
 import qualified Data.IntMap as I
 

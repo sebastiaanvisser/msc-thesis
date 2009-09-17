@@ -1,58 +1,35 @@
-{-# LANGUAGE TypeOperators, FlexibleContexts #-}
 module Container.Tree.Persistent where
 
-import Control.Monad
 import Data.Binary
 import Storage.FileStorage
 import Generics.Representation
 import Generics.Regular.Base ()
-import Generics.Annotate
+import Generics.Cont
 import Annotation.Persistent ()
-import Annotation.Debug ()
 import qualified Container.Tree.Abstract as F
-import qualified Container.Tree.Apo      as P
+import qualified Container.Tree.Cont     as C
+-- import qualified Container.Tree.Apo      as M
 
-{-
+type Tree k v = FixT Pointer (F.Tree k v)
 
-from the future:
+empty :: (Binary k, Binary v) => Storage t (Tree k v)
+empty = mkProducer C.empty
 
-test
-  :: (Functor m, Annotation a (Tree k v) (FixT a (Tree k v)) m)
-  => m (FixT a (Tree k v))
-test = mkProducer empty
+singleton :: (Binary k, Binary v) => k -> v -> Storage t (Tree k v)
+singleton k v = mkProducer (C.singleton k v)
 
-test2
-  :: (Annotation a (Tree k v) (FixT a (Tree k v)) m, Functor m) =>
-     k -> v -> m (FixT a (Tree k v))
-test2 k v = mkProducer (singleton k v)
+triplet :: (Binary k, Binary v) => k -> v -> k -> v -> k -> v -> Storage t (Tree k v)
+triplet a0 b0 a1 b1 a2 b2 = mkProducer (C.triplet a0 b0 a1 b1 a2 b2)
 
--}
+lookup :: (Ord k, Binary k, Binary v) => k -> Tree k v -> Storage t (Maybe v)
+lookup k = mkQuery (C.lookup k)
 
-type TreeAspects = {-I :. Debug :.-} Pointer
+count :: (Num c, Binary k, Binary v) => Tree k v -> Storage t c
+count = mkQuery C.count
 
-class (Show a, Binary a) => TreeClass a
+depth :: (Ord c, Num c, Binary k, Binary v) => Tree k v -> Storage t c
+depth = mkQuery C.depth
 
-type Tree  a b = AnnFix  (F.Tree a b) TreeAspects
-type TreeP a b = AnnFixF (F.Tree a b) TreeAspects
-
-triplet :: (TreeClass a, TreeClass b) => a -> b -> a -> b -> a -> b -> Storage t (TreeP a b)
-triplet a0 b0 a1 b1 a2 b2 = mkProducer (F.triplet a0 b0 a1 b1 a2 b2)
-
-singleton :: (TreeClass a, TreeClass b) => a -> b -> Storage t (TreeP a b)
-singleton a b = mkProducer (F.singleton a b)
-
-empty :: (TreeClass a, TreeClass b) => Storage t (TreeP a b)
-empty = mkProducer F.empty
-
-lookup :: (Ord a, Monad m, TreeClass a, TreeClass b) => a -> TreeP a b -> Storage t (m b)
-lookup a = mkQuery (F.lookup a)
-
-count :: (Num c, TreeClass a, TreeClass b) => TreeP a b -> Storage t c
-count = mkQuery F.count
-
-depth :: (Ord c, Num c, TreeClass a, TreeClass b) => TreeP a b -> Storage t c
-depth = mkQuery F.depth
-
-insert :: (Ord a, TreeClass a, TreeClass b) => a -> b -> TreeP a b -> Storage t (TreeP a b)
-insert a b = mkModifier (F.insert a b)
+insert :: (Ord k, Binary k, Binary v) => k -> v -> Tree k v -> Storage t (Tree k v)
+insert k v = mkModifier (C.insert k v)
 

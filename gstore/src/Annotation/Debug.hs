@@ -14,10 +14,11 @@ instance Binary (f a) => Binary (Debug f a) where
   get = Debug `fmap` get
   put = put . unDebug
 
-instance (MonadIO m, Show (f c)) => Annotation Debug f c m where
-  produce = printer "produce:" . arr Debug
-  query   = printer "query:"   . arr unDebug
+-- TODO: fix show
+instance MonadIO m => Annotation Debug f m where
+  query   = printer "query"   . arr unDebug
+  produce = printer "produce" . arr Debug
 
-printer :: (MonadIO m, Show b) => String -> Kleisli m b b
-printer s = Kleisli (\f -> liftIO (print (s, f)) >> return f)
+printer :: MonadIO m => String -> Kleisli m b b
+printer s = Kleisli (\f -> liftIO (print (s)) >> return f)
 
