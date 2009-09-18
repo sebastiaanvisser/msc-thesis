@@ -1,4 +1,4 @@
-module Container.Tree.Morphism where
+module ..Dep where
 
 import Prelude hiding (replicate, lookup)
 import Generics.Representation

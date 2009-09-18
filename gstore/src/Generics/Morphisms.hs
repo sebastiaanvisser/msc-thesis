@@ -5,7 +5,7 @@ import Control.Category
 import Control.Monad hiding (sequence)
 import Control.Monad.Identity
 import Data.Traversable
-import Generics.Annotation
+import Annotation.Annotation
 import Generics.Representation
 import Prelude hiding ((.), id, sequence)
 

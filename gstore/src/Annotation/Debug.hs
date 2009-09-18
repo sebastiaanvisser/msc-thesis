@@ -5,7 +5,7 @@ import Control.Arrow
 import Control.Category
 import Control.Monad.Trans
 import Data.Binary
-import Generics.Annotation
+import Annotation.Annotation
 import Generics.Representation
 import Prelude hiding ((.), id, read)
 

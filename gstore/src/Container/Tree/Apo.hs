@@ -1,6 +1,6 @@
 module Container.Tree.Apo where
 
-import Generics.Annotation
+import Annotation.Annotation
 import Generics.Morphisms
 import Generics.Representation
 import qualified Container.Tree.Abstract as F

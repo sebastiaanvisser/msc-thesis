@@ -1,4 +1,4 @@
-module Generics.Annotation where
+module Annotation.Annotation where
 
 import Control.Monad
 import Control.Arrow

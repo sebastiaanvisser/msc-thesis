@@ -4,7 +4,7 @@ module Annotation.Persistent where
 import Control.Monad
 import Control.Arrow
 import Data.Binary
-import Generics.Annotation
+import Annotation.Annotation
 import Generics.Representation
 import Storage.FileStorage
 

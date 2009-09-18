@@ -6,7 +6,7 @@
   , TemplateHaskell
   , EmptyDataDecls
   #-}
-module Container.Tree.Morphism2 where
+module Container.Tree.Dep1 where
 
 import Prelude hiding (replicate, lookup)
 import Generics.Regular
