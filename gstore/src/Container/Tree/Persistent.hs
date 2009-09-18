@@ -8,7 +8,7 @@ import Generics.Cont
 import Annotation.Persistent ()
 import qualified Container.Tree.Abstract as F
 import qualified Container.Tree.Cont     as C
--- import qualified Container.Tree.Apo      as M
+import qualified Container.Tree.Apo      as M
 
 type Tree k v = FixT1 Pointer (F.Tree k v)
 
@@ -32,4 +32,7 @@ depth = mkQuery C.depth
 
 insert :: (Ord k, Binary k, Binary v) => k -> v -> Tree k v -> Storage t (Tree k v)
 insert k v = mkModifier (C.insert k v)
+
+insert' :: (Ord k, Binary k, Binary v) => k -> v -> Tree k v -> Storage t (Tree k v)
+insert' = curry M.insert
 

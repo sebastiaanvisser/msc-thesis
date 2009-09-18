@@ -17,7 +17,7 @@ type OBO_DB = Tree String Entry
 insertEntry :: Entry -> OBO_DB -> Storage t OBO_DB
 insertEntry b p =
   do liftIO (putChar '.' >> hFlush stdout)
-     insert (name b) b p
+     insert' (name b) b p
 
 fromList :: [Entry] -> Storage t OBO_DB
 fromList xs = foldl' (\a b -> a >>= insertEntry b) empty xs
