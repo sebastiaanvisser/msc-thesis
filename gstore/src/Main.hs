@@ -1,4 +1,3 @@
-{-# LANGUAGE ScopedTypeVariables, TypeSynonymInstances #-}
 module Main where
 
 import Container.Tree.Persistent
@@ -14,17 +13,6 @@ import System.IO
 import System.Posix.Files
 
 type OBO_DB = Tree String Entry
-
-{-
-sep :: Show b => String -> Storage t b -> Storage t b
-sep a b =
-  do liftIO $ putStrLn ("\n----[  " ++ a ++ "  ]-----------------\n")
-     r <- b
-     liftIO $ print (":::", r)
-     liftIO $ putStrLn "- - - - - - -"
-     debug
-     return r
--}
 
 insertEntry :: Entry -> OBO_DB -> Storage t OBO_DB
 insertEntry b p =

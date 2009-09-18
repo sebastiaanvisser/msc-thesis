@@ -29,4 +29,14 @@ Extensions:       CPP
 HS-Source-Dirs:   src
 Other-modules:    
 Main-is:          Main.hs
+Extensions:       FlexibleContexts
+                  FlexibleInstances 
+                  RankNTypes
+                  EmptyDataDecls
+                  ScopedTypeVariables
+                  TypeOperators
+                  MultiParamTypeClasses
+                  KindSignatures
+                  GeneralizedNewtypeDeriving
+                  TypeFamilies
 
