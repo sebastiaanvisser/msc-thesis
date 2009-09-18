@@ -19,22 +19,21 @@ have been researched and implemented as part of the framework.
 
 \subsection{Heap}
 
-The storage heap will be the back-end of the persistence framework a will
+The storage heap will be the back-end of the persistence framework and will
 manage all low level IO operations.  We at least need one sufficiently
-efficient heap implementation with the interface described in the previous
-sections.
+efficient heap implementation with the interface described in section 3.6.
 
 \subsection{Persistence framework}
 
 We need a framework that helps developers of custom domain specific container
-data structures to lift their operations into the |Storage| monad.  The
-techniques used for this are described in the previous sections.
+data structures to lift their operations into a context for persistent storage
+(the |Storage| monad as described in section 3.6).
 
 The primary goals is to have at least the ability to generically lift morphism
-based functions to persistent operations.  This would most certainly imply
-using some generic programming library to derive monadic variants of
-catamorphisms, anamorphisms and paramorphims and accompanying algebras and
-coalgebras.
+based functions to persistent operations.  Lifting algebraically defined
+operations would most certainly imply using some generic programming library to
+derive monadic variants of catamorphisms, anamorphisms and paramorphims and
+accompanying algebras and coalgebras.
 
 Because the one of the purposes of this project is to investigate the possible
 ways of writing recursive agnostic functions of inductively defined data types,
@@ -45,8 +44,9 @@ additional research.
 \subsection{General purpose data structure}
 
 We should at least have one sufficiently efficient general purpose data
-structure.  A simple choice for this would a dictionary based on a balanced
-binary tree similar to the Haskell |Data.Map| implementation.
+structure.  A simple choice for such a data structure would be a dictionary
+based on a balanced binary tree similar to the Haskell |Data.Map|
+implementation.
 
 Another interesting general purpose data structure with a nice functional
 structure and good efficiency is the finger tree\cite{fingertree}.  Finger
@@ -68,7 +68,7 @@ data.
 \subsection{Garbage collector}
 
 Sharing in Haskell creates the possibility that certain parts are included in
-the same data structure more than once.  This has the implication that the
+the same data structure more than once.  Sharing has the implication that the
 modification of persistent data does not allow us to unconditionally throw away
 or overwrite the original value.  These values might be shared among other
 parts of the structure.  To make sure that the storage heap does not grow with
@@ -89,28 +89,29 @@ garbage collector that can also cleanup cyclic structures.
 \subsection{Transactional cache}
 
 To allow safe and concurrent access to the underlying storage layer we need to
-implement or use some form of transactional cache.  This is a single entry
-point that runs operations on the persistent data structure using an in-memory
-transaction.  Using a transactional cache all operations can be performed
-in-memory and can atomically be committed to the underlying storage heap.
+implement or use some form of transactional cache.  A transactional cache is a
+single entry point that runs operations on the persistent data structure using
+an in-memory transaction.  Using a transactional cache all operations can be
+performed in-memory and can atomically be committed to the underlying storage
+heap.
 
-This layer can be used for both transactional access to the persistent data
-structure, but can also be used as a fast-access in-memory cached view on the
-data.  In-memory operations are far more efficient than true disk accesses.
-Frequently and recently used blocks of data can be cached in-memory to allow
-speedups of otherwise IO intensive operations.
+Adding an in-memory cache layer can be used for both transactional access to
+the persistent data structure, but can also be used as a fast-access in-memory
+view on the data.  In-memory operations are far more efficient than true disk
+accesses.  Frequently and recently used blocks of data can be cached in-memory
+to allow speedups of otherwise IO intensive operations.
 
 \subsection{Example application}
 
 To illustrate the use of the framework and to be forced to think about the API
 exposed to the user at least one demo application should be build.  This
-program should illustrate the use of the underlying framework by storing a
+application should illustrate the use of the underlying framework by storing a
 single data structure containing a reasonable large collection of records.  All
 common operations should be included in the demo, like creating a storage from
 an existing list of records, inserting new record, querying records by some
 index, removing records and counting the number of records.
 
-This example application can also be used for testing and benchmarking the
+A demo application can also be used for testing and benchmarking the
 performance of the framework.  Creating a set of test cases for the framework
 and profiling these in an automated way can be very helpful when trying to
 improve performance.  And, naturally, building a sample application helps to

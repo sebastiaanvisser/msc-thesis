@@ -13,7 +13,7 @@
 \contentsline {section}{\numberline {3}The framework}{7}
 \contentsline {subsection}{\numberline {3.1}Datatype generic programming}{8}
 \contentsline {subsection}{\numberline {3.2}Fixed points of datatypes}{8}
-\contentsline {subsection}{\numberline {3.3}Annotated fixed points}{9}
+\contentsline {subsection}{\numberline {3.3}Annotated fixed points}{10}
 \contentsline {subsection}{\numberline {3.4}Persistent data}{11}
 \contentsline {subsection}{\numberline {3.5}Binary serialization}{11}
 \contentsline {subsection}{\numberline {3.6}Storage heap}{11}

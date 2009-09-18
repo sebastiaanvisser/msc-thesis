@@ -15,7 +15,7 @@ persistent container.
 Work on this proposal in the mean time put some effort in research on the topic
 of abstracting away recursion.
 
-\item[June]
+\item[in progress]
 
 Start playing around with generic programming libraries and try to find a clean
 way to write data structures that are open for annotation. Figure out how this
@@ -27,7 +27,7 @@ constitute the bridge between the framework and the user code. There might not
 be `a best solution' for this part and not too much time should be spent on
 this because work on the succeeding topics may gain valuable insides.
 
-\item[July]
+\item[in progress]
 
 Use the knowledge gathered in the previous month to write one general purpose
 data structure that gets lifted to the persistent storage. In the mean time

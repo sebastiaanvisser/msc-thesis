@@ -9,6 +9,7 @@
 %endif
 
 %format :.: = "\circ"
+%format Fix = "\mu"
 
 \section{The framework}
 
@@ -54,8 +55,9 @@ functions that work for all types by exploiting the structure of algebraic
 datatypes. By only looking at structural properties like the constructors,
 fields, type variables and recursion, generic functions can be written that
 make no assumptions about the actual datatypes.  Abstracting away from the
-recursive points in a datatype is sometimes called the fixed point view on
-datatypes and is really useful to this project.
+recursive points in a datatype, sometimes called the fixed point view on
+functors, can be useful when reasoning over recursive datatypes like lists and
+trees.
 
 \subsection{Fixed points of datatypes}
 
@@ -95,8 +97,8 @@ recursive points we come up with the following datatype:
 
 %endif
 
-Applying a type level fixed point combinator to such an open datatype gives us
-back something isomorphic to the original:
+Applying a type level fixed point combinator, conveniently called $\mu$, to
+such an open datatype gives us back something isomorphic to the original:
 
 >newtype Fix f = In { out :: f (Fix f) }
 
@@ -113,32 +115,29 @@ Opening up recursive datatypes as shown above is a rather easy and mechanical
 process that can easily be done automatically and generically using several
 generic programming libraries.
 
-The same is not the case for the recursive functions working on these data
-types.  Abstracting out the recursion in the function working on our recursive
-data structures demands some changes in the way a function is written.  Several
-techniques can be thought of to achieve this, all of which demands some changes
-in the way the developer writes the algorithms.  Three possible ways of
-abstraction away from recursion in function definitions are:
+When changing the definitions of our datatypes to have an explicit notion of
+recursion demands us to also change the definitions of the function working on
+these datatypes. When changing the definition we can make the choice to not
+concertize the recursion and leave this open to user. There are at least two
+common ways to abstract away from recursion in the function definitions for our
+recursive datatypes.
 
 \begin{itemize}
 
-\item
-
-Functions that explicitly go into recursion can be parametrized with an
+\item Functions that explicitly go into recursion can be parametrized with an
 additional function that takes care of the recursion.  A fixed point combinator
-on the value level can be used to tie the knot.  This way of outsourcing the
-recursion to the caller using a fixed point combinator is similar to the trick
-on the type level.
+on the value level can be used to tie the knot.  Outsourcing the recursion to
+the caller of the function using a fixed point combinator passed in as a
+function parameter is similar to the trick on the type level.
 
-\item
+\item Functions working on our recursive datatypes can also be described
+algebraically.  Algebras or coalgebras can be lifted to catamorphisms and
+anamorphisms (or the somewhat more general paramorphisms and apomorphisms)
+using specialized folds and unfolds.  This technique is very well documented in
+literature\cite{bananas} and should be powerful enough to express all functions
+on our data types\cite{paramorphisms}.
 
-Functions can be described as algebras or coalgebras and be lifted to
-catamorphisms, anamorphisms, and paramorphisms using specialized folds and
-unfolds.  This technique is very well documented in literature\cite{bananas}
-and should be powerful enough to express all functions on our data
-types\cite{paramorphisms}.
-
-\item
+\end{itemize}
 
 Program transformations can be used to convert existing recursive function into
 open variants.  While this is possible in theory is requires a lot of meta
@@ -146,8 +145,6 @@ programming to achieve this, e.g. using Template Haskell\cite{th}.  The main
 advantage of this technique is that this can in theory be used to persist
 \emph{existing} Haskell container datatypes.  The main disadvantage is that
 this rather ad-hoc meta programming approach is not very easy and elegant.
-
-\end{itemize}
 
 So there are several ways to factor out the recursion from the functions that
 operate on the inductive datatypes and it is not inherently clear which of
@@ -164,22 +161,11 @@ framework.  This can be used to generically annotate the behaviour.
 
 The fixed point combinator at the datatype level can be used to store
 additional information inside the recursive points of these datatypes.  This
-can be done using an annotated fixed point combinator.  First we have to define
-composition on type level.
+can be done using an annotated fixed point combinator.  The annotated fixed
+point can now be defined by embedding some composition of an open container
+with an annotation inside the fixed point combinator.
 
->infixr :.:
->newtype (f :.: g) a = C { unC :: f (g a) }
-
-%if False
-
->  deriving Show
-
-%endif
-
-The annotated fixed point can now be defined by embedding a composition of an
-open container with an annotation inside the fixed point combinator.
-
->type AnnFix f ann = Fix (f :.: ann)
+>type AnnFix f ann = Fix (ann f)
 
 The fixed point combinator at the value level can be used to perform additional
 actions when the original function would otherwise have gone into recursion
