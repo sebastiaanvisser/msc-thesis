@@ -10,7 +10,7 @@ import qualified Container.Tree.Abstract as F
 import qualified Container.Tree.Cont     as C
 -- import qualified Container.Tree.Apo      as M
 
-type Tree k v = FixT Pointer (F.Tree k v)
+type Tree k v = FixT1 Pointer (F.Tree k v)
 
 empty :: (Binary k, Binary v) => Storage t (Tree k v)
 empty = mkProducer C.empty

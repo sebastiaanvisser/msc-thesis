@@ -3,32 +3,19 @@ module Main where
 
 import Container.Tree.Persistent
 import Control.Monad.State
+import Annotation.Debug ()
 import Data.Char
 import Data.List hiding (insert, lookup)
 import Data.OBO
-import Generics.Aspect (unwrap)
 import Prelude hiding (lookup)
 import Storage.FileStorage
 import System.Environment
 import System.IO
 import System.Posix.Files
 
-instance TreeClass String
-instance TreeClass Entry
-type OBO_DB = TreeP String Entry
+type OBO_DB = Tree String Entry
 
-trim :: String -> String
-trim =
-    reverse
-  . dropWhile isSpace
-  . reverse
-  . dropWhile isSpace
-
-insertEntry :: Entry -> OBO_DB  -> Storage t OBO_DB
-insertEntry b p = do
-  liftIO $ (putChar '.' >> hFlush stdout)
-  insert (name b) b p
-
+{-
 sep :: Show b => String -> Storage t b -> Storage t b
 sep a b =
   do liftIO $ putStrLn ("\n----[  " ++ a ++ "  ]-----------------\n")
@@ -37,6 +24,12 @@ sep a b =
      liftIO $ putStrLn "- - - - - - -"
      debug
      return r
+-}
+
+insertEntry :: Entry -> OBO_DB -> Storage t OBO_DB
+insertEntry b p =
+  do liftIO (putChar '.' >> hFlush stdout)
+     insert (name b) b p
 
 fromList :: [Entry] -> Storage t OBO_DB
 fromList xs = foldl' (\a b -> a >>= insertEntry b) empty xs
@@ -57,34 +50,34 @@ main =
             putStrLn "  main dump  <database.db>"
 
 build :: FilePath -> FilePath -> IO ()
-build source db = do
-  file <- readFile source
-  let k = parseOBO file
-  case k of
-    Left e    -> print e
-    Right doc -> 
-      do let stanzas = docStanzas doc
-             entries = map stanzaToEntry stanzas
-         setFileSize db 0 -- reset DB.
-         run db $
-           do o <- store nullP
-              p <- fromList entries
-              liftIO $ putStrLn []
-              liftIO $ print (o, p)
-              reuse o (unwrap p)
-              liftIO $ print "done"
+build source db =
+  do file <- readFile source
+     let k = parseOBO file
+     case k of
+       Left e    -> print e
+       Right doc -> 
+         do let stanzas = docStanzas doc
+                entries = map stanzaToEntry stanzas
+            setFileSize db 0 -- reset DB.
+            run db $
+              do o <- store nullP
+                 p <- fromList entries
+                 liftIO (putStrLn [])
+                 liftIO (print (o, p))
+                 reuse o p
+                 liftIO (print "done")
 
-              return ()
+                 return ()
 
 query :: FilePath -> IO ()
 query db = 
   run db $
     do p <- retrieve nullP
-       liftIO $ print p
+       liftIO (print p)
        loop p
   where
     loop p =
-      do s <- liftIO $ (putStr "query> " >> hFlush stdout >> getLine)
+      do s <- liftIO (putStr "query> " >> hFlush stdout >> getLine)
          lookup (trim s) p >>= \a -> liftIO (print (a :: Maybe Entry))
          loop p
 
@@ -92,10 +85,17 @@ stats :: FilePath -> IO ()
 stats db = 
   run db $
     do p <- (retrieve nullP :: Storage t OBO_DB)
-       liftIO $ print p
+       liftIO (print p)
        count p >>= \(c :: Int) -> liftIO (putStr "count: " >> print c)
        depth p >>= \(c :: Int) -> liftIO (putStr "depth: " >> print c)
 
 dump :: FilePath -> IO ()
 dump db = run db debug
+
+trim :: String -> String
+trim =
+    reverse
+  . dropWhile isSpace
+  . reverse
+  . dropWhile isSpace
 
