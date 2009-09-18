@@ -9,10 +9,10 @@ module Generics.Cont
   )
 where
 
-import Control.Monad
 import Control.Arrow
+import Control.Monad
 import Generics.Representation
-import qualified Generics.Annotation as A
+import qualified Annotation.Annotation as A
 
 type Q a f m c = FixT a f -> m c
 type P a f m   = f (FixT a f) -> m (FixT a f)

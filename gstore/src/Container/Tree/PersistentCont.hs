@@ -1,14 +1,14 @@
-module Container.Tree.Persistent where
+module Container.Tree.PersistentCont where
 
-import Data.Binary
-import Storage.FileStorage
-import Generics.Representation
-import Generics.Regular.Base ()
-import Generics.Cont
 import Annotation.Persistent ()
+import Data.Binary
+import Generics.Cont
+import Generics.Regular.Base ()
+import Generics.Representation
+import Storage.FileStorage
 import qualified Container.Tree.Abstract as F
 import qualified Container.Tree.Cont     as C
-import qualified Container.Tree.Apo      as M
+import qualified Container.Tree.Morph    as M
 
 type Tree k v = FixT1 Pointer (F.Tree k v)
 

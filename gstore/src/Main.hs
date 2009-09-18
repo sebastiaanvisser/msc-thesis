@@ -1,6 +1,6 @@
 module Main where
 
-import Container.Tree.Persistent
+import Container.Tree.PersistentCont
 import Control.Monad.State
 import Annotation.Debug ()
 import Data.Char

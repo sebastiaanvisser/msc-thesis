@@ -1,7 +1,7 @@
 module Container.Tree.Cont where
 
-import Prelude hiding (lookup)
 import Container.Tree.Abstract
+import Prelude hiding (lookup)
 import qualified Generics.Cont as C
 
 empty :: C.Produce a (Tree k v) m
