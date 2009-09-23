@@ -18,3 +18,11 @@ type FixT1 a f = a f (FixT a f)
 fix :: (a -> a) -> a
 fix f = f (fix f)
 
+-- Sum and product types. Just like Either and (,).
+
+infixl 6 :+:
+infixl 7 :*:
+
+data a :+: b = L a | R b
+data a :*: b = P a b
+

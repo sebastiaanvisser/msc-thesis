@@ -1,26 +1,27 @@
 module Main where
 
-import Container.Tree.PersistentCont
-import Control.Monad.State
 import Annotation.Debug ()
+import Control.Monad.State
 import Data.Char
-import Data.List hiding (insert, lookup)
+import Data.List
 import Data.OBO
-import Prelude hiding (lookup)
+import Prelude
 import Storage.FileStorage
 import System.Environment
 import System.IO
 import System.Posix.Files
+import qualified Container.Tree.PersistentCont as C
+import qualified Container.Tree.PersistentMorph as M
 
-type OBO_DB = Tree String Entry
+type OBO_DB = M.Tree String Entry
 
 insertEntry :: Entry -> OBO_DB -> Storage t OBO_DB
 insertEntry b p =
   do liftIO (putChar '.' >> hFlush stdout)
-     insert' (name b) b p
+     M.insert (name b) b p
 
 fromList :: [Entry] -> Storage t OBO_DB
-fromList xs = foldl' (\a b -> a >>= insertEntry b) empty xs
+fromList xs = foldl' (\a b -> a >>= insertEntry b) C.empty xs
 
 main :: IO ()
 main = 
@@ -66,7 +67,7 @@ query db =
   where
     loop p =
       do s <- liftIO (putStr "query> " >> hFlush stdout >> getLine)
-         lookup (trim s) p >>= \a -> liftIO (print (a :: Maybe Entry))
+         M.lookup (trim s) p >>= \a -> liftIO (print (a :: Maybe Entry))
          loop p
 
 stats :: FilePath -> IO ()
@@ -74,8 +75,8 @@ stats db =
   run db $
     do p <- (retrieve nullP :: Storage t OBO_DB)
        liftIO (print p)
-       count p >>= \(c :: Int) -> liftIO (putStr "count: " >> print c)
-       depth p >>= \(c :: Int) -> liftIO (putStr "depth: " >> print c)
+       C.count p >>= \(c :: Int) -> liftIO (putStr "count: " >> print c)
+       C.depth p >>= \(c :: Int) -> liftIO (putStr "depth: " >> print c)
 
 dump :: FilePath -> IO ()
 dump db = run db debug

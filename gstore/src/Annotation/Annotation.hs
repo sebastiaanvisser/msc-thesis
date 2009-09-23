@@ -1,13 +1,9 @@
 module Annotation.Annotation where
 
-import Control.Monad
 import Control.Arrow
 import Control.Category
 import Generics.Representation
 import Prelude hiding ((.), id)
-
-instance Monad m => Functor (Kleisli m a) where
-  fmap f (Kleisli m) = Kleisli (liftM f . m)
 
 type Produce a f m = Kleisli m (  f (FixT a f)) (a f (FixT a f))
 type Query   a f m = Kleisli m (a f (FixT a f)) (  f (FixT a f))
