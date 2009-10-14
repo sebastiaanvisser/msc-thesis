@@ -7,6 +7,7 @@ import Control.Monad.Identity
 import Data.Traversable
 import Annotation.Annotation
 import Generics.Representation
+import System.IO.Lazy
 import Prelude hiding ((.), id, sequence)
 
 -- todo: cata/ana in terms of para/apop.
@@ -15,11 +16,11 @@ type Phi' a f c = f c :*: f (FixT a f) -> c
 type Phi    f c = forall a. Phi' a f c
 
 -- how lazy is this?
-paraT :: (Traversable f, AnnQ a f m) => Phi' a f c -> a f (FixT a f) -> m c
+paraT :: (Traversable f, Lazy m, AnnQ a f m) => Phi' a f c -> a f (FixT a f) -> m c
 paraT phi f = 
   do g <- runKleisli query f
-     fc <- sequence (fmap (paraT phi . out) g)
-     return (phi (P fc g))
+     fc <- sequence (fmap (lazy . paraT phi . out) g)
+     return (phi (fc, g))
 
 -- | Apomorphism for functors with annotated fixpoint in an monadic context.
 -- todo: generalize to true apo by skipping the endo part.
@@ -33,14 +34,14 @@ type Psi  s   f = forall a. Psi' s a f
 apoT
   :: (Traversable f, AnnM a f m)
   => Psi' s a f -> s -> FixT1 a f -> m (FixT1 a f)
-apoT psi s = runKleisli $ modify (Kleisli (sequence . fmap rec . psi . P s))
+apoT psi s = runKleisli $ modify (Kleisli (sequence . fmap rec . psi . (,) s))
   where
   rec e =
     case e of
-      L (L x)       -> return x
-      L (R x)       -> In `liftM` runKleisli produce x
-      R (L (P t x)) -> In `liftM` apoT psi t (out x)
-      R (R (P t x)) -> In `liftM` (runKleisli produce x >>= apoT psi t)
+      L (L x)      -> return x
+      L (R x)      -> In `liftM` runKleisli produce x
+      R (L (t, x)) -> In `liftM` apoT psi t (out x)
+      R (R (t, x)) -> In `liftM` (runKleisli produce x >>= apoT psi t)
 
 -- | Apomorphism for functors with fixpoint in an applicative context.
 
@@ -53,7 +54,6 @@ apoA psi s = return . In <=< apoT psi s . out
 
 apo :: Traversable f => Psi' s Id f -> s -> Fix f -> Fix f
 apo psi s = runIdentity . apoA psi s
-
 
 keep :: a -> (a :+: b) :+: c
 keep = L . L

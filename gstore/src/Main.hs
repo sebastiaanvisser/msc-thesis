@@ -33,7 +33,7 @@ main =
      case args of
 --        ["build", source, db] -> build source db
        ["query", db]         -> query db
---        ["stats", db]         -> stats db
+       ["stats", db]         -> stats db
 --        ["dump",  db]         -> dump  db
 --        ["test",  db]         -> test  db
        _  ->
@@ -63,46 +63,24 @@ build source db =
                  liftIO (print "done")
                  return ()-}
 
-{-test :: FilePath -> IO ()
-test db =
-  do () <- runHeap db $ lazy $
-       do p <- retrieve nullP :: HeapRO OBO_DB
-          q <- retrieve p 
---           (l, r) <- level q
---           (ll, lr) <- level l
---           (rl, rr) <- level r
-          liftIO $ print (q) -- {-p, q,{- l, ll, lr, -}r {-rl-},-} rr)
-     return ()
-
-level f =
-  do a <- (retrieve . out . F.leftT)  f
-     b <- (retrieve . out . F.rightT) f
-     return (a, b)
--}
-
 query :: FilePath -> IO ()
-query db = 
-  do xs <- runHeap db (lazy (retrieve nullP >>= reader))
-     print "blaat"
-     print xs
+query db = step
   where
-    reader p =
+    step = runHeap db (readAction (retrieve nullP >>= readit)) >>= print
+    readit p =
       do s <- liftIO (putStr "M-query> " >> hFlush stdout >> getLine)
          M.lookup (trim s) p :: HeapRO (Maybe Entry)
 
-{-
-
 stats :: FilePath -> IO ()
 stats db = 
-  run db $
-    do p <- (retrieve nullP :: Storage t OBO_DB)
-       liftIO (print p)
-       C.count p >>= \(c :: Int) -> liftIO (putStr "count: " >> print c)
-       C.depth p >>= \(c :: Int) -> liftIO (putStr "depth: " >> print c)
+  do (c, d) <- runHeap db $ readAction $
+       do p <- retrieve nullP :: HeapRO OBO_DB
+          ((,) <$> C.count p <*> C.depth p) :: HeapRO (Int, Int)
+     print c
+     print d
 
-dump :: FilePath -> IO ()
-dump db = run db debug
--}
+-- dump :: FilePath -> IO ()
+-- dump db = run db debug
 
 trim :: String -> String
 trim =

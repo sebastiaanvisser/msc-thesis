@@ -40,28 +40,39 @@ type Size    = Int
 type Header  = (Bool, Size)
 
 data Block =
-  Block {
-    _offset  :: Offset
+  Block
+  { _offset  :: Offset
   , _size    :: Size
   , _payload :: Maybe B.ByteString
   } deriving (Eq, Ord, Show)
 
 data FileHeap = 
-  FileHeap {
-    _allocMap :: I.IntMap [Int]
+  FileHeap
+  { _allocMap :: I.IntMap [Int]
   , _heapSize :: Int
   , _file     :: Handle
   } deriving Show
 
 $(mkLabels [''Block, ''FileHeap])
 
-data Par m n a = Par { runA :: m a, runB :: n a }
-
-newtype HeapRO a = HeapRO { runRO :: Rd.ReaderT Handle Lazy a }
-  deriving (Functor, Applicative, Monad, MonadIO, Rd.MonadReader Handle)
+newtype HeapRO a = HeapRO { runRO :: Rd.ReaderT Handle IO a }
+  deriving
+    ( Functor
+    , Applicative
+    , Monad
+    , MonadIO
+    , Rd.MonadReader Handle
+    , Lazy
+    )
 
 newtype HeapRW a = HeapRW { runRW :: St.StateT FileHeap HeapRO a }
-  deriving (Functor, Applicative, Monad, MonadIO, St.MonadState FileHeap)
+  deriving
+    ( Functor
+    , Applicative
+    , Monad
+    , MonadIO
+    , St.MonadState FileHeap
+    )
 
 newtype Pointer (f :: * -> *) a = Ptr { unPtr :: Offset }
   deriving (Show, Binary)
@@ -81,6 +92,9 @@ nullP = Ptr 0
 retrieve :: Binary (f a) => Pointer f a -> HeapRO (f a)
 retrieve (Ptr p) = decode . fm <$> read p
   where fm = fromMaybe (error "retrieve failed")
+
+readAction :: HeapRO a -> HeapRW a
+readAction = HeapRW . lift
 
 ------------------ READ OPS --------------------------
 
@@ -147,7 +161,7 @@ allocate i =
 free :: Offset -> HeapRW ()
 free o =
   do t <- getM heapSize
-     h <- lazy Rd.ask
+     h <- HeapRW $ lift Rd.ask
      s <- liftIO $
        do hSeek h AbsoluteSeek (fromIntegral o)
           write8 h (0::Int)
@@ -188,15 +202,15 @@ delete s = modM allocMap (I.update f s)
 
 ----------------- RUN OPS -----------------------------
 
-lazy :: HeapRO a -> HeapRW a
-lazy = HeapRW . lift
+-- lazy :: HeapRO a -> HeapRW a
+-- lazy = HeapRW . lift
 
 runHeap :: FilePath -> HeapRW a -> IO a
 runHeap f c =
   do h <- openBinaryFile f ReadWriteMode
      let runner =
-             runLazy
-           . flip Rd.runReaderT h
+--              runLazy
+             flip Rd.runReaderT h
            . runRO
            . flip St.evalStateT (emptyHeap h)
            . runRW

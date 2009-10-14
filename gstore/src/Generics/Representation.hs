@@ -24,5 +24,5 @@ infixl 6 :+:
 infixl 7 :*:
 
 data a :+: b = L a | R b
-data a :*: b = P a b
+type a :*: b = (a, b)
 
