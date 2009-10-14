@@ -26,7 +26,7 @@ import Data.Maybe
 import Prelude hiding (read)
 import Storage.FileIO
 import System.IO
-import System.IO.Lazy
+import Control.Monad.Lazy
 import qualified Control.Monad.Reader as Rd
 import qualified Control.Monad.State as St
 import qualified Data.ByteString.Lazy as B

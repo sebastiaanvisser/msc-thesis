@@ -4,10 +4,10 @@ import Control.Arrow
 import Control.Category
 import Control.Monad hiding (sequence)
 import Control.Monad.Identity
+import Control.Monad.Lazy
 import Data.Traversable
 import Annotation.Annotation
 import Generics.Representation
-import System.IO.Lazy
 import Prelude hiding ((.), id, sequence)
 
 -- todo: cata/ana in terms of para/apop.
