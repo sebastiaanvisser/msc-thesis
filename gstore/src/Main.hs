@@ -6,7 +6,7 @@ import Data.Char
 import Data.List
 import Data.OBO
 import Prelude
-import Storage.FileHeap
+import Storage.Heap.Heap
 import System.Environment
 import System.IO
 -- import System.Posix.Files

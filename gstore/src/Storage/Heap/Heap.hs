@@ -1,5 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
-module Storage.FileHeap
+module Storage.Heap.Heap
 {-  ( Heap
   , runHeap
   , location

@@ -5,7 +5,7 @@ import Data.Binary
 import Generics.Cont
 import Generics.Regular.Base ()
 import Generics.Types
-import Storage.FileHeap
+import Storage.Heap.Heap
 import qualified Container.Tree.Abstract as F
 import qualified Container.Tree.Cont     as C
 

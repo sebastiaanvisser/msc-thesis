@@ -19,7 +19,7 @@ import Control.Monad.State
 import Data.Maybe
 import Data.Binary
 import Prelude hiding (read)
-import Storage.FileHeap
+import Storage.Heap.Heap
 import qualified Data.ByteString.Lazy as B
 
 newtype Storage t a = Storage { unStorage :: HeapRW a }
