@@ -6,7 +6,7 @@ import Data.Binary
 import Data.Foldable
 import Data.Monoid
 import Data.Traversable
-import Generics.Representation
+import Generics.Types
 import qualified Generics.Regular as R
 import Generics.Regular.Binary
 import Generics.Regular.TH

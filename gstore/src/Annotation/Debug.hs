@@ -6,7 +6,7 @@ import Control.Category
 import Control.Monad.Trans
 import Data.Binary
 import Annotation.Annotation
-import Generics.Representation
+import Generics.Types
 import Prelude hiding ((.), id, read)
 
 newtype Debug f c = Debug { unDebug :: f c }

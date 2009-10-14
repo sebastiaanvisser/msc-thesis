@@ -4,7 +4,7 @@ import Annotation.Persistent ()
 import Data.Binary
 import Generics.Cont
 import Generics.Regular.Base ()
-import Generics.Representation
+import Generics.Types
 import Storage.FileHeap
 import qualified Container.Tree.Abstract as F
 import qualified Container.Tree.Cont     as C

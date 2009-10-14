@@ -1,4 +1,4 @@
-module Generics.Representation where
+module Generics.Types where
 
 -- Identity annotation.
 

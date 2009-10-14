@@ -2,7 +2,7 @@ module Annotation.Annotation where
 
 import Control.Arrow
 import Control.Category
-import Generics.Representation
+import Generics.Types
 import Prelude hiding ((.), id)
 
 type Produce a f m = Kleisli m (  f (FixT a f)) (a f (FixT a f))

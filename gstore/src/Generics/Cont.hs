@@ -11,7 +11,7 @@ where
 
 import Control.Arrow
 import Control.Monad
-import Generics.Representation
+import Generics.Types
 import qualified Annotation.Annotation as A
 
 type Q a f m c = FixT a f -> m c

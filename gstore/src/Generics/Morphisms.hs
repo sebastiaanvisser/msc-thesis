@@ -7,7 +7,7 @@ import Control.Monad.Identity
 import Control.Monad.Lazy
 import Data.Traversable
 import Annotation.Annotation
-import Generics.Representation
+import Generics.Types
 import Prelude hiding ((.), id, sequence)
 
 -- todo: cata/ana in terms of para/apop.

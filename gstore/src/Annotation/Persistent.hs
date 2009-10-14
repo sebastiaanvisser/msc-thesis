@@ -5,7 +5,7 @@ import Control.Applicative
 import Control.Arrow
 import Data.Binary
 import Annotation.Annotation
-import Generics.Representation
+import Generics.Types
 import Storage.FileHeap
 
 instance Binary (f (FixT Pointer f)) => AnnQ Pointer f HeapRO where
