@@ -1,44 +1,50 @@
 module Main where
 
-import Annotation.Debug ()
+import Control.Applicative
 import Control.Monad.State
 import Data.Char
 import Data.List
 import Data.OBO
 import Prelude
-import Storage.FileStorage
+import Storage.FileHeap
 import System.Environment
 import System.IO
-import System.Posix.Files
+-- import System.Posix.Files
+-- import qualified Container.Tree.Abstract as F
 import qualified Container.Tree.PersistentCont as C
 import qualified Container.Tree.PersistentMorph as M
+-- import Generics.Representation
+-- import System.IO.Unsafe
 
 type OBO_DB = M.Tree String Entry
 
-insertEntry :: Entry -> OBO_DB -> Storage t OBO_DB
+insertEntry :: Entry -> OBO_DB -> HeapRW OBO_DB
 insertEntry b p =
   do liftIO (putChar '.' >> hFlush stdout)
      M.insert (name b) b p
 
-fromList :: [Entry] -> Storage t OBO_DB
+fromList :: [Entry] -> HeapRW OBO_DB
 fromList xs = foldl' (\a b -> a >>= insertEntry b) C.empty xs
 
 main :: IO ()
 main = 
   do args <- getArgs
+     putStrLn "Started."
      case args of
-       ["build", source, db] -> build source db
+--        ["build", source, db] -> build source db
        ["query", db]         -> query db
-       ["stats", db]         -> stats db
-       ["dump",  db]         -> dump  db
+--        ["stats", db]         -> stats db
+--        ["dump",  db]         -> dump  db
+--        ["test",  db]         -> test  db
        _  ->
          do putStrLn "[ERROR] Invalid arguments, try one of the following:"
             putStrLn "  main build <source.obo> <database.db>"
             putStrLn "  main query <database.db>"
             putStrLn "  main stats <database.db>"
             putStrLn "  main dump  <database.db>"
+            putStrLn "  main test  <database.db>"
 
-build :: FilePath -> FilePath -> IO ()
+{-build :: FilePath -> FilePath -> IO ()
 build source db =
   do file <- readFile source
      let k = parseOBO file
@@ -55,20 +61,36 @@ build source db =
                  liftIO (print (o, p))
                  reuse o p
                  liftIO (print "done")
+                 return ()-}
 
-                 return ()
+{-test :: FilePath -> IO ()
+test db =
+  do () <- runHeap db $ lazy $
+       do p <- retrieve nullP :: HeapRO OBO_DB
+          q <- retrieve p 
+--           (l, r) <- level q
+--           (ll, lr) <- level l
+--           (rl, rr) <- level r
+          liftIO $ print (q) -- {-p, q,{- l, ll, lr, -}r {-rl-},-} rr)
+     return ()
+
+level f =
+  do a <- (retrieve . out . F.leftT)  f
+     b <- (retrieve . out . F.rightT) f
+     return (a, b)
+-}
 
 query :: FilePath -> IO ()
 query db = 
-  run db $
-    do p <- retrieve nullP
-       liftIO (print p)
-       loop p
+  do xs <- runHeap db (lazy (retrieve nullP >>= reader))
+     print "blaat"
+     print xs
   where
-    loop p =
-      do s <- liftIO (putStr "query> " >> hFlush stdout >> getLine)
-         M.lookup (trim s) p >>= \a -> liftIO (print (a :: Maybe Entry))
-         loop p
+    reader p =
+      do s <- liftIO (putStr "M-query> " >> hFlush stdout >> getLine)
+         M.lookup (trim s) p :: HeapRO (Maybe Entry)
+
+{-
 
 stats :: FilePath -> IO ()
 stats db = 
@@ -80,6 +102,7 @@ stats db =
 
 dump :: FilePath -> IO ()
 dump db = run db debug
+-}
 
 trim :: String -> String
 trim =

@@ -15,11 +15,11 @@ type Phi' a f c = f c :*: f (FixT a f) -> c
 type Phi    f c = forall a. Phi' a f c
 
 -- how lazy is this?
-paraT :: (Traversable f, Annotation a f m) => Phi' a f c -> a f (FixT a f) -> m c
+paraT :: (Traversable f, AnnQ a f m) => Phi' a f c -> a f (FixT a f) -> m c
 paraT phi f = 
   do g <- runKleisli query f
-     c <- sequence (fmap (paraT phi . out) g)
-     return (phi (P c g))
+     fc <- sequence (fmap (paraT phi . out) g)
+     return (phi (P fc g))
 
 -- | Apomorphism for functors with annotated fixpoint in an monadic context.
 -- todo: generalize to true apo by skipping the endo part.
@@ -31,9 +31,9 @@ type Psi' s a f = Seed s a f -> f (Stop a f :+: Next s a f)
 type Psi  s   f = forall a. Psi' s a f
 
 apoT
-  :: (Traversable f, Annotation a f m)
+  :: (Traversable f, AnnM a f m)
   => Psi' s a f -> s -> FixT1 a f -> m (FixT1 a f)
-apoT psi s = runKleisli . modify . Kleisli $ sequence . fmap rec . psi . P s
+apoT psi s = runKleisli $ modify (Kleisli (sequence . fmap rec . psi . P s))
   where
   rec e =
     case e of

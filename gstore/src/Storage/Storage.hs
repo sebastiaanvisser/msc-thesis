@@ -9,8 +9,8 @@ import Control.Monad.State
 import Data.Binary
 import qualified Data.ByteString.Lazy as B
 
-newtype Storage a = S { unS :: a }
-newtype Pointer a = P { unP :: a }
+newtype Storage a = Storage { unStorage :: a }
+newtype Pointer a = Ptr { unPtr :: a }
 
 -- instance Show (Pointer a) where
 --   show (P p) = "P:" ++ show p
