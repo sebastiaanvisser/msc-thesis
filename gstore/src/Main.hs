@@ -64,12 +64,16 @@ build source db =
                  return ()-}
 
 query :: FilePath -> IO ()
-query db = step
-  where
-    step = runHeap db (readAction (retrieve nullP >>= readit)) >>= print
-    readit p =
-      do s <- liftIO (putStr "M-query> " >> hFlush stdout >> getLine)
-         M.lookup (trim s) p :: HeapRO (Maybe Entry)
+query db = runHeap db $
+  do p <- readAction (retrieve nullP)
+     forever (step p)
+
+step :: OBO_DB -> HeapRW ()
+step p =
+  do a <- readAction $
+            do s <- liftIO (putStr "M-query> " >> hFlush stdout >> getLine)
+               M.lookup (trim s) p :: HeapRO (Maybe Entry)
+     liftIO (print a)
 
 stats :: FilePath -> IO ()
 stats db = 

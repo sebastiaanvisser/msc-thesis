@@ -46,9 +46,11 @@ data Block =
   , _payload :: Maybe B.ByteString
   } deriving (Eq, Ord, Show)
 
+type AllocationMap = I.IntMap [Int]
+
 data FileHeap = 
   FileHeap
-  { _allocMap :: I.IntMap [Int]
+  { _allocMap :: AllocationMap
   , _heapSize :: Int
   , _file     :: Handle
   } deriving Show
@@ -96,11 +98,33 @@ retrieve (Ptr p) = decode . fm <$> read p
 readAction :: HeapRO a -> HeapRW a
 readAction = HeapRW . lift
 
------------------- READ OPS --------------------------
+------------------ DEFINITIONS -----------------------
+
+splitThreshold :: Size
+splitThreshold = 4
 
 headerSize :: Size
 headerSize = 1 -- Occupied flag
            + 4 -- Block size
+
+------------------ READ OPS --------------------------
+
+safeOffset :: Offset -> HeapRO a -> HeapRO (Maybe a)
+safeOffset o c =
+  do h <- Rd.ask
+     fs <- liftIO (hFileSize h)
+     if fromIntegral fs > o + headerSize
+       then Just <$> c
+       else return Nothing
+
+unsafeReadHeader :: Offset -> HeapRO Header
+unsafeReadHeader o =
+  do h <- Rd.ask
+     liftIO $
+       do hSeek h AbsoluteSeek (fromIntegral o)
+          x <- read8 h
+          s <- read32 h
+          return (if (x :: Word8) == 0 then False else True, s)
 
 read :: Offset -> HeapRO (Maybe B.ByteString)
 read o =
@@ -119,6 +143,9 @@ read o =
                       else return Nothing
                  return d
 
+readHeader :: Offset -> HeapRO (Maybe Header)
+readHeader o = safeOffset o (unsafeReadHeader o)
+
 ------------------ ALLOC OPS -------------------------
 
 grow :: Size -> HeapRW ()
@@ -128,35 +155,40 @@ shrink :: Size -> HeapRW ()
 shrink s = modM heapSize (-s+)
 
 findFreeBlock :: Size -> HeapRW (Maybe (Offset, Size))
-findFreeBlock i =
-  do a <- getM allocMap
-     return $
-       do ((s, o:_), _) <- I.minViewWithKey (snd (I.split (i-1) a))
-          return (o, s)
+findFreeBlock i = find <$> getM allocMap
+  where find = fmap (swp . fmap head . fst) . I.minViewWithKey . snd . I.split (i - 1)
+        swp (a, b) = (b, a)
 
-{-allocate :: Size -> Heap Block
+allocate :: Size -> HeapRW Block
 allocate i =
-  do mb <- findFreeBlock i
-     case mb of
+  findFreeBlock i >>= maybe
+    (allocateAtEnd i)  -- No free block found, allocate at end of heap.
+    (reuseFreeBlock i) -- Free block with sufficient size found, use this block.
 
-       -- No free block found, allocate at end of heap.
-       Nothing -> do
-         do e <- getM heapSize
-            grow (headerSize + i)
-            return (Block e i Nothing)
+reuseFreeBlock :: Size -> (Size, Size) -> HeapRW Block
+reuseFreeBlock i (o, s) =
+  if s > headerSize + i + headerSize + splitThreshold
+  then splitAndUse i o s
+  else justUse o s
 
-       -- Free block with sufficient size found, use this block.
-       Just (o, s) ->
-         if s > headerSize + i + headerSize + splitThreshold
-           then
-             do delete s
-                writeBlock (Block (o + headerSize + i) (s - headerSize - i) Nothing)
-                insert (s - headerSize - i) (o + headerSize + i)
-                return (Block o i Nothing)
-           else
-             do delete s
-                return (Block o s Nothing)
--}
+splitAndUse :: Size -> Offset -> Size -> HeapRW Block
+splitAndUse i o s =
+  do delete s
+     writeBlock (Block (o + headerSize + i) (s - headerSize - i) Nothing)
+     insert (s - headerSize - i) (o + headerSize + i)
+     return (Block o i Nothing)
+
+justUse :: Offset -> Size -> HeapRW Block
+justUse o s =
+  do delete s
+     return (Block o s Nothing)
+
+allocateAtEnd :: Size -> HeapRW Block
+allocateAtEnd i =
+  do e <- getM heapSize
+     grow (headerSize + i)
+     return (Block e i Nothing)
+
 
 free :: Offset -> HeapRW ()
 free o =
@@ -172,6 +204,16 @@ free o =
          do shrink (headerSize + s)
             liftIO (hSetFileSize h (fromIntegral o))
 
+readAllocationMap :: Offset -> HeapRW ()
+readAllocationMap o =
+  do i <- readAction $ readHeader o
+     case i of
+       Just (f, s) ->
+         do when (not f) (insert s o)
+            grow (headerSize + s)
+            readAllocationMap (o + headerSize + s)
+       Nothing -> return ()
+
 insert :: Int -> Int -> HeapRW ()
 insert s o = modM allocMap (I.alter (f o) s)
   where f x Nothing   = Just [x]
@@ -184,39 +226,36 @@ delete s = modM allocMap (I.update f s)
 
 ------------------ WRITE OPS -------------------------
 
--- writeHeader :: Offset -> Header -> HeapRW ()
--- writeHeader o (x, s) =
---   h <- lift $ Rd.ask
---     do hSeek h AbsoluteSeek (fromIntegral o)
---        write8  h (if x then (35::Word8) else 0)
---        write32 h s
+writeHeader :: Offset -> Header -> HeapRW ()
+writeHeader o (x, s) =
+  do h <- readAction Rd.ask
+     liftIO $
+       do hSeek h AbsoluteSeek (fromIntegral o)
+          write8  h (if x then (35::Word8) else 0)
+          write32 h s
 
--- writeBlock :: B.ByteString -> Block -> HeapRW ()
--- writeBlock bs (Block o s d) =
---   do writeHeader o (isJust d, s)
---      maybe (return ())
---        (\d' -> accessFileStrict (\h -> B.hPut h (B.take (fromIntegral s) d'))) d
+writeBlock :: Block -> HeapRW ()
+writeBlock (Block o s d) =
+  do writeHeader o (isJust d, s)
+     h <- readAction Rd.ask
+     when (isJust d) $
+       liftIO (B.hPut h (B.take (fromIntegral s) (fromJust d)))
 
--- write :: B.ByteString -> Block -> HeapRW ()
--- write bs = writeBlock . set payload (Just bs)
+write :: B.ByteString -> Block -> HeapRW ()
+write bs = writeBlock . set payload (Just bs)
 
 ----------------- RUN OPS -----------------------------
-
--- lazy :: HeapRO a -> HeapRW a
--- lazy = HeapRW . lift
 
 runHeap :: FilePath -> HeapRW a -> IO a
 runHeap f c =
   do h <- openBinaryFile f ReadWriteMode
      let runner =
---              runLazy
              flip Rd.runReaderT h
            . runRO
            . flip St.evalStateT (emptyHeap h)
            . runRW
-     runner c
+     runner (readAllocationMap 0 >> c)
   where emptyHeap h = FileHeap I.empty 0 h
---(readAllocationMap 0 >> c)
 
 
 
@@ -226,9 +265,6 @@ runHeap f c =
 
 location :: Block -> Offset
 location = get offset
-
-splitThreshold :: Size
-splitThreshold = 4
 
 blockSize :: Block -> Size
 blockSize = (+headerSize) . get size

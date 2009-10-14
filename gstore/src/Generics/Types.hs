@@ -5,7 +5,7 @@ module Generics.Types where
 newtype Id f a = Id { unId :: f a }
   deriving Show
 
--- Fixed point combinators and combinator transformers.
+-- Fixed point combinators and fixed point combinator transformers.
 
 type Fix f = FixT Id f
 type Fix1 f = f (FixT Id f)
