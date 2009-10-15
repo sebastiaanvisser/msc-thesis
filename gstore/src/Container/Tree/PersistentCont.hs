@@ -7,7 +7,7 @@ import Generics.Regular.Base ()
 import Generics.Types
 import qualified Container.Tree.Abstract as F
 import qualified Container.Tree.Cont     as C
-import Storage.Heap.Heap
+import Heap.Heap
 
 type Tree k v = FixT1 Pointer (F.Tree k v)
 

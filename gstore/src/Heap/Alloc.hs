@@ -1,5 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
-module Storage.Heap.Alloc where
+module Heap.Alloc where
 
 import Control.Applicative
 import Control.Monad.Lazy
@@ -7,12 +7,12 @@ import Control.Monad.Reader
 import Control.Monad.State
 import Data.Record.Label
 import Data.Word
-import Storage.FileIO
-import Storage.Heap.Block 
-import Storage.Heap.Read hiding (Heap, run)
+import System.IO.Binary
+import Heap.Block 
+import Heap.Read hiding (Heap, run)
 import System.IO
 import qualified Data.IntMap as I
-import qualified Storage.Heap.Read as R
+import qualified Heap.Read as R
 
 type AllocationMap = I.IntMap [Int]
 

@@ -7,7 +7,7 @@ import Control.Monad.Lazy
 import Data.Binary
 import Annotation.Annotation
 import Generics.Types
-import Storage.Heap.Heap
+import Heap.Heap
 
 instance Binary (f (FixT Pointer f)) => AnnQ Pointer f HeapR where
   query = Kleisli retrieve

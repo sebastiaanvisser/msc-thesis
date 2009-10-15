@@ -1,6 +1,6 @@
-module Storage.Heap.Heap
+module Heap.Heap
   ( run
-  , module Storage.Heap.Block
+  , module Heap.Block
   , HeapR
   , HeapW
   , R.retrieve
@@ -10,10 +10,10 @@ module Storage.Heap.Heap
 where
 
 import System.IO
-import Storage.Heap.Block
-import qualified Storage.Heap.Alloc as A
-import qualified Storage.Heap.Read as R
-import qualified Storage.Heap.Write as W
+import Heap.Block
+import qualified Heap.Alloc as A
+import qualified Heap.Read as R
+import qualified Heap.Write as W
 
 type HeapR = R.Heap
 type HeapW = W.Heap

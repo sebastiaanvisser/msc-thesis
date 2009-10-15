@@ -1,4 +1,4 @@
-module Storage.Heap.Read where
+module Heap.Read where
 
 import Control.Applicative
 import Control.Monad.Lazy
@@ -9,8 +9,8 @@ import Data.ByteString.Lazy
 import Data.Maybe
 import Data.Word
 import Prelude hiding (read)
-import Storage.FileIO
-import Storage.Heap.Block
+import System.IO.Binary
+import Heap.Block
 import System.IO
 
 newtype Heap a = Heap (ReaderT Handle IO a)

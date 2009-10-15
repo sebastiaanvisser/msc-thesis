@@ -7,7 +7,7 @@ import Data.Char
 import Data.List
 import Data.OBO
 import Prelude
-import Storage.Heap.Heap
+import Heap.Heap
 import System.Environment
 import System.IO
 import qualified Container.Tree.PersistentCont as C

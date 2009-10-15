@@ -1,4 +1,4 @@
-module Storage.FileIO where
+module System.IO.Binary where
 
 import Control.Applicative
 import Control.Monad

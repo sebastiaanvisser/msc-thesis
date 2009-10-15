@@ -6,7 +6,7 @@ import Generics.Morphisms
 import Generics.Regular.Base ()
 import Generics.Types
 import Prelude hiding (sequence)
-import Storage.Heap.Heap
+import Heap.Heap
 import qualified Container.Tree.Abstract as F
 import qualified Container.Tree.Morph    as M
 

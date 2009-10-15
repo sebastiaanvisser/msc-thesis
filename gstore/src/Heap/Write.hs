@@ -1,4 +1,4 @@
-module Storage.Heap.Write where
+module Heap.Write where
 
 import Control.Applicative
 import Control.Monad.Lazy
@@ -9,13 +9,13 @@ import Data.Maybe
 import Data.Record.Label
 import Data.Word
 import Prelude hiding (read)
-import Storage.FileIO
-import Storage.Heap.Alloc hiding (Heap)
-import Storage.Heap.Block
+import System.IO.Binary
+import Heap.Alloc hiding (Heap)
+import Heap.Block
 import System.IO
 import qualified Data.ByteString.Lazy as B
-import qualified Storage.Heap.Alloc as A
-import qualified Storage.Heap.Read as R
+import qualified Heap.Alloc as A
+import qualified Heap.Read as R
 
 newtype Heap a = Heap { run :: A.Heap a }
   deriving

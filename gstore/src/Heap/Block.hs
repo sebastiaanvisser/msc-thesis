@@ -1,5 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
-module Storage.Heap.Block where
+module Heap.Block where
 
 import Data.Binary
 import Data.ByteString.Lazy
