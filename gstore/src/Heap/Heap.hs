@@ -6,6 +6,7 @@ module Heap.Heap
   , R.retrieve
   , A.allocate
   , W.store
+  , W.unsafeReuse
   )
 where
 

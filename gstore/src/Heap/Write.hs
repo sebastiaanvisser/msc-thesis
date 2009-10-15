@@ -30,12 +30,25 @@ newtype Heap a = Heap { run :: A.Heap a }
 instance LiftLazy R.Heap Heap where
   liftLazy = Heap . liftLazy
 
+-- Top level exposed.
+
 store :: Binary (f a) => f a -> Heap (Pointer f a)
 store f =
-  do let bs = encode f
-     block <- (Heap . A.allocate . fromIntegral . B.length) bs
-     write bs block
+  do let bits = encode f
+     block <- (Heap . A.allocate . fromIntegral . B.length) bits
+     write bits block
      return (Ptr (_offset block))
+
+unsafeReuse :: Binary (f a) => Pointer f a -> f a -> Heap ()
+unsafeReuse (Ptr o) d =
+  do h <- ask
+     liftIO $
+       do hSeek h AbsoluteSeek (fromIntegral o)
+          write8  h (0x23::Word8)
+          read32 h :: IO Word32
+          B.hPut h (encode d)
+
+-- Helper functions.
 
 writeHeader :: Offset -> Header -> Heap ()
 writeHeader o (x, s) =

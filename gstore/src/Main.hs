@@ -28,20 +28,18 @@ main =
   do args <- getArgs
      putStrLn "Started."
      case args of
---        ["build", source, db] -> build source db
+       ["build", source, db] -> build source db
        ["query", db]         -> query db
        ["stats", db]         -> stats db
 --        ["dump",  db]         -> dump  db
---        ["test",  db]         -> test  db
        _  ->
          do putStrLn "[ERROR] Invalid arguments, try one of the following:"
             putStrLn "  main build <source.obo> <database.db>"
             putStrLn "  main query <database.db>"
             putStrLn "  main stats <database.db>"
             putStrLn "  main dump  <database.db>"
-            putStrLn "  main test  <database.db>"
 
-{-build :: FilePath -> FilePath -> IO ()
+build :: FilePath -> FilePath -> IO ()
 build source db =
   do file <- readFile source
      let k = parseOBO file
@@ -50,15 +48,14 @@ build source db =
        Right doc -> 
          do let stanzas = docStanzas doc
                 entries = map stanzaToEntry stanzas
-            setFileSize db 0 -- reset DB.
             run db $
               do o <- store nullPtr
                  p <- fromList entries
                  liftIO (putStrLn [])
                  liftIO (print (o, p))
-                 reuse o p
+                 unsafeReuse o p
                  liftIO (print "done")
-                 return ()-}
+                 return ()
 
 query :: FilePath -> IO ()
 query db = run db $
