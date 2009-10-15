@@ -2,7 +2,7 @@ module Container.Tree.PersistentMorph where
 
 import Annotation.Persistent ()
 import Data.Binary
-import Generics.Morphisms
+import Generics.Morph
 import Generics.Regular.Base ()
 import Generics.Types
 import Prelude hiding (sequence)

@@ -1,6 +1,6 @@
 module Container.Tree.Morph where
 
-import Generics.Morphisms
+import Generics.Morph
 import qualified Container.Tree.Abstract as F
 
 insert :: Ord k => Psi (k, v) (F.Tree k v)
