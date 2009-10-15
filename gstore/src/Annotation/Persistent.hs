@@ -1,23 +1,24 @@
-{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE TypeSynonymInstances, UndecidableInstances #-}
 module Annotation.Persistent where
 
 import Control.Applicative
 import Control.Arrow
+import Control.Monad.Lazy
 import Data.Binary
 import Annotation.Annotation
 import Generics.Types
 import Storage.Heap.Heap
 
-instance Binary (f (FixT Pointer f)) => AnnQ Pointer f HeapRO where
+instance Binary (f (FixT Pointer f)) => AnnQ Pointer f HeapR where
   query = Kleisli retrieve
 
-instance Binary (f (FixT Pointer f)) => AnnQ Pointer f HeapRW where
-  query = Kleisli (readAction . retrieve)
+instance Binary (f (FixT Pointer f)) => AnnQ Pointer f HeapW where
+  query = Kleisli (liftLazy . retrieve)
 
-instance Binary (f (FixT Pointer f)) => AnnP Pointer f HeapRW where
-  produce = Kleisli (error "TODO: `AnnP Pointer f HeapRW' not implemented yet")
+instance Binary (f (FixT Pointer f)) => AnnP Pointer f HeapW where
+  produce = Kleisli store
 
-instance Binary (f (FixT Pointer f)) => AnnM Pointer f HeapRW where
+instance Binary (f (FixT Pointer f)) => AnnM Pointer f HeapW where
 
 instance Binary (a f (FixT a f)) => Binary (FixT a f) where
   put = put . out

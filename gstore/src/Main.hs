@@ -1,6 +1,7 @@
 module Main where
 
 import Control.Applicative
+import Control.Monad.Lazy
 import Control.Monad.State
 import Data.Char
 import Data.List
@@ -9,21 +10,17 @@ import Prelude
 import Storage.Heap.Heap
 import System.Environment
 import System.IO
--- import System.Posix.Files
--- import qualified Container.Tree.Abstract as F
 import qualified Container.Tree.PersistentCont as C
 import qualified Container.Tree.PersistentMorph as M
--- import Generics.Representation
--- import System.IO.Unsafe
 
 type OBO_DB = M.Tree String Entry
 
-insertEntry :: Entry -> OBO_DB -> HeapRW OBO_DB
+insertEntry :: Entry -> OBO_DB -> HeapW OBO_DB
 insertEntry b p =
   do liftIO (putChar '.' >> hFlush stdout)
      M.insert (name b) b p
 
-fromList :: [Entry] -> HeapRW OBO_DB
+fromList :: [Entry] -> HeapW OBO_DB
 fromList xs = foldl' (\a b -> a >>= insertEntry b) C.empty xs
 
 main :: IO ()
@@ -55,7 +52,7 @@ build source db =
                 entries = map stanzaToEntry stanzas
             setFileSize db 0 -- reset DB.
             run db $
-              do o <- store nullP
+              do o <- store nullPtr
                  p <- fromList entries
                  liftIO (putStrLn [])
                  liftIO (print (o, p))
@@ -64,22 +61,22 @@ build source db =
                  return ()-}
 
 query :: FilePath -> IO ()
-query db = runHeap db $
-  do p <- readAction (retrieve nullP)
+query db = run db $
+  do p <- liftLazy (retrieve nullPtr)
      forever (step p)
 
-step :: OBO_DB -> HeapRW ()
+step :: OBO_DB -> HeapW ()
 step p =
-  do a <- readAction $
-            do s <- liftIO (putStr "M-query> " >> hFlush stdout >> getLine)
-               M.lookup (trim s) p :: HeapRO (Maybe Entry)
-     liftIO (print a)
+  do a <- liftLazy $
+            do s <- liftIO (putStr "\nM-query> " >> hFlush stdout >> getLine)
+               M.lookup (trim s) p
+     liftIO (print (a :: Maybe Entry))
 
 stats :: FilePath -> IO ()
 stats db = 
-  do (c, d) <- runHeap db $ readAction $
-       do p <- retrieve nullP :: HeapRO OBO_DB
-          ((,) <$> C.count p <*> C.depth p) :: HeapRO (Int, Int)
+  do (c, d) <- run db $ liftLazy $
+       do p <- retrieve nullPtr :: HeapR OBO_DB
+          ((,) <$> C.count p <*> C.depth p) :: HeapR (Int, Int)
      print c
      print d
 

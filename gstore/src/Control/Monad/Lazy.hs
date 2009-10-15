@@ -16,3 +16,6 @@ instance (Monad m, Lazy m) => Lazy (ReaderT r m) where
 instance Lazy IO where
   lazy = unsafeInterleaveIO
 
+class LiftLazy l m where
+  liftLazy :: l a -> m a
+
