@@ -13,13 +13,14 @@ import Data.Binary
 import Data.OBO.Document
 import Generics.Regular.Base
 import Generics.Regular.Binary
+import Generics.Seq
 import Generics.Regular.TH
 
 -- Single ontology entry.
 
 data Entry = 
-  En {
-    alt_id       :: String
+  En
+  { alt_id       :: String
   , comment      :: String
   , consider     :: String
   , def          :: String
@@ -50,13 +51,16 @@ instance Binary Entry where
   put = gput
   get = gget
 
+instance DSeq Entry where
+  dseq = gdseq
+
 -- Convert a generic OBO stanza to a specific entry.
 
 stanzaToEntry :: Stanza -> Entry
 stanzaToEntry st =
   let m t = (maybe "" id . lookup t . stMap) st
-  in En {
-       alt_id       = m "alt_id"
+  in En
+     { alt_id       = m "alt_id"
      , comment      = m "comment"
      , consider     = m "consider"
      , def          = m "def"
@@ -74,8 +78,8 @@ stanzaToEntry st =
 
 testEntry :: Entry
 testEntry =
-  En {
-    alt_id        = "alt_id"
+  En
+  { alt_id        = "alt_id"
   , comment       = "comment"
   , consider      = "consider"
   , def           = "def"

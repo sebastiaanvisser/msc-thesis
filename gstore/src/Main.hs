@@ -7,6 +7,7 @@ import Data.Char
 import Data.List
 import Data.OBO
 import Prelude
+import Generics.Seq
 import Heap.Heap
 import System.Environment
 import System.IO
@@ -58,16 +59,18 @@ build source db =
                  return ()
 
 query :: FilePath -> IO ()
-query db = run db $
-  do p <- liftLazy (retrieve nullPtr)
-     forever (step p)
+query db =
+    do p <- run db $ liftLazy $
+         do o <- retrieve nullPtr
+            v <- step o
+            liftIO $ print (dseq v ())
+            return v
+       print p
 
-step :: OBO_DB -> HeapW ()
+step :: OBO_DB -> HeapR (Maybe Entry)
 step p =
-  do a <- liftLazy $
-            do s <- liftIO (putStr "\nM-query> " >> hFlush stdout >> getLine)
-               M.lookup (trim s) p
-     liftIO (print (a :: Maybe Entry))
+  do s <- liftIO (putStr "\nM-query> " >> hFlush stdout >> getLine)
+     M.lookup (trim s) p
 
 stats :: FilePath -> IO ()
 stats db = 

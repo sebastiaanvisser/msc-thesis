@@ -46,12 +46,7 @@ allocMap :: FileHeap :-> I.IntMap [Int]
 
 run :: Handle -> Heap a -> R.Heap a
 run h c = evalStateT
-  (run' $
-    do readAllocationMap 0
-       m <- getM allocMap
-       liftIO (print m)
-       c
-  )
+  (run' (readAllocationMap 0 >> c))
   (FileHeap I.empty 0 h)
 
 allocate :: Size -> Heap Block

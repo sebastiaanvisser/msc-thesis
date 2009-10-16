@@ -1,12 +1,13 @@
 module Generics.Morph where
 
+import Annotation.Annotation
 import Control.Arrow
 import Control.Category
 import Control.Monad hiding (sequence)
 import Control.Monad.Identity
 import Control.Monad.Lazy
 import Data.Traversable
-import Annotation.Annotation
+import Generics.Seq
 import Generics.Types
 import Prelude hiding ((.), id, sequence)
 
@@ -15,12 +16,16 @@ import Prelude hiding ((.), id, sequence)
 type Phi' a f c = f c :*: f (FixT a f) -> c
 type Phi    f c = forall a. Phi' a f c
 
--- how lazy is this?
-paraT :: (Traversable f, Lazy m, AnnQ a f m) => Phi' a f c -> a f (FixT a f) -> m c
+paraT :: (Traversable f, Lazy m, AnnQ a f m) => Phi' a f c -> FixT1 a f -> m c
 paraT phi f = 
   do g <- runKleisli query f
      fc <- sequence (fmap (lazy . paraT phi . out) g)
      return (phi (fc, g))
+
+-- Paramorphism with strict output.
+
+paraT' :: (DSeq c, Traversable f, Lazy m, AnnQ a f m) => Phi' a f c -> FixT1 a f -> m c
+paraT' phi = liftM dseqId . paraT phi
 
 -- | Apomorphism for functors with annotated fixpoint in an monadic context.
 -- todo: generalize to true apo by skipping the endo part.
