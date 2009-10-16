@@ -1,5 +1,5 @@
 {-# LANGUAGE UndecidableInstances #-}
-module Generics.Seq (DSeq (..), gdseq) where
+module Generics.Regular.Seq (DSeq (..), gdseq) where
 
 import Data.List
 import Generics.Regular.Base

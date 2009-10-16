@@ -7,7 +7,7 @@ import Data.Char
 import Data.List
 import Data.OBO
 import Prelude
-import Generics.Seq
+import Generics.Regular.Seq
 import Heap.Heap
 import System.Environment
 import System.IO

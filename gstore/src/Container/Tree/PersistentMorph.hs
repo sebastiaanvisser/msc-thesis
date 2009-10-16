@@ -5,7 +5,7 @@ import Annotation.Persistent ()
 import Data.Binary
 import Generics.Morph
 import Generics.Types
-import Generics.Seq
+import Generics.Regular.Seq
 import Heap.Heap
 import Prelude hiding (sequence)
 import qualified Container.Tree.Abstract as F

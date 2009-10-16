@@ -13,7 +13,7 @@ import Data.Binary
 import Data.OBO.Document
 import Generics.Regular.Base
 import Generics.Regular.Binary
-import Generics.Seq
+import Generics.Regular.Seq
 import Generics.Regular.TH
 
 -- Single ontology entry.

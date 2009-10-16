@@ -7,7 +7,7 @@ import Control.Monad hiding (sequence)
 import Control.Monad.Identity
 import Control.Monad.Lazy
 import Data.Traversable
-import Generics.Seq
+import Generics.Regular.Seq
 import Generics.Types
 import Prelude hiding ((.), id, sequence)
 
