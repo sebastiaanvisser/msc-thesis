@@ -3,7 +3,7 @@ module Generics.Arbitrary where
 
 import Control.Applicative
 import Control.Monad
-import Generic.Core
+import Generics.Regular.Base
 import Generics.Fixpoints
 import Prelude hiding (sum)
 import Test.QuickCheck
@@ -20,8 +20,8 @@ instance Alternative Gen where
 
 -- Generically create arbitrary instances for arbitrary data types.
 
-data ArbParams a = AP {
-    rec     :: ArbParams a -> Int -> Gen a
+data ArbParams a = AP
+  { rec     :: ArbParams a -> Int -> Gen a
   , divisor :: Int
   }
 
@@ -29,47 +29,46 @@ class GArbitrary f where
   garbitrary'   :: ArbParams a -> Int -> Gen (f a)
   gcoarbitrary' :: (Int -> a -> Gen (g b) -> Gen (g b)) -> Int -> f a -> Gen (g b) -> Gen (g b)
 
-instance GArbitrary Unit where
-  garbitrary' _ _ = pure Unit
-  gcoarbitrary' _ _ _ = id
+instance GArbitrary I where
+  garbitrary' p@(AP r d) t = I <$> r p (t `div` d)
+  gcoarbitrary' r o (I a) = r o a
 
-instance GArbitrary Id where
-  garbitrary' p@(AP r d) t = Id <$> r p (t `div` d)
-  gcoarbitrary' r o (Id a) = r o a
+instance GArbitrary U where
+  garbitrary' _ _ = pure U
+  gcoarbitrary' _ _ _ = id
 
 instance Arbitrary a => GArbitrary (K a) where
   garbitrary' _ _ = K <$> arbitrary
   gcoarbitrary' _ _ (K a) = coarbitrary a
 
-instance (GFixpoints f, GFixpoints g,
-          GArbitrary f, GArbitrary g) => GArbitrary (Sum f g) where
-  garbitrary' p s = frequency [r fpl Inl, r fpr Inr]
+instance (GFixp f, GFixp g, GArbitrary f, GArbitrary g) => GArbitrary (f :+: g) where
+  garbitrary' p s = frequency [r fpl L, r fpr R]
     where r a b = (fr a, b <$> garbitrary' p {divisor = sum a} s)
-          (Node fpl fpr) = gfixpoints' (undefined :: Sum f g a)
+          (Node fpl fpr) = fixp (undefined :: (f :+: g) a)
           fr = foldTree (f s) (+)
           f 0 0 = 1 -- if our size (s) is zero, we only give non-recursive constructors a chance
           f 0 _ = 0
           f _ x = x + 1
-  gcoarbitrary' r o (Inl f) = gcoarbitrary' r  o f
-  gcoarbitrary' r o (Inr f) = gcoarbitrary' r (o + sum fpl) f
-    where (Node fpl _) = gfixpoints' (undefined :: Sum f g a)
+  gcoarbitrary' r o (L f) = gcoarbitrary' r  o f
+  gcoarbitrary' r o (R f) = gcoarbitrary' r (o + sum fpl) f
+    where (Node fpl _) = fixp (undefined :: (f :+: g) a)
 
-instance (GArbitrary f, GArbitrary g) => GArbitrary (Prod f g) where
-  garbitrary' p s = Prod <$> garbitrary' p s <*> garbitrary' p s
-  gcoarbitrary' r _ (Prod f g) = gcoarbitrary' r 0 f . gcoarbitrary' r 0 g
+instance (GArbitrary f, GArbitrary g) => GArbitrary (f :*: g) where
+  garbitrary' p s = (:*:) <$> garbitrary' p s <*> garbitrary' p s
+  gcoarbitrary' r _ (f :*: g) = gcoarbitrary' r 0 f . gcoarbitrary' r 0 g
 
-instance GArbitrary f => GArbitrary (Con f) where
-  garbitrary' p s = Con "" <$> garbitrary' p s
-  gcoarbitrary' f o (Con _ c) = variant o . gcoarbitrary' f 0 c
+instance GArbitrary f => GArbitrary (C c f) where
+  garbitrary' p c = C <$> garbitrary' p c
+  gcoarbitrary' f o (C c) = variant o . gcoarbitrary' f 0 c
 
-instance GArbitrary f => GArbitrary (F f) where
-  garbitrary' p s = F <$> garbitrary' p s
-  gcoarbitrary' f o (F c) = gcoarbitrary' f o c
+instance GArbitrary f => GArbitrary (S s f) where
+  garbitrary' p s = S <$> garbitrary' p s
+  gcoarbitrary' f o (S s) = variant o . gcoarbitrary' f 0 s
 
--- The first undefined gets filled in with garbitraryFix, the second in the instance for Sum.
-garbitrary :: (GArbitrary (PF a), PFView a) => Int -> Gen a
+-- The first undefined gets filled in with garbitraryFix, the second in the instance for sums.
+garbitrary :: (Regular a, GArbitrary (PF a)) => Int -> Gen a
 garbitrary s = garbitraryHelper (AP undefined 1) s
 
-garbitraryHelper :: (PFView a, GArbitrary (PF a)) => ArbParams a -> Int -> Gen a
+garbitraryHelper :: (Regular a, GArbitrary (PF a)) => ArbParams a -> Int -> Gen a
 garbitraryHelper p s = to <$> garbitrary' p {rec = garbitraryHelper} s
 

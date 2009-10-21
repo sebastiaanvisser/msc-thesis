@@ -1,9 +1,10 @@
-{-# LANGUAGE ScopedTypeVariables #-}
 module Generics.Fixpoints where
 
 import Control.Applicative
-import Generic.Core
+import Generics.Regular.Base
 import Prelude
+
+-- Tree structure to store fixed points as found in the data type.
 
 data Tree a = Leaf a | Node (Tree a) (Tree a)
  deriving Show
@@ -24,26 +25,31 @@ sum = foldTree id (+)
 instance Functor Tree where
   fmap f = foldTree (Leaf . f) Node
 
-class GFixpoints f where
-  gfixpoints' :: f a -> Tree Int
+-- Generic functions to compute fixed points.
 
-instance GFixpoints Unit where
-  gfixpoints' _ = Leaf 0
+class GFixp f where
+  fixp :: f a -> Tree Int
 
-instance GFixpoints Id where
-  gfixpoints' _ = Leaf 1
+instance GFixp I where
+  fixp _ = Leaf 1
 
-instance GFixpoints (K a) where
-  gfixpoints' _ = Leaf 0
+instance GFixp U where
+  fixp _ = Leaf 0
 
-instance (GFixpoints f, GFixpoints g) => GFixpoints (Sum f g) where
-  gfixpoints' _ = gfixpoints' (undefined :: f a)
-           `Node` gfixpoints' (undefined :: g a)
+instance GFixp (K a) where
+  fixp _ = Leaf 0
 
-instance (GFixpoints f, GFixpoints g) => GFixpoints (Prod f g) where
-  gfixpoints' _ = (+) <$> gfixpoints' (undefined :: f a)
-                      <*> gfixpoints' (undefined :: g a)
+instance (GFixp f, GFixp g) => GFixp (f :+: g) where
+  fixp _ = fixp (undefined :: f a)
+    `Node` fixp (undefined :: g a)
 
-instance GFixpoints f => GFixpoints (Con f) where
-  gfixpoints' _ = gfixpoints' (undefined :: f a)
+instance (GFixp f, GFixp g) => GFixp (f :*: g) where
+  fixp _ = (+) <$> fixp (undefined :: f a)
+               <*> fixp (undefined :: g a)
+
+instance GFixp f => GFixp (C c f) where
+  fixp _ = fixp (undefined :: f a)
+
+instance GFixp f => GFixp (S s f) where
+  fixp _ = fixp (undefined :: f a)
 
