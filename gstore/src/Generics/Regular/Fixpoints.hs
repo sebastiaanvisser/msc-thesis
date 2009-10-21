@@ -1,4 +1,4 @@
-module Generics.Fixpoints where
+module Generics.Regular.Fixpoints where
 
 import Control.Applicative
 import Generics.Regular.Base
