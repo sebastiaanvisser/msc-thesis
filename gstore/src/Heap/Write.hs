@@ -7,7 +7,6 @@ import Control.Monad.State
 import Data.Binary
 import Data.Maybe
 import Data.Record.Label
-import Data.Word
 import Prelude hiding (read)
 import System.IO.Binary
 import Heap.Alloc hiding (Heap)
@@ -45,7 +44,7 @@ unsafeReuse (Ptr o) d =
      liftIO $
        do hSeek h AbsoluteSeek (fromIntegral o)
           write8  h (0x23::Word8)
-          read32 h :: IO Word32
+          _ <- read32 h :: IO Word32
           B.hPut h (encode d)
 
 -- Helper functions.

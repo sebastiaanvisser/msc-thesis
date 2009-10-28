@@ -1,7 +1,6 @@
 module System.IO.Binary where
 
 import Control.Applicative
-import Control.Monad
 import Data.Bits
 import Data.Char
 import System.IO

@@ -1,9 +1,10 @@
 module Generics.Types where
 
+import Prelude hiding (sum)
+
 -- Identity annotation.
 
-newtype Id f a = Id { unId :: f a }
-  deriving Show
+newtype Id f a = Id { unId :: f a } deriving Show
 
 -- Fixed point combinators and fixed point combinator transformers.
 
@@ -25,4 +26,8 @@ infixl 7 :*:
 
 data a :+: b = L a | R b
 type a :*: b = (a, b)
+
+sum :: (a -> c) -> (b -> c) -> (a :+: b) -> c
+sum f _ (L a) = f a
+sum _ g (R b) = g b
 

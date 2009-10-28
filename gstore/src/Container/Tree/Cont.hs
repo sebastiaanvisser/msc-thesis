@@ -31,9 +31,9 @@ lookup k q (Branch c d l r) =
     LT -> q l
     GT -> q r
 
-count :: (Num c, Monad m) => C.Query a (Tree k b) m c
-count _ Leaf = return 0
-count q t =
+size :: (Num c, Monad m) => C.Query a (Tree k b) m c
+size _ Leaf = return 0
+size q t =
   do k <- q (leftT  t)
      v <- q (rightT t)
      return (1 + k + v)
@@ -45,9 +45,9 @@ depth q t =
      v <- q (rightT t)
      return (1 + max k v)
 
-insert :: (Monad m, Ord k) => k -> v -> C.Modify a (Tree k v) m
-insert k v _ p Leaf = singleton k v p
-insert k _ q p (Branch c d l r)
-  | k > c     = q r >>= p .       Branch c d  l
-  | otherwise = q l >>= p . flip (Branch c d) r
+alter :: (Monad m, Ord k) => (Maybe v -> Maybe v) -> k -> C.Modify a (Tree k v) m
+alter f k _ p Leaf = maybe (p Leaf) (\v -> singleton k v p) (f Nothing)
+alter _ k q p (Branch c d l r)
+  | k > c     = q r >>= p . \s -> Branch c d l s
+  | otherwise = q l >>= p . \s -> Branch c d s r
 

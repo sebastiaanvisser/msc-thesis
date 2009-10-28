@@ -3,11 +3,9 @@ module Heap.Read where
 import Control.Applicative
 import Control.Monad.Lazy
 import Control.Monad.Reader
-import Control.Monad.Trans
 import Data.Binary
 import Data.ByteString.Lazy
 import Data.Maybe
-import Data.Word
 import Prelude hiding (read)
 import System.IO.Binary
 import Heap.Block

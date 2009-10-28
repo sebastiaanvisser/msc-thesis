@@ -1,12 +1,11 @@
 module Generics.Cont
-  ( Query
-  , Produce
-  , Modify
-
-  , mkQuery
-  , mkProducer
-  , mkModifier
-  )
+( Query
+, Produce
+, Modify
+, mkQuery
+, mkProducer
+, mkModifier
+)
 where
 
 import Control.Arrow

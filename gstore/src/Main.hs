@@ -14,7 +14,7 @@ import System.IO
 import qualified Container.Tree.PersistentCont as C
 import qualified Container.Tree.PersistentMorph as M
 
-type OBO_DB = M.Tree String Entry
+type OBO_DB = M.Map String Entry
 
 insertEntry :: Entry -> OBO_DB -> HeapW OBO_DB
 insertEntry b p =
@@ -76,7 +76,7 @@ stats :: FilePath -> IO ()
 stats db = 
   do (c, d) <- run db $ liftLazy $
        do p <- retrieve nullPtr :: HeapR OBO_DB
-          ((,) <$> C.count p <*> C.depth p) :: HeapR (Int, Int)
+          ((,) <$> C.size p <*> C.depth p) :: HeapR (Int, Int)
      print c
      print d
 

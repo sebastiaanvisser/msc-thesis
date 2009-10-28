@@ -2,7 +2,6 @@ module Data.OBO.Parser (parseOBO) where
 
 {- http://www.geneontology.org/GO.format.obo-1_2.shtml -}
 
-import Data.Char
 import Data.OBO.Document
 import Control.Applicative
 import Text.ParserCombinators.Parsec hiding (many, optional, (<|>))
