@@ -24,10 +24,6 @@ fix f = f (fix f)
 infixl 6 :+:
 infixl 7 :*:
 
-data a :+: b = L a | R b
+type a :+: b = Either a b
 type a :*: b = (a, b)
-
-sum :: (a -> c) -> (b -> c) -> (a :+: b) -> c
-sum f _ (L a) = f a
-sum _ g (R b) = g b
 

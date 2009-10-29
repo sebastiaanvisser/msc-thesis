@@ -9,7 +9,7 @@ import Control.Monad.Lazy
 import Data.Traversable
 import Generics.Regular.Seq
 import Generics.Types
-import Prelude hiding ((.), id, sequence, sum)
+import Prelude hiding ((.), id, sequence)
 
 data Psi (a :: (* -> *) -> * -> *) (f :: * -> *) (r :: *) where
   Psi :: ((f r, f (FixT a f)) -> r) -> Psi a f r
@@ -36,11 +36,7 @@ snd3 (_, y, _) = y
 trd3 :: (a, b, c) -> c
 trd3 (_, _, z) = z
 
-(<++>)
-  :: (Functor f, Functor (Psi a f))
-  => Psi a f (r -> s)
-  -> Psi a f r
-  -> Psi a f (r -> s, r, s)
+(<++>) :: (Functor f, Functor (Psi a f)) => Psi a f (r -> s) -> Psi a f r -> Psi a f (r -> s, r, s)
 Prj f <++> Prj g = fmap trd3 f <++> fmap trd3 g 
 Psi f <++> Prj g = Prj (idPsi <++> Psi f) <++> Prj g
 Prj f <++> Psi g = Prj f <++> Prj (idPsi <++> Psi g)
@@ -64,10 +60,10 @@ type Endo a f = Psi a f (FixT a f :+: f (FixT a f))
 type EndoA f = forall a. Endo a f
 
 toEndo :: Functor f => Psi a f (FixT a f) -> Endo a f
-toEndo = fmap L
+toEndo = fmap Left
 
 endoMT :: (Traversable f, Lazy m, AnnQ a f m, AnnP a f m) => Endo a f -> FixT1 a f -> m (FixT1 a f)
-endoMT = _para ((return . out) `sum` runProduce) (L . In)
+endoMT = _para ((return . out) `either` runProduce) (Left . In)
 
 endoM :: (Traversable f, Lazy m, Applicative m, Monad m) => Endo Id f -> Fix f -> m (Fix f)
 endoM psi = return . In <=< endoMT psi . out
