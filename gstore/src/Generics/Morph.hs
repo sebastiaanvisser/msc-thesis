@@ -58,12 +58,8 @@ _para z y (Psi psi) f =
 paraMT :: (AnnQ a f m, Lazy m, Traversable f) => Psi a f r -> FixT1 a f -> m r
 paraMT = _para return id
 
--- Paramorphism with strict output.
-
 paraMT' :: (DSeq r, Traversable f, Lazy m, AnnQ a f m) => Psi a f r -> FixT1 a f -> m r
 paraMT' psi f = dseqId <$> paraMT psi f
-
--- Paramorphisms that output to the same structure as comes in.
 
 type Endo a f = Psi a f (FixT a f :+: f (FixT a f))
 type EndoA f = forall a. Endo a f
@@ -85,19 +81,18 @@ endo psi = runIdentity . endoM psi
 
 -------------------------------------------------------------------------------
 
--- | Apomorphism for functors with annotated fixpoint in an monadic context.
+data Phi (a :: (* -> *) -> * -> *) (f :: * -> *) (s :: *) where
+  Phi :: (s -> f (s :+: f (FixT a f))) -> Phi a f s
 
-type Phi  s a f = s -> f (s :+: f (FixT a f))
-type PhiA s   f = forall a. Phi s a f
+type PhiA s f = forall a. Phi a f s
 
-apoT :: (Traversable f, AnnM a f m) => Phi s a f -> s -> m (FixT1 a f)
-apoT phi = runProduce <=< sequence . fmap (fmap In . (apoT phi `sum` runProduce)) . phi
+apoMT :: (Traversable f, AnnM a f m) => Phi a f s -> s -> m (FixT1 a f)
+apoMT (Phi phi) = runProduce <=< sequence . fmap (fmap In . (apoMT (Phi phi) `sum` runProduce)) . phi
 
--- Apomorphism that includes the structure type itself in its seed.
 
 type Seed    s a f = s :*: f (FixT a f)
 type Stop      a f = FixT a f :+: f (FixT a f)
-type Next    s a f = s :*: FixT a f :+: s :*: f (FixT a f)
+type Next    s a f = s :*: (FixT a f :+: f (FixT a f))
 type CoEndo  s a f = Seed s a f -> f (Stop a f :+: Next s a f)
 type CoEndoA s   f = forall a. CoEndo s a f
 
@@ -106,22 +101,14 @@ coEndoMT
   => CoEndo s a f -> s -> FixT1 a f -> m (FixT1 a f)
 coEndoMT phi s = runKleisli . modify $ Kleisli (sequence . fmap rec . phi . (,) s)
   where
-  rec e =
-    case e of
-      L (L x)      -> return x
-      L (R x)      -> In <$> runProduce x
-      R (L (t, x)) -> In <$> coEndoMT phi t (out x)
-      R (R (t, x)) -> In <$> (runProduce x >>= coEndoMT phi t)
-
--- | Apomorphism for functors with fixpoint in an applicative context.
+  rec (L x     ) = sum return (fmap In . runProduce) x
+  rec (R (t, x)) = In <$> sum (coEndoMT phi t . out) (coEndoMT phi t <=< runProduce) x
 
 coEndoM :: (Traversable f, Applicative m, Monad m) => CoEndo s Id f -> s -> Fix f -> m (Fix f)
 coEndoM phi s = return . In <=< coEndoMT phi s . out
 
 coEndoT :: (Traversable f, AnnM a f Identity) => CoEndo s a f -> s -> FixT1 a f -> FixT1 a f
 coEndoT phi s = runIdentity . coEndoMT phi s
-
--- | Plain apomorphism for functors with fixpoint.
 
 coEndo :: Traversable f => CoEndo s Id f -> s -> Fix f -> Fix f
 coEndo phi s = runIdentity . coEndoM phi s
@@ -132,6 +119,6 @@ keep = L . L
 make :: a -> (b :+: a) :+: c
 make = L . R
 
-next :: a -> b :+: (a :+: c)
-next = R . L
+next :: (s, b) -> a :+: (s, b :+: c)
+next (a, b) = R (a, L b)
 

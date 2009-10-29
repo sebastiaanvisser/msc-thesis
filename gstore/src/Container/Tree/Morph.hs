@@ -1,18 +1,17 @@
 module Container.Tree.Morph where
 
 import Generics.Morph
--- import Generics.Types
 import qualified Container.Tree.Abstract as F
 
-insert :: Ord k => CoEndoA (k, v) (F.Tree k v)
-insert (s@(k, v), t) =
+insert :: Ord k => k -> v -> CoEndoA () (F.Tree k v)
+insert k v ((), t) =
   case t of
     F.Branch m w l r ->
       case k `compare` m of
-        LT -> F.Branch m w (next (s, l))  (keep r)
-        EQ -> F.Branch k v (keep l)       (keep r)
-        GT -> F.Branch m w (keep l)       (next (s, r))
-    F.Leaf -> F.Branch k v (make F.Leaf)  (make F.Leaf)
+        LT -> F.Branch m w (next ((), r))  (keep r)
+        EQ -> F.Branch k v (keep l)        (keep r)
+        GT -> F.Branch m w (keep l)        (next ((), r))
+    F.Leaf -> F.Branch k v (make F.Leaf)   (make F.Leaf)
 
 lookup :: Ord k => k -> PsiA (F.Tree k v) (Maybe v)
 lookup k = Psi $ \f ->

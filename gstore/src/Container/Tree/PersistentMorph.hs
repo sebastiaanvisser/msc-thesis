@@ -13,7 +13,7 @@ import qualified Container.Tree.Morph    as M
 type Map k v = FixT1 Pointer (F.Tree k v)
 
 insert :: (Ord k, Binary k, Binary v) => k -> v -> Map k v -> HeapW (Map k v)
-insert = curry (coEndoMT M.insert)
+insert k v = coEndoMT (M.insert k v) ()
 
 size :: (Num n, Binary k, Binary v, DSeq n) => Map k v -> HeapR n
 size = paraMT' M.size
