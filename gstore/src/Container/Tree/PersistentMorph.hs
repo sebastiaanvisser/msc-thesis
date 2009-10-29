@@ -2,7 +2,8 @@ module Container.Tree.PersistentMorph where
 
 import Annotation.Persistent ()
 import Data.Binary
-import Generics.Morph
+import Generics.Morphism.Apo
+import Generics.Morphism.Para
 import Generics.Types
 import Generics.Regular.Seq
 import Heap.Heap

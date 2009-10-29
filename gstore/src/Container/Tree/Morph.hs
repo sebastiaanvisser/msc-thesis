@@ -1,6 +1,7 @@
 module Container.Tree.Morph where
 
-import Generics.Morph
+import Generics.Morphism.Apo
+import Generics.Morphism.Para
 import qualified Container.Tree.Abstract as F
 
 insert :: Ord k => k -> v -> CoEndoA () (F.Tree k v)
