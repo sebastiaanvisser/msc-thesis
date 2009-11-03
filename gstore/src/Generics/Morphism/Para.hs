@@ -24,9 +24,6 @@ instance Functor f => Applicative (Psi a f) where
   pure    = Psi . const
   a <*> b = Prj (a <++> b)
 
-idPsi :: Functor f => Psi a f (r -> r)
-idPsi = pure id
-
 fst3 :: (a, b, c) -> a
 fst3 (x, _, _) = x
 
@@ -38,8 +35,8 @@ trd3 (_, _, z) = z
 
 (<++>) :: (Functor f, Functor (Psi a f)) => Psi a f (r -> s) -> Psi a f r -> Psi a f (r -> s, r, s)
 Prj f <++> Prj g = fmap trd3 f <++> fmap trd3 g 
-Psi f <++> Prj g = Prj (idPsi <++> Psi f) <++> Prj g
-Prj f <++> Psi g = Prj f <++> Prj (idPsi <++> Psi g)
+Psi f <++> Prj g = Prj (pure id <++> Psi f) <++> Prj g
+Prj f <++> Psi g = Prj f <++> Prj (pure id <++> Psi g)
 Psi f <++> Psi g = Psi (\(a, b) -> f (fmap fst3 a, b) `mk` g (fmap snd3 a, b))
   where mk x y = (x, y, x y)
 
@@ -50,17 +47,17 @@ _para z y (Psi psi) f =
      r <- fmap y <$> sequence (fmap (lazy . _para z y (Psi psi) . out) g)
      z (psi (r, g))
 
-paraMT :: (AnnQ a f m, Lazy m, Traversable f) => Psi a f r -> FixT1 a f -> m r
-paraMT = _para return id
+paraMT :: (AnnQ a f m, Lazy m, Traversable f) => Psi a f r -> FixT a f -> m r
+paraMT psi = _para return id psi . out
 
-paraMT' :: (DSeq r, Traversable f, Lazy m, AnnQ a f m) => Psi a f r -> FixT1 a f -> m r
+paraMT' :: (DSeq r, Traversable f, Lazy m, AnnQ a f m) => Psi a f r -> FixT a f -> m r
 paraMT' psi f = dseqId <$> paraMT psi f
 
 paraM :: (Applicative m, Monad m, Lazy m, Traversable f) => Psi Id f r -> Fix f -> m r
-paraM psi = paraMT psi . out
+paraM = paraMT 
 
 paraT :: (AnnQ a f Identity, Traversable f) => Psi a f c -> FixT a f -> c
-paraT psi = runIdentity . paraMT psi . out
+paraT psi = runIdentity . paraMT psi
 
 para :: Traversable f => Psi Id f c -> Fix f -> c
 para psi = runIdentity . paraM psi
@@ -71,13 +68,13 @@ type EndoA f = forall a. Endo a f
 toEndo :: Functor f => Psi a f (FixT a f) -> Endo a f
 toEndo = fmap Left
 
-endoMT :: (Traversable f, Lazy m, AnnQ a f m, AnnP a f m) => Endo a f -> FixT1 a f -> m (FixT1 a f)
-endoMT = _para ((return . out) `either` runProduce) (Left . In)
+endoMT :: (Traversable f, Lazy m, AnnQ a f m, AnnP a f m) => Endo a f -> FixT a f -> m (FixT a f)
+endoMT psi = liftM In . _para ((return . out) `either` runProduce) (Left . In) psi . out
 
 endoM :: (Traversable f, Lazy m, Applicative m, Monad m) => Endo Id f -> Fix f -> m (Fix f)
-endoM psi = return . In <=< endoMT psi . out
+endoM = endoMT
 
-endoT :: (Traversable f, AnnQ a f Identity, AnnP a f Identity) => Endo a f -> FixT1 a f -> FixT1 a f
+endoT :: (Traversable f, AnnQ a f Identity, AnnP a f Identity) => Endo a f -> FixT a f -> FixT a f
 endoT psi = runIdentity . endoMT psi
 
 endo :: Traversable f => Endo Id f -> Fix f -> Fix f
