@@ -14,14 +14,14 @@ import qualified Container.Tree.Morph    as M
 type Map k v = FixT1 Pointer (F.Tree k v)
 
 insert :: (Ord k, Binary k, Binary v) => k -> v -> Map k v -> HeapW (Map k v)
-insert k v = coEndoMT (M.insert k v)
+insert k v = fmap out . coEndoMT (M.insert k v) . In
 
 size :: (Num n, Binary k, Binary v, DSeq n) => Map k v -> HeapR n
-size = paraMT' M.size
+size = paraMT' M.size . In
 
 depth :: (Ord n, Num n, Binary k, Binary v, DSeq n) => Map k v -> HeapR n
-depth = paraMT' M.depth
+depth = paraMT' M.depth . In
 
 lookup :: (Show v, Ord k, Binary k, Binary v, DSeq v) => k -> Map k v -> HeapR (Maybe v)
-lookup k = paraMT' (M.lookup k)
+lookup k = paraMT' (M.lookup k) . In
 
