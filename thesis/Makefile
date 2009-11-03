@@ -4,6 +4,9 @@ all: ${DOC}.pdf
 
 ${DOC}.pdf: \
 	abstract.tex \
+	morphisms.tex \
+	morphisms-example.tex \
+	storage.tex \
 	${DOC}.tex
 
 %.tex: %.lhs
