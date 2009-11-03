@@ -56,6 +56,15 @@ paraMT = _para return id
 paraMT' :: (DSeq r, Traversable f, Lazy m, AnnQ a f m) => Psi a f r -> FixT1 a f -> m r
 paraMT' psi f = dseqId <$> paraMT psi f
 
+paraM :: (Applicative m, Monad m, Lazy m, Traversable f) => Psi Id f r -> Fix f -> m r
+paraM psi = paraMT psi . out
+
+paraT :: (AnnQ a f Identity, Traversable f) => Psi a f c -> FixT a f -> c
+paraT psi = runIdentity . paraMT psi . out
+
+para :: Traversable f => Psi Id f c -> Fix f -> c
+para psi = runIdentity . paraM psi
+
 type Endo a f = Psi a f (FixT a f :+: f (FixT a f))
 type EndoA f = forall a. Endo a f
 
