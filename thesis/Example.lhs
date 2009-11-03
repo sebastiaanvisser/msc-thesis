@@ -1,5 +1,11 @@
 %include polycode.fmt
 
+%if False
+
+> module Example where
+
+%endif
+
 \section{Binary tree example}
 
 \subsection{Debug annotation}

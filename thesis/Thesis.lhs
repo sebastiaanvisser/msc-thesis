@@ -14,14 +14,18 @@
 
 %if False
 
+> module Thesis where
+
 > import Morphisms
+> import Example
+> import Storage
 
 %endif
 
 \tableofcontents \pagebreak
-\input{morphisms} 
-\input{morphisms-example} 
-\input{storage} 
+\input{Morphisms} 
+\input{Example} 
+\input{Storage} 
 
 \end{document}
 

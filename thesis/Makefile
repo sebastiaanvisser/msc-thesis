@@ -1,12 +1,12 @@
-DOC=thesis
+DOC=Thesis
 
 all: ${DOC}.pdf
 
 ${DOC}.pdf: \
 	abstract.tex \
-	morphisms.tex \
-	morphisms-example.tex \
-	storage.tex \
+	Morphisms.tex \
+	Example.tex \
+	Storage.tex \
 	${DOC}.tex
 
 %.tex: %.lhs
