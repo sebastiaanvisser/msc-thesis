@@ -45,26 +45,42 @@ _para z y (Proj psi) = fmap trd3 . _para (\(a, b, r) -> z r >>= \r' -> return (a
 _para z y (Psi psi)  = z . psi <=< mapM (g (fmap y . lazy . _para z y (Psi psi))) <=< runQuery
   where g f c = fmap ((,) c) (f c)
 
+-- Lazy paramorphism in a monadic context for annotated structures.
+
 paraMA :: (AnnQ a f m, Lazy m, Traversable f) => AlgA a f r -> FixA a f -> m r
 paraMA psi = _para return id psi
+
+-- Lazy paramorphism in a monadic context for structures without annotations.
 
 paraM :: (Applicative m, Monad m, Lazy m, Traversable f) => AlgA Id f r -> Fix f -> m r
 paraM = paraMA 
 
+-- Lazy paramorphism for annotated structures.
+
 paraA :: (AnnQ a f Identity, Traversable f) => AlgA a f c -> FixA a f -> c
 paraA psi = runIdentity . paraMA psi
+
+-- Lazy paramorphism for structures without annotations.
 
 para :: Traversable f => AlgA Id f c -> Fix f -> c
 para psi = runIdentity . paraM psi
 
+-- Strict paramorphism in a monadic context for annotated structures.
+
 paraMA' :: (DSeq r, Traversable f, Lazy m, AnnQ a f m) => AlgA a f r -> FixA a f -> m r
 paraMA' psi f = dseqId <$> paraMA psi f
+
+-- Strict paramorphism in a monadic context for structures without annotations.
 
 paraM' :: (DSeq r, Traversable f, Applicative m, Monad m, Lazy m) => AlgA Id f r -> Fix f -> m r
 paraM' = paraMA'
 
+-- Strict paramorphism for annotated structures.
+
 paraA' :: (DSeq c, Traversable f, AnnQ a f Identity) => AlgA a f c -> FixA a f -> c
 paraA' psi = runIdentity . paraMA' psi
+
+-- Strict paramorphism for structures without annotations.
 
 para' :: (DSeq c, Traversable f) => AlgA Id f c -> Fix f -> c
 para' psi = runIdentity . paraM' psi
