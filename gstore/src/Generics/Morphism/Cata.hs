@@ -14,8 +14,8 @@ data AlgA (a :: (* -> *) -> * -> *) (f :: * -> *) (r :: *) where
 
 type Alg f r = forall a. AlgA a f r
 
-cataToPara :: AlgA a f r -> Para.AlgA a f r
-cataToPara (Psi  c) = Para.Psi (c . fst)
+cataToPara :: Functor f => AlgA a f r -> Para.AlgA a f r
+cataToPara (Psi  c) = Para.Psi (c . fmap snd)
 cataToPara (Proj p) = Para.Proj (cataToPara p)
 
 cataMA :: (AnnQ a f m, Lazy m, Traversable f) => AlgA a f r -> FixA a f -> m r

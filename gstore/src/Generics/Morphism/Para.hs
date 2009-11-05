@@ -12,7 +12,7 @@ import Generics.Types
 import Prelude hiding ((.), id, mapM)
 
 data AlgA (a :: (* -> *) -> * -> *) (f :: * -> *) (r :: *) where
-  Psi  :: ((f r, f (FixA a f)) -> r) -> AlgA a f r
+  Psi  :: (f (FixA a f, r) -> r)  -> AlgA a f r
   Proj :: AlgA a f (r -> s, r, s) -> AlgA a f s
 
 type Alg f r = forall a. AlgA a f r
@@ -33,19 +33,17 @@ snd3 (_, y, _) = y
 trd3 :: (a, b, c) -> c
 trd3 (_, _, z) = z
 
-(<++>) :: (Functor f, Functor (AlgA a f)) => AlgA a f (r -> s) -> AlgA a f r -> AlgA a f (r -> s, r, s)
+(<++>) :: forall f r a s. (Functor f, Functor (AlgA a f)) => AlgA a f (r -> s) -> AlgA a f r -> AlgA a f (r -> s, r, s)
 Proj f <++> Proj g = fmap trd3 f <++> fmap trd3 g 
 Psi  f <++> Proj g = Proj (pure id <++> Psi f) <++> Proj g
 Proj f <++> Psi  g = Proj f <++> Proj (pure id <++> Psi g)
-Psi  f <++> Psi  g = Psi (\(a, b) -> f (fmap fst3 a, b) `mk` g (fmap snd3 a, b))
+Psi  f <++> Psi  g = Psi (\x -> f (fmap2 fst3 x) `mk` g (fmap2 snd3 x))
   where mk x y = (x, y, x y)
 
-_para :: (Traversable f, Lazy m, AnnQ a f m) => (x -> m r) -> (r -> x) -> AlgA a f x -> FixA a f -> m r
-_para z y (Proj psi) f = trd3 <$> _para (\(a, b, r) -> z r >>= \r' -> return (a, b, r')) (\(a, b, r) -> (a, b, y r)) psi f
-_para z y (Psi psi) f = 
-  do g <- runQuery f
-     r <- mapM (fmap y . lazy . _para z y (Psi psi)) g
-     z (psi (r, g))
+_para :: forall f m a r x. (Traversable f, Lazy m, AnnQ a f m) => (x -> m r) -> (r -> x) -> AlgA a f x -> FixA a f -> m r
+_para z y (Proj psi) = fmap trd3 . _para (\(a, b, r) -> z r >>= \r' -> return (a, b, r')) (\(a, b, r) -> (a, b, y r)) psi
+_para z y (Psi psi)  = z . psi <=< mapM (g (fmap y . lazy . _para z y (Psi psi))) <=< runQuery
+  where g f c = fmap ((,) c) (f c)
 
 paraMA :: (AnnQ a f m, Lazy m, Traversable f) => AlgA a f r -> FixA a f -> m r
 paraMA psi = _para return id psi

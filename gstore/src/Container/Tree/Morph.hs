@@ -29,9 +29,9 @@ fromList = Apo.Phi $ \f ->
 
 lookup :: Ord k => k -> Para.Alg (F.Tree k v) (Maybe v)
 lookup k = Para.Psi $ \f ->
-  case fst f of
-    F.Leaf             -> Nothing
-    F.Branch c d l r ->
+  case f of
+    F.Leaf -> Nothing
+    F.Branch c d (_, l) (_, r) ->
       case k `compare` c of
         LT -> l
         EQ -> Just d
@@ -39,13 +39,13 @@ lookup k = Para.Psi $ \f ->
 
 size :: Num n => Para.Alg (F.Tree k v) n
 size = Para.Psi $ \f ->
-  case fst f of
-    F.Leaf             -> 0
-    F.Branch _ _ l r -> 1 + l + r
+  case f of
+    F.Leaf                     -> 0
+    F.Branch _ _ (_, l) (_, r) -> 1 + l + r
 
 depth :: (Ord n, Num n) => Para.Alg (F.Tree k v) n
 depth = Para.Psi $ \f ->
-  case fst f of
-    F.Leaf             -> 0
-    F.Branch _ _ l r -> 1 + max l r
+  case f of
+    F.Leaf                     -> 0
+    F.Branch _ _ (_, l) (_, r) -> 1 + max l r
 

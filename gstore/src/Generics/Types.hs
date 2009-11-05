@@ -29,3 +29,8 @@ infixl 7 :*:
 type a :+: b = Either a b
 type a :*: b = (a, b)
 
+-- Helper functions.
+
+fmap2 :: (Functor f, Functor g) => (a -> b) -> f (g a) -> f (g b)
+fmap2 = fmap . fmap
+
