@@ -17,7 +17,7 @@ class (Applicative m, Monad m) => AnnQ a f m where
 class (Applicative m, Monad m) => AnnP a f m where
   produce :: Produce a f m
 
-class (Applicative m, Monad m, AnnQ a f m, AnnP a f m) => AnnM a f m where
+class (AnnQ a f m, AnnP a f m) => AnnM a f m where
   modify :: Modify a f m
   modify f = produce . f . query
 
