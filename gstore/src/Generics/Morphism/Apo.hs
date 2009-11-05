@@ -10,41 +10,41 @@ import Data.Traversable
 import Generics.Types
 import Prelude hiding ((.), id, mapM)
 
-data Apo (a :: (* -> *) -> * -> *) (f :: * -> *) (s :: *) where
-  Phi :: (s -> f (s :+: f (FixT a f))) -> Apo a f s
+data CoalgA (a :: (* -> *) -> * -> *) (f :: * -> *) (s :: *) where
+  Phi :: (s -> f (s :+: f (FixA a f))) -> CoalgA a f s
 
-type ApoA s f = forall a. Apo a f s
+type Coalg s f = forall a. CoalgA a f s
 
-apoMT :: (Traversable f, AnnM a f m) => Apo a f s -> s -> m (FixT a f)
-apoMT (Phi phi) = runProduce <=< mapM (apoMT (Phi phi) `either` runProduce) . phi
+apoMA :: (Traversable f, AnnM a f m) => CoalgA a f s -> s -> m (FixA a f)
+apoMA (Phi phi) = runProduce <=< mapM (apoMA (Phi phi) `either` runProduce) . phi
 
-apoM :: (Traversable f, AnnM Id f m) => Apo Id f s -> s -> m (Fix f)
-apoM = apoMT
+apoM :: (Traversable f, AnnM Id f m) => CoalgA Id f s -> s -> m (Fix f)
+apoM = apoMA
 
-apoT :: (Traversable f, AnnM a f Identity) => Apo a f s -> s -> FixT a f
-apoT phi = runIdentity . apoMT phi
+apoA :: (Traversable f, AnnM a f Identity) => CoalgA a f s -> s -> FixA a f
+apoA phi = runIdentity . apoMA phi
 
-apo :: Traversable f => Apo Id f s -> s -> Fix f
+apo :: Traversable f => CoalgA Id f s -> s -> Fix f
 apo phi = runIdentity . apoM phi
 
-type CoEndo a f = f (FixT a f) -> f (FixT a f :+: (FixT a f :+: f (FixT a f)))
-type CoEndoA  f = forall a. CoEndo a f
+type EndoA a f = f (FixA a f) -> f (FixA a f :+: (FixA a f :+: f (FixA a f)))
+type Endo    f = forall a. EndoA a f
 
-coEndoMT
+endoMA
   :: (Traversable f, AnnM a f m)
-  => CoEndo a f -> FixT a f -> m (FixT a f)
-coEndoMT phi = runKleisli ((modify . Kleisli) (mapM cont . phi))
+  => EndoA a f -> FixA a f -> m (FixA a f)
+endoMA phi = runKleisli ((modify . Kleisli) (mapM cont . phi))
   where
-  cont (Left x)          = coEndoMT phi x
+  cont (Left x)          = endoMA phi x
   cont (Right (Left  x)) = return x
   cont (Right (Right x)) = runProduce x
 
-coEndoM :: (Traversable f, Applicative m, Monad m) => CoEndo Id f -> Fix f -> m (Fix f)
-coEndoM = coEndoMT
+endoM :: (Traversable f, Applicative m, Monad m) => EndoA Id f -> Fix f -> m (Fix f)
+endoM = endoMA
 
-coEndoT :: (Traversable f, AnnM a f Identity) => CoEndo a f -> FixT a f -> FixT a f
-coEndoT phi = runIdentity . coEndoMT phi
+endoA :: (Traversable f, AnnM a f Identity) => EndoA a f -> FixA a f -> FixA a f
+endoA phi = runIdentity . endoMA phi
 
-coEndo :: Traversable f => CoEndo Id f -> Fix f -> Fix f
-coEndo phi = runIdentity . coEndoM phi
+endo :: Traversable f => EndoA Id f -> Fix f -> Fix f
+endo phi = runIdentity . endoM phi
 

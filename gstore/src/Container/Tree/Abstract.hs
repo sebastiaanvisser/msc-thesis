@@ -68,6 +68,6 @@ instance (Binary k, Binary v, Binary f) => Binary (Tree k v f) where
   put = gput
   get = gget
 
-instance (Show k, Show v) => Show (FixT Id (Tree k v)) where
+instance (Show k, Show v) => Show (FixA Id (Tree k v)) where
   show = show . unId . out
 

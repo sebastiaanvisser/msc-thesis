@@ -5,27 +5,28 @@ import Control.Applicative
 import Control.Monad.Identity
 import Control.Monad.Lazy
 import Data.Traversable
-import Generics.Morphism.Para (Para, paraMT, paraM, paraT, para)
 import Generics.Types
 import qualified Generics.Morphism.Para as Para
 
-data Cata (a :: (* -> *) -> * -> *) (f :: * -> *) (r :: *) where
-  Psi  :: (f r -> r) -> Cata a f r
-  Proj :: Cata a f (r -> s, r, s) -> Cata a f s
+data AlgA (a :: (* -> *) -> * -> *) (f :: * -> *) (r :: *) where
+  Psi  :: (f r -> r) -> AlgA a f r
+  Proj :: AlgA a f (r -> s, r, s) -> AlgA a f s
 
-cataToPara :: Cata a f r -> Para a f r
+type Alg f r = forall a. AlgA a f r
+
+cataToPara :: AlgA a f r -> Para.AlgA a f r
 cataToPara (Psi  c) = Para.Psi (c . fst)
 cataToPara (Proj p) = Para.Proj (cataToPara p)
 
-cataMT :: (AnnQ a f m, Lazy m, Traversable f) => Cata a f r -> FixT a f -> m r
-cataMT = paraMT . cataToPara
+cataMA :: (AnnQ a f m, Lazy m, Traversable f) => AlgA a f r -> FixA a f -> m r
+cataMA = Para.paraMA . cataToPara
 
-cataM :: (Applicative m, Monad m, Lazy m, Traversable f) => Cata Id f r -> Fix f -> m r
-cataM = paraM . cataToPara
+cataM :: (Applicative m, Monad m, Lazy m, Traversable f) => AlgA Id f r -> Fix f -> m r
+cataM = Para.paraM . cataToPara
 
-cataT :: (AnnQ a f Identity, Traversable f) => Cata a f c -> FixT a f -> c
-cataT = paraT . cataToPara
+cataA :: (AnnQ a f Identity, Traversable f) => AlgA a f c -> FixA a f -> c
+cataA = Para.paraA . cataToPara
 
-cata :: Traversable f => Cata Id f c -> Fix f -> c
-cata = para . cataToPara
+cata :: Traversable f => AlgA Id f c -> Fix f -> c
+cata = Para.para . cataToPara
 

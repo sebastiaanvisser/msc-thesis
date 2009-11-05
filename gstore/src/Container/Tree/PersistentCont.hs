@@ -12,7 +12,7 @@ import Prelude hiding (lookup, null)
 import qualified Container.Tree.Abstract as F
 import qualified Container.Tree.Cont     as C
 
-type Map k v = FixT1 Pointer (F.Tree k v)
+type Map k v = FixA1 Pointer (F.Tree k v)
 
 empty :: (Binary k, Binary v) => HeapW (Map k v)
 empty = mkProducer C.empty

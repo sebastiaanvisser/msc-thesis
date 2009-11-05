@@ -3,13 +3,12 @@ module TestAlg where
 import Control.Applicative
 import Control.Monad.Identity
 import Generics.Types
-import Generics.Morphism.Para
--- import Generics.Morphism.Apo
+import qualified Generics.Morphism.Para as Para
 import qualified Container.Tree.Abstract as F
 
-type Tree    = FixT Id (F.Tree () Int)
-type Alg r   = Psi  Id (F.Tree () Int) r
-type EndoAlg = Endo Id (F.Tree () Int)
+type Tree    = FixA Id (F.Tree () Int)
+type Alg r   = Para.Alg (F.Tree () Int) r
+type EndoAlg = Para.Endo (F.Tree () Int)
 
 leaf :: Tree
 leaf = (In . Id) F.Leaf
@@ -24,13 +23,13 @@ tri :: Int -> Int -> Int -> Tree
 tri a b c = branch b (single a) (single c)
 
 minAlg :: Alg Int
-minAlg = Psi $ \a ->
+minAlg = Para.Psi $ \a ->
   case fst a of
     F.Leaf           -> maxBound
     F.Branch _ v l r -> minimum [v, l, r]
 
 repAlg :: Alg (Int -> Tree)
-repAlg = Psi $ \a x ->
+repAlg = Para.Psi $ \a x ->
   case fst a of
     F.Leaf           -> In (Id (F.Leaf))
     F.Branch k _ l r -> In (Id (F.Branch k x (l x) (r x)))
@@ -40,10 +39,10 @@ repMinAlg = repAlg <*> minAlg
 
 
 runRepMinAsPara :: Tree -> Tree
-runRepMinAsPara = runIdentity . paraMT repMinAlg
+runRepMinAsPara = runIdentity . Para.paraMA repMinAlg
 
 runRepMinAsEndo :: Tree -> Tree
-runRepMinAsEndo = runIdentity . endoMT (toEndo repMinAlg)
+runRepMinAsEndo = runIdentity . Para.endoMA (Para.toEndo repMinAlg)
 
 myT :: Tree
 myT =
