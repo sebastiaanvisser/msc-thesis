@@ -10,21 +10,21 @@ import Data.Traversable
 import Generics.Types
 import Prelude hiding ((.), id, mapM)
 
-data Phi (a :: (* -> *) -> * -> *) (f :: * -> *) (s :: *) where
-  Phi :: (s -> f (s :+: f (FixT a f))) -> Phi a f s
+data Apo (a :: (* -> *) -> * -> *) (f :: * -> *) (s :: *) where
+  Phi :: (s -> f (s :+: f (FixT a f))) -> Apo a f s
 
-type PhiA s f = forall a. Phi a f s
+type ApoA s f = forall a. Apo a f s
 
-apoMT :: (Traversable f, AnnM a f m) => Phi a f s -> s -> m (FixT a f)
+apoMT :: (Traversable f, AnnM a f m) => Apo a f s -> s -> m (FixT a f)
 apoMT (Phi phi) = runProduce <=< mapM (apoMT (Phi phi) `either` runProduce) . phi
 
-apoM :: (Traversable f, AnnM Id f m) => Phi Id f s -> s -> m (Fix f)
+apoM :: (Traversable f, AnnM Id f m) => Apo Id f s -> s -> m (Fix f)
 apoM = apoMT
 
-apoT :: (Traversable f, AnnM a f Identity) => Phi a f s -> s -> FixT a f
+apoT :: (Traversable f, AnnM a f Identity) => Apo a f s -> s -> FixT a f
 apoT phi = runIdentity . apoMT phi
 
-apo :: Traversable f => Phi Id f s -> s -> Fix f
+apo :: Traversable f => Apo Id f s -> s -> Fix f
 apo phi = runIdentity . apoM phi
 
 type CoEndo a f = f (FixT a f) -> f (FixT a f :+: (FixT a f :+: f (FixT a f)))

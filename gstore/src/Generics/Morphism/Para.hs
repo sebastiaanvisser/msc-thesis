@@ -15,7 +15,7 @@ data Para (a :: (* -> *) -> * -> *) (f :: * -> *) (r :: *) where
   Psi  :: ((f r, f (FixT a f)) -> r) -> Para a f r
   Proj :: Para a f (r -> s, r, s) -> Para a f s
 
-type PsiA f r = forall a. Para a f r
+type ParaA f r = forall a. Para a f r
 
 instance Functor f => Functor (Para a f) where
   fmap f psi = Proj (pure f <++> psi)
