@@ -8,11 +8,13 @@ newtype Id f a = Id { unId :: f a } deriving Show
 
 -- Fixed point combinators and fixed point combinator transformers.
 
+newtype FixA (a :: (* -> *) -> (* -> *)) f = In { out :: a f (FixA a f) }
+type FixA1 a f = f (FixA a f)
+type FixA2 a f = a f (FixA a f)
+
 type Fix f = FixA Id f
 type Fix1 f = f (FixA Id f)
-
-newtype FixA (a :: (* -> *) -> (* -> *)) f = In { out :: a f (FixA a f) }
-type FixA1 a f = a f (FixA a f)
+type Fix2 f = Id f (FixA Id f)
 
 -- Value level fixed point.
 
