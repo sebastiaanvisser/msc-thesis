@@ -31,8 +31,8 @@ mkModifier :: A.AnnM a f m => Modify a f m -> FixT1 a f -> m (FixT1 a f)
 mkModifier m = liftM out . fix (flip m pC . (<=< qC)) <=< qC . In
 
 qC :: A.AnnQ a f m => FixT a f -> m (f (FixT a f))
-qC = runKleisli A.query . out
+qC = runKleisli A.query
 
 pC :: A.AnnP a f m => f (FixT a f) -> m (FixT a f)
-pC = liftM In . runKleisli A.produce
+pC = runKleisli A.produce
 

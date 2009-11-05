@@ -3,13 +3,13 @@ module Generics.Morphism.Para where
 import Annotation.Annotation
 import Control.Applicative
 import Control.Category
-import Control.Monad hiding (sequence)
+import Control.Monad hiding (mapM)
 import Control.Monad.Identity
 import Control.Monad.Lazy
 import Data.Traversable
 import Generics.Regular.Seq
 import Generics.Types
-import Prelude hiding ((.), id, sequence)
+import Prelude hiding ((.), id, mapM)
 
 data Psi (a :: (* -> *) -> * -> *) (f :: * -> *) (r :: *) where
   Psi :: ((f r, f (FixT a f)) -> r) -> Psi a f r
@@ -40,15 +40,15 @@ Prj f <++> Psi g = Prj f <++> Prj (pure id <++> Psi g)
 Psi f <++> Psi g = Psi (\(a, b) -> f (fmap fst3 a, b) `mk` g (fmap snd3 a, b))
   where mk x y = (x, y, x y)
 
-_para :: (Traversable f, Lazy m, AnnQ a f m) => (x -> m r) -> (r -> x) -> Psi a f x -> FixT1 a f -> m r
+_para :: (Traversable f, Lazy m, AnnQ a f m) => (x -> m r) -> (r -> x) -> Psi a f x -> FixT a f -> m r
 _para z y (Prj psi) f = trd3 <$> _para (\(a, b, r) -> z r >>= \r' -> return (a, b, r')) (\(a, b, r) -> (a, b, y r)) psi f
 _para z y (Psi psi) f = 
   do g <- runQuery f
-     r <- fmap y <$> sequence (fmap (lazy . _para z y (Psi psi) . out) g)
+     r <- mapM (fmap y . lazy . _para z y (Psi psi)) g
      z (psi (r, g))
 
 paraMT :: (AnnQ a f m, Lazy m, Traversable f) => Psi a f r -> FixT a f -> m r
-paraMT psi = _para return id psi . out
+paraMT psi = _para return id psi
 
 paraMT' :: (DSeq r, Traversable f, Lazy m, AnnQ a f m) => Psi a f r -> FixT a f -> m r
 paraMT' psi f = dseqId <$> paraMT psi f
@@ -69,7 +69,7 @@ toEndo :: Functor f => Psi a f (FixT a f) -> Endo a f
 toEndo = fmap Left
 
 endoMT :: (Traversable f, Lazy m, AnnQ a f m, AnnP a f m) => Endo a f -> FixT a f -> m (FixT a f)
-endoMT psi = liftM In . _para ((return . out) `either` runProduce) (Left . In) psi . out
+endoMT psi = _para (return `either` runProduce) Left psi
 
 endoM :: (Traversable f, Lazy m, Applicative m, Monad m) => Endo Id f -> Fix f -> m (Fix f)
 endoM = endoMT

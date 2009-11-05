@@ -10,13 +10,13 @@ import Generics.Types
 import Heap.Heap
 
 instance Binary (f (FixT Pointer f)) => AnnQ Pointer f HeapR where
-  query = Kleisli retrieve
+  query = Kleisli (retrieve . out)
 
 instance Binary (f (FixT Pointer f)) => AnnQ Pointer f HeapW where
-  query = Kleisli (liftLazy . retrieve)
+  query = Kleisli (liftLazy . retrieve . out)
 
 instance Binary (f (FixT Pointer f)) => AnnP Pointer f HeapW where
-  produce = Kleisli store
+  produce = Kleisli (fmap In . store)
 
 instance Binary (f (FixT Pointer f)) => AnnM Pointer f HeapW where
 
