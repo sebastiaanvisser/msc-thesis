@@ -3,29 +3,26 @@ module Generics.Morphism.Para where
 import Annotation.Annotation
 import Control.Applicative
 import Control.Category
-import Control.Monad hiding (sequence)
+import Control.Monad hiding (mapM)
 import Control.Monad.Identity
 import Control.Monad.Lazy
 import Data.Traversable
 import Generics.Regular.Seq
 import Generics.Types
-import Prelude hiding ((.), id, sequence)
+import Prelude hiding ((.), id, mapM)
 
-data Psi (a :: (* -> *) -> * -> *) (f :: * -> *) (r :: *) where
-  Psi :: ((f r, f (FixT a f)) -> r) -> Psi a f r
-  Prj :: Psi a f (r -> s, r, s) -> Psi a f s
+data AlgA (a :: (* -> *) -> * -> *) (f :: * -> *) (r :: *) where
+  Psi  :: (f (FixA a f, r) -> r)  -> AlgA a f r
+  Proj :: AlgA a f (r -> s, r, s) -> AlgA a f s
 
-type PsiA f r = forall a. Psi a f r
+type Alg f r = forall a. AlgA a f r
 
-instance Functor f => Functor (Psi a f) where
-  fmap f psi = Prj (pure f <++> psi)
+instance Functor f => Functor (AlgA a f) where
+  fmap f psi = Proj (pure f <++> psi)
 
-instance Functor f => Applicative (Psi a f) where
+instance Functor f => Applicative (AlgA a f) where
   pure    = Psi . const
-  a <*> b = Prj (a <++> b)
-
-idPsi :: Functor f => Psi a f (r -> r)
-idPsi = pure id
+  a <*> b = Proj (a <++> b)
 
 fst3 :: (a, b, c) -> a
 fst3 (x, _, _) = x
@@ -36,41 +33,74 @@ snd3 (_, y, _) = y
 trd3 :: (a, b, c) -> c
 trd3 (_, _, z) = z
 
-(<++>) :: (Functor f, Functor (Psi a f)) => Psi a f (r -> s) -> Psi a f r -> Psi a f (r -> s, r, s)
-Prj f <++> Prj g = fmap trd3 f <++> fmap trd3 g 
-Psi f <++> Prj g = Prj (idPsi <++> Psi f) <++> Prj g
-Prj f <++> Psi g = Prj f <++> Prj (idPsi <++> Psi g)
-Psi f <++> Psi g = Psi (\(a, b) -> f (fmap fst3 a, b) `mk` g (fmap snd3 a, b))
+(<++>) :: (Functor f, Functor (AlgA a f)) => AlgA a f (r -> s) -> AlgA a f r -> AlgA a f (r -> s, r, s)
+Proj f <++> Proj g = fmap trd3 f <++> fmap trd3 g 
+Psi  f <++> Proj g = Proj (pure id <++> Psi f) <++> Proj g
+Proj f <++> Psi  g = Proj f <++> Proj (pure id <++> Psi g)
+Psi  f <++> Psi  g = Psi (\x -> f (fmap2 fst3 x) `mk` g (fmap2 snd3 x))
   where mk x y = (x, y, x y)
 
-_para :: (Traversable f, Lazy m, AnnQ a f m) => (x -> m r) -> (r -> x) -> Psi a f x -> FixT1 a f -> m r
-_para z y (Prj psi) f = trd3 <$> _para (\(a, b, r) -> z r >>= \r' -> return (a, b, r')) (\(a, b, r) -> (a, b, y r)) psi f
-_para z y (Psi psi) f = 
-  do g <- runQuery f
-     r <- fmap y <$> sequence (fmap (lazy . _para z y (Psi psi) . out) g)
-     z (psi (r, g))
+_para :: (Traversable f, Lazy m, AnnQ a f m) => (x -> m r) -> (r -> x) -> AlgA a f x -> FixA a f -> m r
+_para z y (Proj psi) = fmap trd3 . _para (\(a, b, r) -> z r >>= \r' -> return (a, b, r')) (\(a, b, r) -> (a, b, y r)) psi
+_para z y (Psi psi)  = z . psi <=< mapM (g (fmap y . lazy . _para z y (Psi psi))) <=< runQuery
+  where g f c = fmap ((,) c) (f c)
 
-paraMT :: (AnnQ a f m, Lazy m, Traversable f) => Psi a f r -> FixT1 a f -> m r
-paraMT = _para return id
+-- Lazy paramorphism in a monadic context for annotated structures.
 
-paraMT' :: (DSeq r, Traversable f, Lazy m, AnnQ a f m) => Psi a f r -> FixT1 a f -> m r
-paraMT' psi f = dseqId <$> paraMT psi f
+paraMA :: (AnnQ a f m, Lazy m, Traversable f) => AlgA a f r -> FixA a f -> m r
+paraMA psi = _para return id psi
 
-type Endo a f = Psi a f (FixT a f :+: f (FixT a f))
-type EndoA f = forall a. Endo a f
+-- Lazy paramorphism in a monadic context for structures without annotations.
 
-toEndo :: Functor f => Psi a f (FixT a f) -> Endo a f
+paraM :: (Applicative m, Monad m, Lazy m, Traversable f) => AlgA Id f r -> Fix f -> m r
+paraM = paraMA 
+
+-- Lazy paramorphism for annotated structures.
+
+paraA :: (AnnQ a f Identity, Traversable f) => AlgA a f c -> FixA a f -> c
+paraA psi = runIdentity . paraMA psi
+
+-- Lazy paramorphism for structures without annotations.
+
+para :: Traversable f => AlgA Id f c -> Fix f -> c
+para psi = runIdentity . paraM psi
+
+-- Strict paramorphism in a monadic context for annotated structures.
+
+paraMA' :: (DSeq r, Traversable f, Lazy m, AnnQ a f m) => AlgA a f r -> FixA a f -> m r
+paraMA' psi f = dseqId <$> paraMA psi f
+
+-- Strict paramorphism in a monadic context for structures without annotations.
+
+paraM' :: (DSeq r, Traversable f, Applicative m, Monad m, Lazy m) => AlgA Id f r -> Fix f -> m r
+paraM' = paraMA'
+
+-- Strict paramorphism for annotated structures.
+
+paraA' :: (DSeq c, Traversable f, AnnQ a f Identity) => AlgA a f c -> FixA a f -> c
+paraA' psi = runIdentity . paraMA' psi
+
+-- Strict paramorphism for structures without annotations.
+
+para' :: (DSeq c, Traversable f) => AlgA Id f c -> Fix f -> c
+para' psi = runIdentity . paraM' psi
+
+type EndoA a f = AlgA a f (FixA a f :+: f (FixA a f))
+type Endo f = forall a. EndoA a f
+
+toEndo :: Functor f => AlgA a f (FixA a f) -> EndoA a f
 toEndo = fmap Left
 
-endoMT :: (Traversable f, Lazy m, AnnQ a f m, AnnP a f m) => Endo a f -> FixT1 a f -> m (FixT1 a f)
-endoMT = _para ((return . out) `either` runProduce) (Left . In)
+endoMA :: (Traversable f, Lazy m, AnnQ a f m, AnnP a f m) => EndoA a f -> FixA a f -> m (FixA a f)
+endoMA psi = _para (return `either` runProduce) Left psi
 
-endoM :: (Traversable f, Lazy m, Applicative m, Monad m) => Endo Id f -> Fix f -> m (Fix f)
-endoM psi = return . In <=< endoMT psi . out
+endoM :: (Traversable f, Lazy m, Applicative m, Monad m) => EndoA Id f -> Fix f -> m (Fix f)
+endoM = endoMA
 
-endoT :: (Traversable f, AnnQ a f Identity, AnnP a f Identity) => Endo a f -> FixT1 a f -> FixT1 a f
-endoT psi = runIdentity . endoMT psi
+endoA :: (Traversable f, AnnQ a f Identity, AnnP a f Identity) => EndoA a f -> FixA a f -> FixA a f
+endoA psi = runIdentity . endoMA psi
 
-endo :: Traversable f => Endo Id f -> Fix f -> Fix f
+endo :: Traversable f => EndoA Id f -> Fix f -> Fix f
 endo psi = runIdentity . endoM psi
+
 
