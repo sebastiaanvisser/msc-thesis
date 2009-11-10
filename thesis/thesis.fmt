@@ -38,3 +38,36 @@
 %format AnnP = "Ann_P"
 %format AnnM = "Ann_M"
 
+%format paraMA1 = "para^m_{\alpha}"
+%format paraM1  = "para^m"
+%format paraA1  = "para_{\alpha}"
+%format para1   = "para"
+%format psi     = "\psi"
+%format Psi1    = "\Psi"
+%format Psi2    = "\Psi"
+%format Psi     = "\Psi"
+
+%format apoMA = "apo^m_{\alpha}"
+%format apoM  = "apo^m"
+%format apoA  = "apo_{\alpha}"
+%format apo   = "apo"
+%format phi   = "\phi"
+%format Phi   = "\Phi"
+
+%format <++> = "\oplus"
+%format paraMA = "para^m_{\alpha}"
+%format elipses = "\dots"
+
+%format Endo    = "\Psi_{endo}"
+%format endoMA  = " endo^m_{\alpha}"
+%format endoMA' = "helper"
+%format endoM   = "endo^m"
+%format endoA   = "endo_{\alpha}"
+%format endo    = "endo"
+
+%format CoEndo    = "\Phi_{endo}"
+%format coendoMA  = " coendo^m_{\alpha}"
+%format coendoM   = "coendo^m"
+%format coendoA   = "coendo_{\alpha}"
+%format coendo    = "coendo"
+

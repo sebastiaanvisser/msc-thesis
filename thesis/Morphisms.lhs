@@ -1,4 +1,5 @@
 %include polycode.fmt
+%include thesis.fmt
 
 %if False
 
@@ -18,19 +19,6 @@
 > import Data.Time.LocalTime
 
 %endif
-
-%format mempty    = "\varnothing"
-%format `mappend` = "\diamond"
-%format fmap' a   = "\widehat{" a "}"
-%format <*>       = "\circledast"
-%format <=<       = "\triangleleft"
-%format >>=       = "\rightarrowtail"
-%format fixp      = "fix"
-
-%format :*: = "\times"
-%format :+: = "+"
-
-%format AM = "Monad"
 
 %if False
 
@@ -54,15 +42,6 @@
 \section{Generic traversals with annotations}
 
 \subsection{Paramorphisms}
-
-%format paraMA1 = "para^m_{\alpha}"
-%format paraM1  = "para^m"
-%format paraA1  = "para_{\alpha}"
-%format para1   = "para"
-%format psi     = "\psi"
-%format Psi1    = "\Psi"
-%format Psi2    = "\Psi"
-%format Psi     = "\Psi"
 
 Now we have a way to associate functionality with annotations we should able to
 write operations over our annotated structures -- like the binary tree example
@@ -116,13 +95,6 @@ annotation specific computations, hence the $(_{\alpha}^m)$ postfixes.
 
 \subsection{Apomorphisms}
 
-%format apoMA = "apo^m_{\alpha}"
-%format apoM  = "apo^m"
-%format apoA  = "apo_{\alpha}"
-%format apo   = "apo"
-%format phi   = "\phi"
-%format Phi   = "\Phi"
-
 > type Phi a f s = s -> f (s :+: f (FixA a f))
 
 > apoMA :: (Functor m, Traversable f, AnnP a f m) => Phi a f s -> s -> m (FixA a f)
@@ -164,10 +136,6 @@ annotation specific computations, hence the $(_{\alpha}^m)$ postfixes.
 >   where sub f c = fmap ((,) c) (f c)
 
 \subsection{Applicative paramorphisms}
-
-%format <++> = "\oplus"
-%format paraMA = "para^m_{\alpha}"
-%format elipses = "\dots"
 
 > data Psi (a :: (* -> *) -> * -> *) (f :: * -> *) (r :: *) where
 >   Alg  :: ((f r, f (FixA a f)) -> r)  -> Psi a f r
@@ -218,13 +186,6 @@ annotation specific computations, hence the $(_{\alpha}^m)$ postfixes.
 
 \subsection{Endomorphic paramorphism}
 
-%format Endo    = "\Psi_{endo}"
-%format endoMA  = " endo^m_{\alpha}"
-%format endoMA' = "helper"
-%format endoM   = "endo^m"
-%format endoA   = "endo_{\alpha}"
-%format endo    = "endo"
-
 > type Endo a f = Psi a f (FixA a f :+: f (FixA a f))
 
 > toEndo :: Functor f => Psi a f (FixA a f) -> Endo a f
@@ -254,12 +215,6 @@ annotation specific computations, hence the $(_{\alpha}^m)$ postfixes.
 > endo psi = runIdentity . endoM psi
 
 \subsection{Endomorphic apomorphisms}
-
-%format CoEndo    = "\Phi_{endo}"
-%format coendoMA  = " coendo^m_{\alpha}"
-%format coendoM   = "coendo^m"
-%format coendoA   = "coendo_{\alpha}"
-%format coendo    = "coendo"
 
 > type CoEndo a f = f (FixA a f) -> f (FixA a f :+: (FixA a f :+: f (FixA a f)))
 
