@@ -11,31 +11,10 @@
 > import Control.Monad.Identity
 > import Control.Monad.Reader hiding (mapM)
 > import System.IO.Unsafe
-> import Data.Foldable
-> import Data.Monoid hiding (Endo)
 > import Data.Traversable
 > import Data.Traversable
 > import Prelude hiding ((.), id, mapM)
-> import Data.Time.LocalTime
-
-%endif
-
-%if False
-
-> fmap' :: Functor f => (a -> b) -> f a -> f b
-> fmap' = fmap
-
-> infixl 6 :+:
-> infixl 7 :*:
-
-> type a :+: b = Either a b
-> type a :*: b = (a, b)
-
-> class (Applicative m, Monad m) => AM m
-> instance (Applicative m, Monad m) => AM m
-
-> fixp :: (t -> t) -> t
-> fixp a = a (fixp a)
+> import Fixpoints
 
 %endif
 
@@ -109,31 +88,55 @@ annotation specific computations, hence the $(_{\alpha}^m)$ postfixes.
 > apo :: Traversable f => Phi Id f s -> s -> Fix f
 > apo phi = runIdentity . apoM phi
 
-\subsection{Lazy IO and strict paramorphisms}
+\subsection{Endomorphic paramorphism}
 
-> class Lazy m where
->   lazy :: m a -> m a
+> type Endo a f = Psi a f (FixA a f :+: f (FixA a f))
 
-> instance Lazy Identity where
->   lazy = id
+> toEndo :: Functor f => Psi a f (FixA a f) -> Endo a f
+> toEndo = fmap' Left
 
-> instance (AM m, Lazy m) => Lazy (ReaderT r m) where
->   lazy c = ask >>= lift . lazy . runReaderT c
+> endoMA  :: (Functor m, Lazy m, AnnQ a f m, AnnP a f m)
+>         => Endo a f -> FixA a f -> m (FixA a f)
+> endoMA psi = endoMA' (return `either` produce) Left psi
 
-> instance Lazy IO where
->   lazy = unsafeInterleaveIO
+> endoMA'  :: (Functor m, Lazy m, AnnQ a f m)
+>          => (x -> m r) -> (r -> x) -> Psi a f x -> FixA a f -> m r
+> endoMA' z y (Alg psi) f = 
+>   do  g   <- query f
+>       r   <- fmap' y `fmap` mapM (lazy . endoMA' z y (Alg psi)) g
+>       z (psi (r, g))
+> endoMA' z y (Prj psi) f = fmap' trd3 (endoMA' f0 f1 psi f)
+>     where  f0  (a, b, r) = z r >>= \r' -> return (a, b, r')
+>            f1  (a, b, r) = (a, b, y r)
 
-> dseq :: a -> a
+> endoM :: (Traversable f, Lazy m, AM m) => Endo Id f -> Fix f -> m (Fix f)
+> endoM psi = endoMA psi
 
-%if False
+> endoA :: (AnnQ a f Identity, AnnP a f Identity) => Endo a f -> FixA a f -> FixA a f
+> endoA psi = runIdentity . endoMA psi
 
-> dseq = undefined
+> endo :: Traversable f => Endo Id f -> Fix f -> Fix f
+> endo psi = runIdentity . endoM psi
 
-%endif
+\subsection{Endomorphic apomorphisms}
 
-> para' :: (Lazy m, AnnQ a f m) => Psi1 a f r -> FixA a f -> m r
-> para' psi = fmap' dseq (fix (\pm -> return . psi <=< mapM (sub (lazy . pm)) <=< query))
->   where sub f c = fmap ((,) c) (f c)
+> type CoEndo a f = f (FixA a f) -> f (FixA a f :+: (FixA a f :+: f (FixA a f)))
+
+> coendoMA :: (Traversable f, AnnM a f m) => CoEndo a f -> FixA a f -> m (FixA a f)
+> coendoMA phi = modify (mapM cont . phi)
+>   where
+>   cont (Left x)           = coendoMA phi x
+>   cont (Right (Left  x))  = return x
+>   cont (Right (Right x))  = produce x
+
+> coendoM :: (Traversable f, AM m) => CoEndo Id f -> Fix f -> m (Fix f) 
+> coendoM = coendoMA
+
+> coendoA :: (AnnM a f Identity) => CoEndo a f -> FixA a f -> FixA a f 
+> coendoA phi = runIdentity . coendoMA phi
+
+> coendo :: Traversable f => CoEndo Id f -> Fix f -> Fix f
+> coendo phi = runIdentity . coendoM phi
 
 \subsection{Applicative paramorphisms}
 
@@ -184,53 +187,29 @@ annotation specific computations, hence the $(_{\alpha}^m)$ postfixes.
 
 %endif
 
-\subsection{Endomorphic paramorphism}
+\subsection{Lazy IO and strict paramorphisms}
 
-> type Endo a f = Psi a f (FixA a f :+: f (FixA a f))
+> class Lazy m where
+>   lazy :: m a -> m a
 
-> toEndo :: Functor f => Psi a f (FixA a f) -> Endo a f
-> toEndo = fmap' Left
+> instance Lazy Identity where
+>   lazy = id
 
-> endoMA  :: (Functor m, Lazy m, AnnQ a f m, AnnP a f m)
->         => Endo a f -> FixA a f -> m (FixA a f)
-> endoMA psi = endoMA' (return `either` produce) Left psi
+> instance (AM m, Lazy m) => Lazy (ReaderT r m) where
+>   lazy c = ask >>= lift . lazy . runReaderT c
 
-> endoMA'  :: (Functor m, Lazy m, AnnQ a f m)
->          => (x -> m r) -> (r -> x) -> Psi a f x -> FixA a f -> m r
-> endoMA' z y (Alg psi) f = 
->   do  g   <- query f
->       r   <- fmap' y `fmap` mapM (lazy . endoMA' z y (Alg psi)) g
->       z (psi (r, g))
-> endoMA' z y (Prj psi) f = fmap' trd3 (endoMA' f0 f1 psi f)
->     where  f0  (a, b, r) = z r >>= \r' -> return (a, b, r')
->            f1  (a, b, r) = (a, b, y r)
+> instance Lazy IO where
+>   lazy = unsafeInterleaveIO
 
-> endoM :: (Traversable f, Lazy m, AM m) => Endo Id f -> Fix f -> m (Fix f)
-> endoM psi = endoMA psi
+> dseq :: a -> a
 
-> endoA :: (AnnQ a f Identity, AnnP a f Identity) => Endo a f -> FixA a f -> FixA a f
-> endoA psi = runIdentity . endoMA psi
+%if False
 
-> endo :: Traversable f => Endo Id f -> Fix f -> Fix f
-> endo psi = runIdentity . endoM psi
+> dseq = undefined
 
-\subsection{Endomorphic apomorphisms}
+%endif
 
-> type CoEndo a f = f (FixA a f) -> f (FixA a f :+: (FixA a f :+: f (FixA a f)))
-
-> coendoMA :: (Traversable f, AnnM a f m) => CoEndo a f -> FixA a f -> m (FixA a f)
-> coendoMA phi = modify (mapM cont . phi)
->   where
->   cont (Left x)           = coendoMA phi x
->   cont (Right (Left  x))  = return x
->   cont (Right (Right x))  = produce x
-
-> coendoM :: (Traversable f, AM m) => CoEndo Id f -> Fix f -> m (Fix f) 
-> coendoM = coendoMA
-
-> coendoA :: (AnnM a f Identity) => CoEndo a f -> FixA a f -> FixA a f 
-> coendoA phi = runIdentity . coendoMA phi
-
-> coendo :: Traversable f => CoEndo Id f -> Fix f -> Fix f
-> coendo phi = runIdentity . coendoM phi
+> para' :: (Lazy m, AnnQ a f m) => Psi1 a f r -> FixA a f -> m r
+> para' psi = fmap' dseq (fix (\pm -> return . psi <=< mapM (sub (lazy . pm)) <=< query))
+>   where sub f c = fmap ((,) c) (f c)
 

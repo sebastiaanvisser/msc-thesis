@@ -1,4 +1,5 @@
 %include polycode.fmt
+%include thesis.fmt
 
 %if False
 
@@ -6,16 +7,15 @@
 
 %endif
 
-\section{Data storage}
+\section{Persistent heap}
 
-\subsection{Heap}
+\subsection{Heap layout}
+\subsection{Reading}
+\subsection{Allocation}
+\subsection{Writing}
 
-\subsubsection{Heap layout}
-\subsubsection{Reading}
-\subsubsection{Allocation}
-\subsubsection{Writing}
+\section{Generic storage}
 
 \subsection{Storage annotation}
-
 \subsection{Persistent map}
 

@@ -9,9 +9,10 @@ ${DOC}.pdf: \
 	Morphisms.tex \
 	Example.tex \
 	Storage.tex \
+	thesis.fmt \
 	${DOC}.tex
 
-%.tex: %.lhs %.fmt
+%.tex: %.lhs
 	lhs2TeX -o $@ $<
 
 %.pdf: %.tex

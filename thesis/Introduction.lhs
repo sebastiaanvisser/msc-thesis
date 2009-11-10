@@ -15,12 +15,12 @@ annotation can be used to get back a data type isomorphic to a data type
 without annotations and how a debug annotation can be used to print out traces
 of generic traversals. 
 
-In chapter TODO have implement two general morphisms that can be used to
+In chapter TODO we implement two general morphisms that can be used to
 algebraically process recursively annotated data structures, the
 \emph{paramorphisms} and \emph{apomorphisms}. Using these two general morphisms
 we can easily derive four additional more specific morphisms,
-\emph{catamorphisms}, \emph{anamorphisms}, \emph{endomorphic paramorphisms}
-and \emph{endomorphic apomorphisms}. We show how to implement all of these
+\emph{catamorphisms}, \emph{anamorphisms}, \emph{endomorphic paramorphisms} and
+\emph{endomorphic apomorphisms}. We show how to implement all of these
 morphisms with the annotations and annotation associated functionality in mind.
 
 Performing operations over annotated structure might require traversals to be
@@ -34,4 +34,6 @@ Writing operations over data structures in terms of morphisms is not always
 easy, especially when composing several operations into one. Chapter TODO
 explores how we can make algebras for paramorphisms into applicative functors
 and get back an idiomatic way of composing algebras.
+
+...
 
