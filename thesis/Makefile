@@ -4,12 +4,14 @@ all: ${DOC}.pdf
 
 ${DOC}.pdf: \
 	abstract.tex \
+	Introduction.tex \
+	Fixpoints.tex \
 	Morphisms.tex \
 	Example.tex \
 	Storage.tex \
 	${DOC}.tex
 
-%.tex: %.lhs
+%.tex: %.lhs %.fmt
 	lhs2TeX -o $@ $<
 
 %.pdf: %.tex

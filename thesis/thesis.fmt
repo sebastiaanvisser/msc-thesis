@@ -1,0 +1,40 @@
+%format mempty    = "\varnothing"
+%format `mappend` = "\diamond"
+%format fmap' a   = "\widehat{" a "}"
+%format <*>       = "\circledast"
+%format <=<       = "\triangleleft"
+%format >>=       = "\rightarrowtail"
+%format fixp      = "fix"
+
+%format :*: = "\times"
+%format :+: = "+"
+
+%format AM = "Monad"
+
+%format Fix_1     = "\mu"
+%format In_1      = "In"
+%format out_1     = "out"
+
+%format Tree_1    = "Tree"
+%format Leaf_1    = "Leaf"
+%format Branch_1  = "Branch"
+
+%format Tree_f    = "Tree_f"
+
+%format Tree_2    = "Tree"
+%format Leaf_2    = "Leaf"
+%format Branch_2  = "Branch"
+
+%format mapM1 = "mapM"
+
+%format FixA  = "\mu_{\alpha}"
+%format FixA1 = "\mu_{\alpha}^1"
+%format FixA2 = "\mu_{\alpha}^2"
+%format Fix   = "\mu"
+%format Fix1  = "\mu^1"
+%format Fix2  = "\mu^2"
+
+%format AnnQ = "Ann_Q"
+%format AnnP = "Ann_P"
+%format AnnM = "Ann_M"
+

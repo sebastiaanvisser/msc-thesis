@@ -20,6 +20,9 @@
 \begin{document}
   \tableofcontents
   \pagebreak
+  \input{Introduction} 
+  \pagebreak
+  \input{Fixpoints} 
   \input{Morphisms} 
   \input{Example} 
   \input{Storage} 
