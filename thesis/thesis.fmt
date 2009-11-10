@@ -47,6 +47,9 @@
 %format Psi2    = "\Psi"
 %format Psi     = "\Psi"
 
+%format lookupAlg = "lookup_{alg}"
+%format lookupMA  = "lookup^m_{\alpha}"
+
 %format apoMA = "apo^m_{\alpha}"
 %format apoM  = "apo^m"
 %format apoA  = "apo_{\alpha}"
