@@ -19,6 +19,9 @@
 %format Leaf_1    = "Leaf"
 %format Branch_1  = "Branch"
 
+%format leaf_1    = "leaf"
+%format branch_1  = "branch"
+
 %format Tree_f    = "Tree_f"
 
 %format Tree_2    = "Tree"
@@ -38,6 +41,10 @@
 %format AnnP = "Ann_P"
 %format AnnM = "Ann_M"
 
+%format TreeA   = "Tree_{\alpha}"
+%format leafA   = "leaf_{\alpha}"
+%format branchA = "branch_{\alpha}"
+
 %format paraMA1 = "para^m_{\alpha}"
 %format paraM1  = "para^m"
 %format paraA1  = "para_{\alpha}"
@@ -47,8 +54,8 @@
 %format Psi2    = "\Psi"
 %format Psi     = "\Psi"
 
-%format lookupAlg = "lookup_{alg}"
-%format lookupMA  = "lookup^m_{\alpha}"
+%format containsAlg = "contains_{alg}"
+%format containsMA  = "contains^m_{\alpha}"
 
 %format apoMA = "apo^m_{\alpha}"
 %format apoM  = "apo^m"
@@ -56,6 +63,9 @@
 %format apo   = "apo"
 %format phi   = "\phi"
 %format Phi   = "\Phi"
+
+%format fromListCoalg = "fromList_{coalg}"
+%format fromListMA    = "fromList^m_{\alpha}"
 
 %format <++> = "\oplus"
 %format paraMA = "para^m_{\alpha}"

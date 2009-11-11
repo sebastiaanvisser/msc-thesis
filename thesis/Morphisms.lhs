@@ -13,7 +13,7 @@ import Control.Monad.Identity
 import Control.Monad.Reader hiding (mapM)
 import System.IO.Unsafe
 import Data.Traversable
-import Prelude hiding ((.), id, mapM)
+import Prelude hiding ((.), id, mapM, lookup)
 import Fixpoints
 \end{code}
 
@@ -43,18 +43,18 @@ This type signature describes that an algebra should be able to produce an
 value of type |r| from one non-recursive pieces of a recursive structure, all
 the recursive sub-results of the computation and the original sub-structures.
 
-An example of such an algebra is the |lookupAlg| function for binary trees.
-Because the algebra only uses the recursive sub-results and not the origianl
+An example of such an algebra is the |containsAlg| function for binary trees.
+Because the algebra only uses the recursive sub-results and not the original
 sub-structures this algebra is actually a catamorphism, a special case of the
 more general paramorpism.
 
 \begin{code}
-lookupAlg :: Ord v => v -> Psi1 a (Tree_f v) (Maybe v)
-lookupAlg _  Leaf_2                      = Nothing
-lookupAlg v  (Branch_2 c (_, l) (_, r))  = 
+containsAlg :: Ord v => v -> Psi1 a (Tree_f v) Bool
+containsAlg _  Leaf                      = False
+containsAlg v  (Branch c (_, l) (_, r))  = 
   case v `compare` c of
     LT  -> l
-    EQ  -> Just c
+    EQ  -> True
     GT  -> r
 \end{code}
 
@@ -74,27 +74,54 @@ paraMA1 psi = return . psi <=< mapM (group (paraMA1 psi)) <=< query
 
 \noindent
 The implementation of this generic paramorphism might seem a bit cryptic at
-first sight, this is probably due to its very generic behaviour. Quickly
-summarized this function performs a bottom up traversal over a recursively
-annotation structure. This functions gets a fully annotated structure as input
-and uses the |query| function to get the original structure out of the
-annotation. The |Traversable| instance that is an implicit super class of the
-|AnnQ| class allows us to use the |mapM| function to recursively apply this
-|paraMA1| function to the sub-structures to come up with the sub-results.
-The sub-results will be grouped together with the original sub-structures these
+first sight, this is due to its very generic behaviour. Quickly summarized this
+function performs a bottom up traversal over a recursively annotation
+structure. This functions gets a fully annotated structure as input and uses
+the |query| function to get the original structure out of the annotation. The
+|Traversable| instance that is an implicit super class of the |AnnQ| class
+allows us to use the |mapM| function to recursively apply this |paraMA1|
+function to the sub-structures to come up with the sub-results.  The
+sub-results will be grouped together with the original sub-structures these
 results are computed from. The original non-recursive piece of the input with
 these grouped results in as the values will be passed into the algebra |psi|.
 The algebra can now compute the result value for one level of the recursive
 computation. 
 
 To illustrate the usage of the |paraMA1| function we apply this paramorphism to
-the |lookup| algebra and get back a function that performs a lookup over an
-annotation binary tree.
+the |contains| algebra and get back a function that performs a |contains| over
+an annotation binary tree.
 
 \begin{code}
-lookupMA :: (Ord v, AnnQ a (Tree_f v) m) => v -> FixA a (Tree_f v) -> m (Maybe v)
-lookupMA v = paraMA1 (lookupAlg v)
+containsMA :: (Ord v, AnnQ a (Tree_f v) m) => v -> FixA a (Tree_f v) -> m Bool
+containsMA v = paraMA1 (containsAlg v)
 \end{code}
+
+\noindent
+We can easily test this function in our interactive environment.
+We first manually constructi a binary tree and constraining this to the |IO|
+context and |Debug| annotation. While constructing the annotation prints out a
+debug trace of all sub-structures being produced, exactly as defined.
+
+\begin{verbatim}
+ghci> join (branchA True <$> leafA <*> leafA) :: IO (TreeA Debug Bool)
+produce: Leaf
+produce: Leaf
+produce: Branch True <D Leaf> <D Leaf>
+<D (Branch True <D Leaf> <D Leaf>)>
+\end{verbatim}
+
+Now we can apply the |containsMA| function to the resulting binary tree and
+check for the existinence of a |Branch| with value |True|. While running this
+function the annotation print out a trace of all sub-structures being read from
+the debug annotation.
+
+\begin{verbatim}
+ghci> containsMA True it
+query: Branch True <D Leaf> <D Leaf>
+query: Leaf
+query: Leaf
+True
+\end{verbatim}
 
 \noindent
 When an annotation does not have any requirements about the type of context to
@@ -116,16 +143,12 @@ para1 psi = paraA1 psi
 \end{code}
 
 \noindent
-To illustrate this pure paramorphism we apply it to the |lookup| algebra and
-get back a pure |lookup| function.
+To illustrate this pure paramorphism we apply it to the |contains| algebra and
+get back a pure |contains| function.
 
 \begin{code}
-type Tree v = Fix (Tree_f v)
-\end{code}
-
-\begin{code}
-lookup :: Ord v => v -> Tree v -> Maybe v
-lookup v = para1 (lookupAlg v)
+contains :: Ord v => v -> Tree v -> Bool
+contains v = para1 (containsAlg v)
 \end{code}
 
 \end{subsection}
@@ -140,7 +163,7 @@ can be used to create lists from a seed value is an example of an anamorphisms.
 
 The coalgebra for an apomorphism, called |Phi|, takes a seed value of some type
 |s| and should be able to produce an new seed or a recursive structure.
-  
+
 \begin{code}
 type Phi a f s = s -> f (s :+: f (FixA a f))
 \end{code}
@@ -148,27 +171,94 @@ type Phi a f s = s -> f (s :+: f (FixA a f))
 \noindent
 From the type signature of the |Phi| coalgebra it is obvious that it is dual to
 the |Psi| algebra for paramorphisms. Paramorphisms destruct recursive
-structures to a result value |r|, apomorphisms constructor recursive structures
-from a seed value |s|.
+structures to some result value |r|, apomorphisms construct recursive
+structures from some seed value |s|.
+
+To illustrate the usage of this coalgebra we define the function
+|fromListCoalg| that describeds how to create a balanced binary tree from an
+input list. Note that because this coalgebra only produces new seeds (using the
+|Left| constructor) instead of directly creating sub-structures it actually is
+an anamorphism.
 
 \begin{code}
-apoMA :: (Functor m, Traversable f, AnnP a f m) => Phi a f s -> s -> m (FixA a f)
+fromListCoalg :: Phi a (Tree_f k) [k]
+fromListCoalg []      = Leaf
+fromListCoalg (y:ys)  =
+  let  l  = take (length ys `div` 2) ys
+       r  = drop (length l) ys
+  in Branch y (Left l) (Left r)
+\end{code}
+
+\noindent
+Like the paramorphism we start with an apomorphism that corecursively generates
+an annotated structure in some, possibly monadic, context. We call this
+function |apoMA|. This apomorphism takes a coalgebra |Phi| and some initial
+seed value |s| and uses this to produce an annotated structure |FixA a f|.
+
+\begin{code}
+apoMA :: (Functor m, AnnP a f m) => Phi a f s -> s -> m (FixA a f)
 apoMA phi = produce <=< mapM (apoMA phi `either` produce) . phi
 \end{code}
 
-\begin{code}
-apoM :: (Functor m, Traversable f, AnnP Id f m) => Phi Id f s -> s -> m (Fix f)
-apoM = apoMA
-\end{code}
+\noindent
+This apomorphism first applies the algebra |phi| to the initial seed value |s|
+and new structure |f| with either a new seed or an recursive sub-structure in
+the sub-positions. When a new seed has been supplied by the coalgebra the
+|apoMA| function will be call recursively to produce a new sub-structure. When
+the coalgebra supplied an existing sub-structure the |produce| function from
+the |AnnP| type class will be used to provide an annotation for it. The entire
+structure itself will be supplied with an annotation as well using the
+|produce| function again.
+
+Now we can apply this to our example coalgebra |fromListCoalg| and get back a
+true fromList function that can be used to produce annotation binary trees.
 
 \begin{code}
-apoA :: (Traversable f, AnnP a f Identity) => Phi a f s -> s -> FixA a f
+fromListMA :: AnnP a (Tree_f k) m => [k] -> m (FixA a (Tree_f k))
+fromListMA = apoMA fromListCoalg
+\end{code}
+
+Now we can illustrate the usage of the |fromListMA| function by construction a
+simple binary tree from a two-element lists. Again we constraint the context to
+|IO| and the annotation to |Debug|. The annotation nicely prints out all the
+sub-structures that are being produced before the final result tree is
+returned.
+
+\begin{verbatim}
+ghci> fromListMA [1, 3] :: IO (FixA Debug (Tree_f Int))       
+produce: Leaf
+produce: Leaf
+produce: Leaf
+produce: Branch 3 <D Leaf> <D Leaf>
+produce: Branch 1 <D Leaf> <D (Branch 3 <D Leaf> <D Leaf>)>
+<D (Branch 1 <D Leaf> <D (Branch 3 <D Leaf> <D Leaf>)>)>
+\end{verbatim}
+
+\noindent
+Like for paramorphisms we can create a specialized version that works for
+annotation types that do not require a context to run in. We use the identity
+monad to get back a pure annotated apomorphism.
+
+\begin{code}
+apoA :: (AnnP a f Identity) => Phi a f s -> s -> FixA a f
 apoA phi = runIdentity . apoMA phi
 \end{code}
 
+\noindent
+Fixing the annotation to be the identity gives us back a pure apomorphism
+working over structure without annotations.
+
 \begin{code}
 apo :: Traversable f => Phi Id f s -> s -> Fix f
-apo phi = runIdentity . apoM phi
+apo phi = apoA phi
+\end{code}
+
+Now we can simply create a pure |fromList| version working on plain binary
+trees without annotations.
+
+\begin{code}
+fromList :: [k] -> Tree k
+fromList = apo fromListCoalg
 \end{code}
 
 \end{subsection}

@@ -23,7 +23,9 @@
   \input{Introduction} 
   \pagebreak
   \input{Fixpoints} 
+  \pagebreak
   \input{Morphisms} 
+  \pagebreak
   \input{Example} 
   \input{Storage} 
 \end{document}

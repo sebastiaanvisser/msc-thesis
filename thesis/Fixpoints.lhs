@@ -41,7 +41,7 @@ fixp a = a (fixp a)
 
 %endif
 
-\begin{section}{Generic traversals with annotations}
+\begin{section}{Annotated fixed points}
 
 \begin{subsection}{Fixed points}
 
@@ -51,7 +51,7 @@ binary tree stores both a value and two explicit sub-trees in the branch
 constructor, empty trees are indicated by a leaf.
 
 \begin{code}
-data Tree_1 v = Leaf | Branch_1 v (Tree_1 v) (Tree_1 v)
+data Tree_1 v = Leaf_1 | Branch_1 v (Tree_1 v) (Tree_1 v)
 \end{code}
 
 \noindent
@@ -61,7 +61,8 @@ recursive positions. Not the tree datatype itself, but the users of the
 datatype mow decide what values to store as sub-trees.
 
 \begin{code}
-data Tree_f v f = Leaf_2 | Branch_2 v f f
+data Tree_f v f = Leaf | Branch v f f
+  deriving Show
 \end{code}
 
 \noindent
@@ -84,19 +85,6 @@ type Tree_2 v = Fix_1 (Tree_f v)
 \end{code}
 
 \noindent
-Because of the use of the |newtype| |Fix_1| all sub-tree constructors will be now
-surrounded by an additional |In| constructor. To make the usage of binary trees
-more easy we create two smart constructors: |leaf| and |branch|.
-
-\begin{code}
-leaf :: Tree_2 v
-leaf = In_1 Leaf_2
-
-branch :: v -> Tree_2 v -> Tree_2 v -> Tree_2 v
-branch v l r = In_1 (Branch_2 v l r)
-\end{code}
-
-\noindent
 To make it easier to deal with the recursive structure of the binary tree we
 can make the |Tree_f| an instance of Haskell's |Functor| type class. The
 functorial |fmap| lifts the function to be applied against the sub-trees of the
@@ -104,8 +92,8 @@ binary tree.
 
 \begin{code}
 instance Functor (Tree_f v) where
-  fmap _  Leaf_2            = Leaf_2
-  fmap f  (Branch_2 v l r)  = Branch_2 v (f l) (f r)
+  fmap _  Leaf            = Leaf
+  fmap f  (Branch v l r)  = Branch v (f l) (f r)
 \end{code}
 
 \noindent
@@ -119,8 +107,8 @@ reduce an entire structure into a single value using some |Monoid| operation.
 
 \begin{code}
 instance Foldable (Tree_f v) where
-  foldMap _  Leaf_2            = mempty
-  foldMap f  (Branch_2 _ l r)  = f l `mappend` f r
+  foldMap _  Leaf            = mempty
+  foldMap f  (Branch _ l r)  = f l `mappend` f r
 \end{code}
 
 \noindent
@@ -129,8 +117,8 @@ and perform an actions for each element.
 
 \begin{code}
 instance Traversable (Tree_f v) where
-  traverse _  Leaf_2            = pure Leaf_2
-  traverse f  (Branch_2 v l r)  = pure (Branch_2 v) <*> f l <*> f r
+  traverse _  Leaf            = pure Leaf
+  traverse f  (Branch v l r)  = pure (Branch v) <*> f l <*> f r
 \end{code}
 
 \noindent
@@ -158,13 +146,13 @@ In the previous we worked out some basic building blocks that can be useful
 when working with container data types with the recursive point parametrized.
 But why would it be useful to abstract away from the recursive points in the
 first place? This section show how we can store additional information in the
-recursive points using an annotated fixed combinator.
+recursive points using an annotated fixed point combinator.
 
-First we introduce an new fixed combinator that stores an annotation over the
-container data type instead of a value of the data type itself. This type level
-fixed point combinator is called |FixA|, the \emph{alpha} postfix indicates it
-can store arbitrary stacks of annotations at the recursive positions of the
-structure it contains.
+First we introduce an new fixed point combinator that stores an annotation over
+the container data type instead of a value of the data type itself. This type
+level fixed point combinator is called |FixA|, the \emph{alpha} postfix
+indicates it can store arbitrary stacks of annotations at the recursive
+positions of the structure it contains.
 
 \begin{code}
 newtype FixA a f = In { out :: (a f) (FixA a f) }
@@ -201,6 +189,12 @@ additional information but just encapsulates the underlying container type.
 newtype Id f a = Id { unId :: f a }
 \end{code}
 
+%if False
+\begin{code}
+  deriving Show
+\end{code}
+%endif
+
 \noindent
 The identity annotation can be used to get back the regular fixed point
 combinator defined in the previous section by plugging it into a |FixA|.
@@ -216,6 +210,25 @@ similar to |FixA2|, both aliases for the usage of identity annotations.
 \begin{code}
 type Fix1  f =      f   (Fix f)
 type Fix2  f = (Id  f)  (Fix f)
+\end{code}
+
+\noindent
+Using an annotated fixed point |FixA| or using a regular fixed point |Fix| both
+require all sub-structures to be surrounded by an additional |In| constructor.
+To make the usage of plain binary trees more easy we create a |Tree| type
+synonym and two smart constructors: |leaf| and |branch|. Note these function
+run in some context |m|.
+
+\begin{code}
+type Tree v = Fix (Tree_f v)
+\end{code}
+
+\begin{code}
+leaf :: Tree v
+leaf = In (Id Leaf)
+
+branch :: v -> Tree v -> Tree v -> Tree v
+branch v l r = In (Id (Branch v l r))
 \end{code}
 
 \noindent
@@ -322,6 +335,23 @@ For the identity we just use the default implementation.
 instance (Traversable f, AM m) => AnnM Id f m
 \end{code}
 
+\noindent
+Now we have both defined annotated fixed points and a type class to associate
+functionality with these annotations we can create two smart constructors to
+simplify creating annotated trees manually.
+
+\begin{code}
+type TreeA a v = FixA a (Tree_f v)
+\end{code}
+
+\begin{code}
+leafA :: AnnP a (Tree_f v) m => m (TreeA a v)
+leafA = produce Leaf
+
+branchA :: (AnnP a (Tree_f v) m) => v -> TreeA a v -> TreeA a v -> m (TreeA a v)
+branchA v l r = produce (Branch v l r)
+\end{code}
+
 \end{subsection}
 
 \begin{subsection}{Debug annotation}
@@ -336,9 +366,14 @@ First we define the |Debug| data type that is just a |newtype| similar to the
 identity annotation.
 
 \begin{code}
-newtype Debug f c = Debug { unDebug :: f c }
+newtype Debug f c = D { unD :: f c }
+\end{code}
+
+%if False
+\begin{code}
   deriving Show
 \end{code}
+%endif
 
 \noindent
 Now we create a little helper function that can print out a predefined prefix
@@ -360,7 +395,7 @@ unpacking the constructor and printing out the structure we recurse.
 \begin{code}
 instance  (Traversable f, Applicative m, MonadIO m, Show (FixA1 Debug f))
       =>  AnnQ Debug f m where
-  query = printer "query" . unDebug . out
+  query = printer "query" . unD . out
 \end{code}
 
 \noindent
@@ -369,7 +404,7 @@ The same trick can be used for the dual instance |AnnM|.
 \begin{code}
 instance  (Traversable f, Applicative m, MonadIO m, Show (FixA1 Debug f))
       =>  AnnP Debug f m where
-  produce = printer "produce" . In . Debug
+  produce = fmap (In . D) . printer "produce"
 \end{code}
 
 \noindent
@@ -386,7 +421,7 @@ instance for our recursive structures.
 
 \begin{code}
 instance Show (FixA2 a f) => Show (FixA a f) where
-  show = show . out
+  show f = "<" ++ show (out f) ++ ">"
 \end{code}
 
 \noindent
