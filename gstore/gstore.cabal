@@ -21,6 +21,7 @@ Build-Depends:    QuickCheck,
                   transformers,
                   regular,
                   regular-binary,
+                  she,
                   unix
 
 Executable:       main
