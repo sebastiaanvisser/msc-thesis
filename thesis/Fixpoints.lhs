@@ -4,6 +4,7 @@
 %if False
 
 \begin{code}
+{-# OPTIONS_GHC -F -pgmF she #-}
 {-# LANGUAGE KindSignatures, UndecidableInstances #-}
 module Fixpoints where
 
@@ -12,7 +13,6 @@ import Control.Category
 import Control.Monad.Reader hiding (mapM)
 import Data.Foldable
 import Data.Monoid hiding (Endo)
-import Data.Traversable
 import Data.Traversable
 import Prelude hiding ((.), id, mapM)
 import Data.Time.LocalTime
@@ -117,8 +117,8 @@ and perform an actions for each element.
 
 \begin{code}
 instance Traversable (Tree_f v) where
-  traverse _  Leaf            = pure Leaf
-  traverse f  (Branch v l r)  = pure (Branch v) <*> f l <*> f r
+  traverse _  Leaf            = (| Leaf |)
+  traverse f  (Branch v l r)  = (| (Branch v) (f l) (f r) |)
 \end{code}
 
 \noindent

@@ -265,6 +265,11 @@ fromList = apo fromListCoalg
 
 \begin{subsection}{Endomorphic paramorphism}
 
+Both the paramorphisms and the apomorphisms working on annotation had enought
+information to know when to use the |query| or |produce| function to read a
+structure from an annotation or to annotate a new structure. The paramorphism start out with querying the value
+
+
 \begin{code}
 type Endo a f = Psi a f (FixA a f :+: f (FixA a f))
 \end{code}
