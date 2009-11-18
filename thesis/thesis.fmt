@@ -73,6 +73,10 @@
 %format paraMA = "para^m_{\alpha}"
 %format elipses = "\dots"
 
+%format replicateAlg  = "replicate_{alg}"
+%format replicateAlg1 = "replicate_{alg}"
+%format replicateMA = "replicate^m_{\alpha}"
+
 %format Endo    = "\Psi_{endo}"
 %format endoMA  = " endo^m_{\alpha}"
 %format endoMA' = "helper"

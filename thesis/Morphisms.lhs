@@ -3,19 +3,18 @@
 
 %if False
 
-\begin{code}
-{-# LANGUAGE KindSignatures, UndecidableInstances #-}
-module Morphisms where
+> {-# OPTIONS_GHC -F -pgmF she #-}
+> {-# LANGUAGE KindSignatures, UndecidableInstances #-}
+> module Morphisms where
 
-import Control.Applicative
-import Control.Category
-import Control.Monad.Identity
-import Control.Monad.Reader hiding (mapM)
-import System.IO.Unsafe
-import Data.Traversable
-import Prelude hiding ((.), id, mapM, lookup)
-import Fixpoints
-\end{code}
+> import Control.Applicative
+> import Control.Category
+> import Control.Monad.Identity
+> import Control.Monad.Reader hiding (mapM)
+> import System.IO.Unsafe
+> import Data.Traversable
+> import Prelude hiding ((.), id, mapM, lookup)
+> import Fixpoints
 
 %endif
 
@@ -34,9 +33,7 @@ bottom up traversal that can fold an entire structure into a single value.
 We first write down the type signature of the algebra for the paramorphism, we
 call this algebra |Psi1|. 
 
-\begin{code}
-type Psi1 a f r = f (FixA a f :*: r) -> r
-\end{code}
+> type Psi1 a f r = f (FixA a f :*: r) -> r
 
 \noindent
 This type signature describes that an algebra should be able to produce an
@@ -48,15 +45,13 @@ Because the algebra only uses the recursive sub-results and not the original
 sub-structures this algebra is actually a catamorphism, a special case of the
 more general paramorpism.
 
-\begin{code}
-containsAlg :: Ord v => v -> Psi1 a (Tree_f v) Bool
-containsAlg _  Leaf                      = False
-containsAlg v  (Branch c (_, l) (_, r))  = 
-  case v `compare` c of
-    LT  -> l
-    EQ  -> True
-    GT  -> r
-\end{code}
+> containsAlg :: Ord v => v -> Psi1 a (Tree_f v) Bool
+> containsAlg _  Leaf                      = False
+> containsAlg v  (Branch c (_, l) (_, r))  = 
+>   case v `compare` c of
+>     LT  -> l
+>     EQ  -> True
+>     GT  -> r
 
 \noindent
 The paramorphism function performs a bottom up traversal over some |Functor|
@@ -66,11 +61,9 @@ function runs is some monadic context |m| and performs a traversal over some
 annotated structure |FixA a f| using the |AnnQ| type class to perform
 annotation specific computations, hence the $(_{\alpha}^m)$ postfixes.
 
-\begin{code}
-paraMA1 :: AnnQ a f m => Psi1 a f r -> FixA a f -> m r
-paraMA1 psi = return . psi <=< mapM (group (paraMA1 psi)) <=< query
-  where group f c = fmap ((,) c) (f c)
-\end{code}
+> paraMA1 :: AnnQ a f m => Psi1 a f r -> FixA a f -> m r
+> paraMA1 psi = return . psi <=< mapM (group (paraMA1 psi)) <=< query
+>   where group f c = fmap ((,) c) (f c)
 
 \noindent
 The implementation of this generic paramorphism might seem a bit cryptic at
@@ -91,10 +84,8 @@ To illustrate the usage of the |paraMA1| function we apply this paramorphism to
 the |contains| algebra and get back a function that performs a |contains| over
 an annotation binary tree.
 
-\begin{code}
-containsMA :: (Ord v, AnnQ a (Tree_f v) m) => v -> FixA a (Tree_f v) -> m Bool
-containsMA v = paraMA1 (containsAlg v)
-\end{code}
+> containsMA :: (Ord v, AnnQ a (Tree_f v) m) => v -> FixA a (Tree_f v) -> m Bool
+> containsMA v = paraMA1 (containsAlg v)
 
 \noindent
 We can easily test this function in our interactive environment.
@@ -127,29 +118,23 @@ True
 When an annotation does not have any requirements about the type of context to
 run in we can use the |Identity| monad to create a pure paramorphic traversal.
 
-\begin{code}
-paraA1 :: (AnnQ a f Identity, Traversable f) => Psi1 a f c -> FixA a f -> c
-paraA1 psi = runIdentity . paraMA1 psi
-\end{code}
+> paraA1 :: (AnnQ a f Identity, Traversable f) => Psi1 a f c -> FixA a f -> c
+> paraA1 psi = runIdentity . paraMA1 psi
 
 \noindent
 When we further restrict the annotation to be the identity annotation we get
 back a true pure paramorphism functions that works on plain in-memory data
 structures.
 
-\begin{code}
-para1 :: Traversable f => Psi1 Id f c -> Fix f -> c
-para1 psi = paraA1 psi
-\end{code}
+> para1 :: Traversable f => Psi1 Id f c -> Fix f -> c
+> para1 psi = paraA1 psi
 
 \noindent
 To illustrate this pure paramorphism we apply it to the |contains| algebra and
 get back a pure |contains| function.
 
-\begin{code}
-contains :: Ord v => v -> Tree v -> Bool
-contains v = para1 (containsAlg v)
-\end{code}
+> contains :: Ord v => v -> Tree v -> Bool
+> contains v = para1 (containsAlg v)
 
 \end{subsection}
 
@@ -164,9 +149,7 @@ can be used to create lists from a seed value is an example of an anamorphisms.
 The coalgebra for an apomorphism, called |Phi|, takes a seed value of some type
 |s| and should be able to produce an new seed or a recursive structure.
 
-\begin{code}
-type Phi a f s = s -> f (s :+: f (FixA a f))
-\end{code}
+> type Phi a f s = s -> f (s :+: f (FixA a f))
 
 \noindent
 From the type signature of the |Phi| coalgebra it is obvious that it is dual to
@@ -180,14 +163,12 @@ input list. Note that because this coalgebra only produces new seeds (using the
 |Left| constructor) instead of directly creating sub-structures it actually is
 an anamorphism.
 
-\begin{code}
-fromListCoalg :: Phi a (Tree_f k) [k]
-fromListCoalg []      = Leaf
-fromListCoalg (y:ys)  =
-  let  l  = take (length ys `div` 2) ys
-       r  = drop (length l) ys
-  in Branch y (Left l) (Left r)
-\end{code}
+> fromListCoalg :: Phi a (Tree_f k) [k]
+> fromListCoalg []      = Leaf
+> fromListCoalg (y:ys)  =
+>   let  l  = take (length ys `div` 2) ys
+>        r  = drop (length l) ys
+>   in Branch y (Left l) (Left r)
 
 \noindent
 Like the paramorphism we start with an apomorphism that corecursively generates
@@ -195,10 +176,8 @@ an annotated structure in some, possibly monadic, context. We call this
 function |apoMA|. This apomorphism takes a coalgebra |Phi| and some initial
 seed value |s| and uses this to produce an annotated structure |FixA a f|.
 
-\begin{code}
-apoMA :: (Functor m, AnnP a f m) => Phi a f s -> s -> m (FixA a f)
-apoMA phi = produce <=< mapM (apoMA phi `either` produce) . phi
-\end{code}
+> apoMA :: (Functor m, AnnP a f m) => Phi a f s -> s -> m (FixA a f)
+> apoMA phi = produce <=< mapM (apoMA phi `either` produce) . phi
 
 \noindent
 This apomorphism first applies the algebra |phi| to the initial seed value |s|
@@ -213,10 +192,8 @@ structure itself will be supplied with an annotation as well using the
 Now we can apply this to our example coalgebra |fromListCoalg| and get back a
 true fromList function that can be used to produce annotation binary trees.
 
-\begin{code}
-fromListMA :: AnnP a (Tree_f k) m => [k] -> m (FixA a (Tree_f k))
-fromListMA = apoMA fromListCoalg
-\end{code}
+> fromListMA :: AnnP a (Tree_f k) m => [k] -> m (FixA a (Tree_f k))
+> fromListMA = apoMA fromListCoalg
 
 Now we can illustrate the usage of the |fromListMA| function by construction a
 simple binary tree from a two-element lists. Again we constraint the context to
@@ -239,179 +216,214 @@ Like for paramorphisms we can create a specialized version that works for
 annotation types that do not require a context to run in. We use the identity
 monad to get back a pure annotated apomorphism.
 
-\begin{code}
-apoA :: (AnnP a f Identity) => Phi a f s -> s -> FixA a f
-apoA phi = runIdentity . apoMA phi
-\end{code}
+> apoA :: (AnnP a f Identity) => Phi a f s -> s -> FixA a f
+> apoA phi = runIdentity . apoMA phi
 
 \noindent
 Fixing the annotation to be the identity gives us back a pure apomorphism
 working over structure without annotations.
 
-\begin{code}
-apo :: Traversable f => Phi Id f s -> s -> Fix f
-apo phi = apoA phi
-\end{code}
+> apo :: Traversable f => Phi Id f s -> s -> Fix f
+> apo phi = apoA phi
 
+\noindent
 Now we can simply create a pure |fromList| version working on plain binary
 trees without annotations.
 
-\begin{code}
-fromList :: [k] -> Tree k
-fromList = apo fromListCoalg
-\end{code}
+> fromList :: [k] -> Tree k
+> fromList = apo fromListCoalg
 
 \end{subsection}
 
 \begin{subsection}{Endomorphic paramorphism}
 
-Both the paramorphisms and the apomorphisms working on annotation had enought
-information to know when to use the |query| or |produce| function to read a
-structure from an annotation or to annotate a new structure. The paramorphism start out with querying the value
+Both the paramorphisms and the apomorphisms working on annotated structures had
+enought information to know when to use the |query| or |produce| function to
+read a structure from an annotation or to annotate a new structure. The
+paramorphism starts out with querying the value from the annotation before
+applying the algebra. The apomorphism produces an annotation returned by the
+coalgebra.
 
+The algebras as defiend in the previous sections are very general in the sense
+that they can return a value of any result type |r|. Some paramorphisms might
+choose to produce a value that is equal to the input value. An example of such
+an algebra is the |replicate| algebra that replaces every value in a binary
+tree with one and the same value.
 
-\begin{code}
-type Endo a f = Psi a f (FixA a f :+: f (FixA a f))
-\end{code}
+> replicateAlg1 :: Ord v => v -> Psi1 a (Tree_f v) (Fix1 (Tree_f v))
+> replicateAlg1 _    Leaf                     = Leaf
+> replicateAlg1 v (  Branch _ (_, l) (_, r))  = Branch v (In (Id l)) (In (Id r))
 
-\begin{code}
-toEndo :: Functor f => Psi a f (FixA a f) -> Endo a f
-toEndo = fmap' Left
-\end{code}
+\noindent
+The value that gets into the |replicateAlg| is of |FixA1 a (Tree_f v)|
+for some arbitrary annotation. The algebra does not run in any context, and
+should not run in any context, and cannot come up with new annotations. The
+only thing it can do is fix the annotation type to |Id| and return a plain
+binary tree as a result.
+  
+Because the type of |Psi| does not allow the reuse of existing sub-structure
+with annotations in the output we have to create a new type of albera for
+\emph{endomorphic paramorphisms}, paramorphisms for which the result type
+equals the output type.
 
-\begin{code}
-endoMA  :: (Functor m, Lazy m, AnnQ a f m, AnnP a f m)
-        => Endo a f -> FixA a f -> m (FixA a f)
-endoMA psi = endoMA' (return `either` produce) Left psi
-\end{code}
+> type Endo a f = f (FixA a f :*: FixA a f) -> (FixA a f :+: FixA1 a f)
 
-\begin{code}
-endoMA'  :: (Functor m, Lazy m, AnnQ a f m)
-         => (x -> m r) -> (r -> x) -> Psi a f x -> FixA a f -> m r
-endoMA' z y (Alg psi) f = 
-  do  g   <- query f
-      r   <- fmap' y `fmap` mapM (lazy . endoMA' z y (Alg psi)) g
-      z (psi (r, g))
-endoMA' z y (Prj psi) f = fmap' trd3 (endoMA' f0 f1 psi f)
-    where  f0  (a, b, r) = z r >>= \r' -> return (a, b, r')
-           f1  (a, b, r) = (a, b, y r)
-\end{code}
+\noindent
+The |Endo| type is an specialized version of the |Psi| type and describes an
+algbera that returns either an existing fully annotated structure or produces a
+new structure with existing fully annotated sub-structures. 
 
-\begin{code}
-endoM :: (Traversable f, Lazy m, AM m) => Endo Id f -> Fix f -> m (Fix f)
-endoM psi = endoMA psi
-\end{code}
+> endoMA :: AnnM a f m => Endo a f -> FixA a f -> m (FixA a f)
+> endoMA psi = (return `either` produce) . psi <=< mapM (group (endoMA psi)) <=< query
+>   where group f c = fmap ((,) c) (f c)
 
-\begin{code}
-endoA :: (AnnQ a f Identity, AnnP a f Identity) => Endo a f -> FixA a f -> FixA a f
-endoA psi = runIdentity . endoMA psi
-\end{code}
+\noindent
+The only real difference between the |paraMA| and the |endoMA| function is that
+the latter knows it might need to use the |produce| function on the result of
+the algbera |psi|. The |paraMA| function can be used to compute any results
+value from an input structure, even unannotated forms of the input structure.
+The |endoMA| function can be used to compute a fully annotated structure with
+the same type as the input structure.
 
-\begin{code}
-endo :: Traversable f => Endo Id f -> Fix f -> Fix f
-endo psi = runIdentity . endoM psi
-\end{code}
+We can now rewrite the |replicateAlg| algbera to produce annotated structures.
+
+> replicateAlg :: forall a v. Ord v => v -> Endo a (Tree_f v)
+> replicateAlg _    Leaf                     = Right Leaf
+> replicateAlg v (  Branch _ (_, l) (_, r))  = Right (Branch v l r)
+
+\noindent
+Because the |replicateAlg| produces a new structure and does not directly
+resuses pre-annotated sub-structure it uses the |Right| constructor from the
+sum-type. The |endoMA| morphism now know to provide annotations for these new
+structures using the |produce| function.
+
+Combinging the endomorphic paramorphism with the algbera for replication gives
+us back a true replicate function for annotated structures.
+
+> replicateMA :: (Ord v, AnnM a (Tree_f v) m) => v -> FixA a (Tree_f v) -> m (FixA a (Tree_f v))
+> replicateMA v = endoMA (replicateAlg v)
+
+\noindent
+We can now test this function on the result of our prevouis example, the
+|fromListMA [1, 3]|. The result shows a nice debug trace of how the
+|replicateMA| function traverses the binary tree and builds it up again using
+the replicated value.
+
+\begin{verbatim}
+ghci> replicateMA 4 it
+query: Branch 1 <D Leaf> <D (Branch 3 <D Leaf> <D Leaf>)>
+query: Leaf
+produce: Leaf
+query: Branch 3 <D Leaf> <D Leaf>
+query: Leaf
+produce: Leaf
+query: Leaf
+produce: Leaf
+produce: Branch 4 <D Leaf> <D Leaf>
+produce: Branch 4 <D Leaf> <D (Branch 4 <D Leaf> <D Leaf>)>
+<D (Branch 4 <D Leaf> <D (Branch 4 <D Leaf> <D Leaf>)>)>
+\end{verbatim}
+
+\noindent
+Like for regular paramorphisms we can create a specialized version that works for
+annotation types that do not require a context to run in. We use the identity
+monad to get back a pure annotated endomorphic paramorphism.
+
+> endoA :: AnnM a f Identity => Endo a f -> FixA a f -> FixA a f
+> endoA psi = runIdentity . endoMA psi
+
+\noindent
+Fixing the annotation to be the identity gives us back a pure endomorphic
+paramorphism working over structure without annotations.
+
+> endo :: Traversable f => Endo Id f -> Fix f -> Fix f
+> endo psi = endoA psi
 
 \end{subsection}
 
 \begin{subsection}{Endomorphic apomorphisms}
 
-\begin{code}
-type CoEndo a f = f (FixA a f) -> f (FixA a f :+: (FixA a f :+: f (FixA a f)))
-\end{code}
+> type CoEndo a f = f (FixA a f) -> f (FixA a f :+: (FixA a f :+: f (FixA a f)))
 
-\begin{code}
-coendoMA :: (Traversable f, AnnM a f m) => CoEndo a f -> FixA a f -> m (FixA a f)
-coendoMA phi = modify (mapM cont . phi)
-  where
-  cont (Left x)           = coendoMA phi x
-  cont (Right (Left  x))  = return x
-  cont (Right (Right x))  = produce x
-\end{code}
+> coendoMA :: (Traversable f, AnnM a f m) => CoEndo a f -> FixA a f -> m (FixA a f)
+> coendoMA phi = modify (mapM cont . phi)
+>   where
+>   cont (Left x)           = coendoMA phi x
+>   cont (Right (Left  x))  = return x
+>   cont (Right (Right x))  = produce x
 
-\begin{code}
-coendoM :: (Traversable f, AM m) => CoEndo Id f -> Fix f -> m (Fix f) 
-coendoM = coendoMA
-\end{code}
+> coendoM :: (Traversable f, AM m) => CoEndo Id f -> Fix f -> m (Fix f) 
+> coendoM = coendoMA
 
-\begin{code}
-coendoA :: (AnnM a f Identity) => CoEndo a f -> FixA a f -> FixA a f 
-coendoA phi = runIdentity . coendoMA phi
-\end{code}
+> coendoA :: (AnnM a f Identity) => CoEndo a f -> FixA a f -> FixA a f 
+> coendoA phi = runIdentity . coendoMA phi
 
-\begin{code}
-coendo :: Traversable f => CoEndo Id f -> Fix f -> Fix f
-coendo phi = runIdentity . coendoM phi
-\end{code}
+> coendo :: Traversable f => CoEndo Id f -> Fix f -> Fix f
+> coendo phi = runIdentity . coendoM phi
 
 \end{subsection}
 
 \begin{subsection}{Applicative paramorphisms}
 
-\begin{code}
-data Psi (a :: (* -> *) -> * -> *) (f :: * -> *) (r :: *) where
-  Alg  :: ((f r, f (FixA a f)) -> r)  -> Psi a f r
-  Prj  :: Psi a f (r -> s, r, s)      -> Psi a f s
-\end{code}
+> data Psi (a :: (* -> *) -> * -> *) (f :: * -> *) (r :: *) where
+>   Alg  :: ((f r, f (FixA a f)) -> r)  -> Psi a f r
+>   Prj  :: Psi a f (r -> s, r, s)      -> Psi a f s
 
-\begin{code}
-instance Functor f => Functor (Psi a f) where
-  fmap f psi = Prj (pure f <++> psi)
-\end{code}
+> instance Functor f => Functor (Psi a f) where
+>   fmap f psi = Prj (pure f <++> psi)
 
-\begin{code}
-instance Functor f => Applicative (Psi a f) where
-  pure     = Alg . const
-  a <*> b  = Prj (a <++> b)
-\end{code}
+> instance Functor f => Applicative (Psi a f) where
+>   pure     = Alg . const
+>   a <*> b  = Prj (a <++> b)
+
+% endoMA  :: (Functor m, Lazy m, AnnQ a f m, AnnP a f m)
+%         => Endo a f -> FixA a f -> m (FixA a f)
+% endoMA psi = endoMA' (return `either` produce) Left psi
+% 
+% endoMA'  :: (Functor m, Lazy m, AnnQ a f m)
+%          => (x -> m r) -> (r -> x) -> Psi a f x -> FixA a f -> m r
+% endoMA' z y (Alg psi) f = 
+%   do  g   <- query f
+%       r   <- fmap' y `fmap` mapM (lazy . endoMA' z y (Alg psi)) g
+%       z (psi (r, g))
+% endoMA' z y (Prj psi) f = fmap' trd3 (endoMA' f0 f1 psi f)
+%     where  f0  (a, b, r) = z r >>= \r' -> return (a, b, r')
+%            f1  (a, b, r) = (a, b, y r)
+% \end{code}
 
 %if False
 
-\begin{code}
-idPsi :: Functor f => Psi a f (r -> r)
-idPsi = pure id
-\end{code}
+> idPsi :: Functor f => Psi a f (r -> r)
+> idPsi = pure id
 
-\begin{code}
-fst3 :: (a, b, c) -> a
-fst3 (x, _, _) = x
-\end{code}
+> fst3 :: (a, b, c) -> a
+> fst3 (x, _, _) = x
 
-\begin{code}
-snd3 :: (a, b, c) -> b
-snd3 (_, y, _) = y
-\end{code}
+> snd3 :: (a, b, c) -> b
+> snd3 (_, y, _) = y
 
-\begin{code}
-trd3 :: (a, b, c) -> c
-trd3 (_, _, z) = z
-\end{code}
+> trd3 :: (a, b, c) -> c
+> trd3 (_, _, z) = z
 
 %endif
 
-\begin{code}
-(<++>)  :: (Functor f, Functor (Psi a f)) => Psi a f (r -> s) -> Psi a f r -> Psi a f (r -> s, r, s)
-Alg  f <++> Prj  g = Prj (idPsi <++> Alg f) <++> Prj g
-Prj  f <++> Alg  g = Prj f <++> Prj (idPsi <++> Alg g)
-Prj  f <++> Prj  g = fmap' trd3 f <++> fmap' trd3 g 
-Alg  f <++> Alg  g = Alg (\(a, b) -> f (fmap' fst3 a, b) `mk` g (fmap' snd3 a, b))
-  where mk x y = (x, y, x y)
-\end{code}
+> (<++>)  :: (Functor f, Functor (Psi a f)) => Psi a f (r -> s) -> Psi a f r -> Psi a f (r -> s, r, s)
+> Alg  f <++> Prj  g = Prj (idPsi <++> Alg f) <++> Prj g
+> Prj  f <++> Alg  g = Prj f <++> Prj (idPsi <++> Alg g)
+> Prj  f <++> Prj  g = fmap' trd3 f <++> fmap' trd3 g 
+> Alg  f <++> Alg  g = Alg (\(a, b) -> f (fmap' fst3 a, b) `mk` g (fmap' snd3 a, b))
+>   where mk x y = (x, y, x y)
 
-\begin{code}
-paraMA :: (Traversable f, Lazy m, Functor m, AnnQ a f m) => Psi a f r -> FixA a f -> m r
-paraMA (Prj psi) f = fmap' trd3 (paraMA psi f)
-paraMA (Alg psi) f = elipses
-\end{code}
+> paraMA :: (Traversable f, Lazy m, Functor m, AnnQ a f m) => Psi a f r -> FixA a f -> m r
+> paraMA (Prj psi) f = fmap' trd3 (paraMA psi f)
+> paraMA (Alg psi) f = elipses
 
 %if False
 
-\begin{code}
-  where elipses =
-          do g <- query f
-             r <- mapM (lazy . paraMA (Alg psi)) g
-             return (psi (r, g))
-\end{code}
+>   where elipses =
+>           do g <- query f
+>              r <- mapM (lazy . paraMA (Alg psi)) g
+>              return (psi (r, g))
 
 %endif
 
@@ -419,43 +431,29 @@ paraMA (Alg psi) f = elipses
 
 \begin{subsection}{Lazy IO and strict paramorphisms}
 
-\begin{code}
-class Lazy m where
-  lazy :: m a -> m a
-\end{code}
+> class Lazy m where
+>   lazy :: m a -> m a
 
-\begin{code}
-instance Lazy Identity where
-  lazy = id
-\end{code}
+> instance Lazy Identity where
+>   lazy = id
 
-\begin{code}
-instance (AM m, Lazy m) => Lazy (ReaderT r m) where
-  lazy c = ask >>= lift . lazy . runReaderT c
-\end{code}
+> instance (AM m, Lazy m) => Lazy (ReaderT r m) where
+>   lazy c = ask >>= lift . lazy . runReaderT c
 
-\begin{code}
-instance Lazy IO where
-  lazy = unsafeInterleaveIO
-\end{code}
+> instance Lazy IO where
+>   lazy = unsafeInterleaveIO
 
-\begin{code}
-dseq :: a -> a
-\end{code}
+> dseq :: a -> a
 
 %if False
 
-\begin{code}
-dseq = undefined
-\end{code}
+> dseq = undefined
 
 %endif
 
-\begin{code}
-para' :: (Lazy m, AnnQ a f m) => Psi1 a f r -> FixA a f -> m r
-para' psi = fmap' dseq (fix (\pm -> return . psi <=< mapM (group (lazy . pm)) <=< query))
-  where group f c = fmap ((,) c) (f c)
-\end{code}
+> para' :: (Lazy m, AnnQ a f m) => Psi1 a f r -> FixA a f -> m r
+> para' psi = fmap' dseq (fix (\pm -> return . psi <=< mapM (group (lazy . pm)) <=< query))
+>   where group f c = fmap ((,) c) (f c)
 
 \end{subsection}
 
