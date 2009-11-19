@@ -5,8 +5,8 @@
 %format <=<       = "\diamond"
 %format >>=       = "\rightarrowtail"
 %format fixp      = "fix"
-%format "(|"      = "Left("
-%format "|)"      = "Right("
+%format Left      = "L"
+%format Right     = "R"
 
 %format :*: = "\times"
 %format :+: = "+"
@@ -83,6 +83,10 @@
 %format endoM   = "endo^m"
 %format endoA   = "endo_{\alpha}"
 %format endo    = "endo"
+
+%format insertCoalg  = "insert_{coalg}"
+%format insertCoalg1 = "insert_{coalg}"
+%format insertMA     = "insert^m_{\alpha}"
 
 %format CoEndo    = "\Phi_{endo}"
 %format coendoMA  = " coendo^m_{\alpha}"

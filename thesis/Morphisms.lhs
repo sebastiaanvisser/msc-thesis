@@ -238,7 +238,7 @@ trees without annotations.
 \begin{subsection}{Endomorphic paramorphism}
 
 Both the paramorphisms and the apomorphisms working on annotated structures had
-enought information to know when to use the |query| or |produce| function to
+enough information to know when to use the |query| or |produce| function to
 read a structure from an annotation or to annotate a new structure. The
 paramorphism starts out with querying the value from the annotation before
 applying the algebra. The apomorphism produces an annotation returned by the
@@ -343,7 +343,43 @@ paramorphism working over structure without annotations.
 
 \begin{subsection}{Endomorphic apomorphisms}
 
+Similar to the concept of endomorphic paramorphism are the endomorphic
+apomorphisms. Endomorphic paramorphisms are specific apomorphisms in the sense
+that the input seed to produce new structures from is itself of the same
+structure type. Endomorphic apomorphisms working on annotated structures suffer
+from the same problem their paramorphic counterparts, the (co)algberas do not
+have enough information to reason about the annotation type.  This can
+illustrated with the coalgebra for insertion into a binary tree.
+
+> insertCoalg1 :: Ord v => v -> Phi a (Tree_f v) (Fix1 (Tree_f v))
+> insertCoalg1 v s =
+>  case s of
+>    Branch w l r ->
+>      case v `compare` w of
+>        LT  -> Branch w  (Left (unId (out l)))  (Right undefined)
+>        EQ  -> Branch v  (Right undefined)      (Left (unId (out r)))
+>        GT  -> Branch w  (Right undefined)      (Right undefined)
+>    Leaf    -> Branch v  (Right Leaf)           (Right Leaf)
+
+Remeber that the coalgebra for apomorphisms could decide whether to produce a
+new seed or a new sub-structure directly using the |Left| and |Right|
+constructors of the sum datatype. The |undefined| symbols (Haskells
+\emph{undefined}) in the |insertCoalg| are the places that cannot be filled in
+because the coalgebra cannot inspect annotated structures. To allow writing
+proper endomorphic coalgebras for annotated structure we introduce a new
+coalgbera type that can exploit more information.
+
 > type CoEndo a f = f (FixA a f) -> f (FixA a f :+: (FixA a f :+: f (FixA a f)))
+
+The |CoEndo| type signature fixes the input seed to the type of the structure
+that will be produced. The output structure can have three different types of
+value at the sub-positions, hence the nested sum type. 
+
+\begin{itemize}
+\item The first is a new seed to recursively continue.
+\item The second means stopping and reusing pre-annotated structure.
+\item The third means stopping and invention structure with pre-annotated sub-structures.
+\end{itemize}
 
 > coendoMA :: (Traversable f, AnnM a f m) => CoEndo a f -> FixA a f -> m (FixA a f)
 > coendoMA phi = modify (mapM cont . phi)
@@ -352,10 +388,24 @@ paramorphism working over structure without annotations.
 >   cont (Right (Left  x))  = return x
 >   cont (Right (Right x))  = produce x
 
+> insertCoalg :: Ord v => v -> CoEndo a (Tree_f v)
+> insertCoalg v s =
+>   case s of
+>     Branch w l r ->
+>       case v `compare` w of
+>         LT  -> Branch w  (Left l)              (Right (Left r))
+>         EQ  -> Branch v  (Right (Left l))      (Left r)
+>         GT  -> Branch w  (Right (Left l))      (Right (Left r))
+>     Leaf    -> Branch v  (Right (Right Leaf))  (Right (Right Leaf))
+
+
+> insert :: (Ord v, AnnM a (Tree_f v) m) => v -> FixA a (Tree_f v) -> m (FixA a (Tree_f v))
+> insert v = coendoMA (insertCoalg v)
+
 > coendoM :: (Traversable f, AM m) => CoEndo Id f -> Fix f -> m (Fix f) 
 > coendoM = coendoMA
 
-> coendoA :: (AnnM a f Identity) => CoEndo a f -> FixA a f -> FixA a f 
+> coendoA :: AnnM a f Identity => CoEndo a f -> FixA a f -> FixA a f 
 > coendoA phi = runIdentity . coendoMA phi
 
 > coendo :: Traversable f => CoEndo Id f -> Fix f -> Fix f
