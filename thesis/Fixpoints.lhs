@@ -46,7 +46,7 @@ An example of explicit recursion is the following binary tree datatype. This
 binary tree stores both a value and two explicit sub-trees in the branch
 constructor, empty trees are indicated by a leaf.
 
-> data Tree_1 v = Leaf_1 | Branch_1 v (Tree_1 v) (Tree_1 v)
+> data Tree_1 = Leaf_1 | Branch_1 Int Tree_1 Tree_1
 
 \noindent
 To gain more control over the recursive positions of the datatype we can
@@ -54,7 +54,7 @@ parametrize the binary tree with an additional type parameter used at the
 recursive positions. Not the tree datatype itself, but the users of the
 datatype mow decide what values to store as sub-trees.
 
-> data Tree_f v f = Leaf | Branch v f f
+> data Tree_f f = Leaf | Branch Int f f
 >   deriving Show
 
 \noindent
@@ -70,7 +70,7 @@ with its own fixed point.
 By applying the fixed point combinator to the |Tree_f| datatype we get a back a
 real binary tree again with real sub-trees at the recursive positions.
 
-> type Tree_2 v = Fix_1 (Tree_f v)
+> type Tree_2 = Fix_1 Tree_f
 
 \noindent
 To make it easier to deal with the recursive structure of the binary tree we
@@ -78,7 +78,7 @@ can make the |Tree_f| an instance of Haskell's |Functor| type class. The
 functorial |fmap| lifts the function to be applied against the sub-trees of the
 binary tree.
 
-> instance Functor (Tree_f v) where
+> instance Functor Tree_f where
 >   fmap _  Leaf            = Leaf
 >   fmap f  (Branch v l r)  = Branch v (f l) (f r)
 
@@ -91,7 +91,7 @@ and above is able to derive the instances for |Functor|, |Foldable| and
 |Traversable| for you automatically.}. The foldable type class allows us to
 reduce an entire structure into a single value using some |Monoid| operation. 
 
-> instance Foldable (Tree_f v) where
+> instance Foldable Tree_f where
 >   foldMap _  Leaf            = mempty
 >   foldMap f  (Branch _ l r)  = f l `mappend` f r
 
@@ -99,7 +99,7 @@ reduce an entire structure into a single value using some |Monoid| operation.
 The |Traversable| class allows us to traverse the structure from left to right
 and perform an actions for each element.
 
-> instance Traversable (Tree_f v) where
+> instance Traversable Tree_f where
 >   traverse _  Leaf            = (| Leaf |)
 >   traverse f  (Branch v l r)  = (| (Branch v) (f l) (f r) |)
 
@@ -185,12 +185,12 @@ To make the usage of plain binary trees more easy we create a |Tree| type
 synonym and two smart constructors: |leaf| and |branch|. Note these function
 run in some context |m|.
 
-> type Tree v = Fix (Tree_f v)
+> type Tree = Fix Tree_f
 
-> leaf :: Tree v
+> leaf :: Tree
 > leaf = In (Id Leaf)
 
-> branch :: v -> Tree v -> Tree v -> Tree v
+> branch :: Int -> Tree -> Tree -> Tree
 > branch v l r = In (Id (Branch v l r))
 
 \noindent
@@ -200,7 +200,7 @@ tree annotated with the times at which some sub-tree was last modified you
 could write something like this:
 
 > data TimeAnn f a = TA LocalTime (f a)
-> type TimedTree v = FixA TimeAnn (Tree_f v)
+> type TimedTree = FixA TimeAnn Tree_f
 
 \end{subsection}
 
@@ -284,12 +284,12 @@ Now we have both defined annotated fixed points and a type class to associate
 functionality with these annotations we can create two smart constructors to
 simplify creating annotated trees manually.
 
-> type TreeA a v = FixA a (Tree_f v)
+> type TreeA a = FixA a Tree_f
 
-> leafA :: AnnP a (Tree_f v) m => m (TreeA a v)
+> leafA :: AnnP a Tree_f m => m (TreeA a)
 > leafA = produce Leaf
 > 
-> branchA :: (AnnP a (Tree_f v) m) => v -> TreeA a v -> TreeA a v -> m (TreeA a v)
+> branchA :: AnnP a Tree_f m => Int -> TreeA a -> TreeA a -> m (TreeA a)
 > branchA v l r = produce (Branch v l r)
 
 \end{subsection}

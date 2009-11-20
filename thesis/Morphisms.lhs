@@ -45,7 +45,7 @@ Because the algebra only uses the recursive sub-results and not the original
 sub-structures this algebra is actually a catamorphism, a special case of the
 more general paramorpism.
 
-> containsAlg :: Ord v => v -> Psi1 a (Tree_f v) Bool
+> containsAlg :: Int -> Psi1 a Tree_f Bool
 > containsAlg _  Leaf                      = False
 > containsAlg v  (Branch c (_, l) (_, r))  = 
 >   case v `compare` c of
@@ -84,7 +84,7 @@ To illustrate the usage of the |paraMA1| function we apply this paramorphism to
 the |contains| algebra and get back a function that performs a |contains| over
 an annotation binary tree.
 
-> containsMA :: (Ord v, AnnQ a (Tree_f v) m) => v -> FixA a (Tree_f v) -> m Bool
+> containsMA :: AnnQ a Tree_f m => Int -> FixA a Tree_f -> m Bool
 > containsMA v = paraMA1 (containsAlg v)
 
 \noindent
@@ -133,7 +133,7 @@ structures.
 To illustrate this pure paramorphism we apply it to the |contains| algebra and
 get back a pure |contains| function.
 
-> contains :: Ord v => v -> Tree v -> Bool
+> contains :: Int -> Tree -> Bool
 > contains v = para1 (containsAlg v)
 
 \end{subsection}
@@ -163,7 +163,7 @@ input list. Note that because this coalgebra only produces new seeds (using the
 |Left| constructor) instead of directly creating sub-structures it actually is
 an anamorphism.
 
-> fromListCoalg :: Phi a (Tree_f k) [k]
+> fromListCoalg :: Phi a Tree_f [Int]
 > fromListCoalg []      = Leaf
 > fromListCoalg (y:ys)  =
 >   let  l  = take (length ys `div` 2) ys
@@ -192,7 +192,7 @@ structure itself will be supplied with an annotation as well using the
 Now we can apply this to our example coalgebra |fromListCoalg| and get back a
 true fromList function that can be used to produce annotation binary trees.
 
-> fromListMA :: AnnP a (Tree_f k) m => [k] -> m (FixA a (Tree_f k))
+> fromListMA :: AnnP a Tree_f m => [Int] -> m (FixA a Tree_f)
 > fromListMA = apoMA fromListCoalg
 
 Now we can illustrate the usage of the |fromListMA| function by construction a
@@ -230,7 +230,7 @@ working over structure without annotations.
 Now we can simply create a pure |fromList| version working on plain binary
 trees without annotations.
 
-> fromList :: [k] -> Tree k
+> fromList :: [Int] -> Tree
 > fromList = apo fromListCoalg
 
 \end{subsection}
@@ -250,7 +250,7 @@ choose to produce a value that is equal to the input value. An example of such
 an algebra is the |replicate| algebra that replaces every value in a binary
 tree with one and the same value.
 
-> replicateAlg1 :: Ord v => v -> Psi1 a (Tree_f v) (Fix1 (Tree_f v))
+> replicateAlg1 :: Int -> Psi1 a Tree_f (Fix1 Tree_f)
 > replicateAlg1 _    Leaf                     = Leaf
 > replicateAlg1 v (  Branch _ (_, l) (_, r))  = Branch v (In (Id l)) (In (Id r))
 
@@ -287,7 +287,7 @@ the same type as the input structure.
 
 We can now rewrite the |replicateAlg| algbera to produce annotated structures.
 
-> replicateAlg :: forall a v. Ord v => v -> Endo a (Tree_f v)
+> replicateAlg :: Int -> Endo a Tree_f
 > replicateAlg _    Leaf                     = Right Leaf
 > replicateAlg v (  Branch _ (_, l) (_, r))  = Right (Branch v l r)
 
@@ -300,7 +300,7 @@ structures using the |produce| function.
 Combinging the endomorphic paramorphism with the algbera for replication gives
 us back a true replicate function for annotated structures.
 
-> replicateMA :: (Ord v, AnnM a (Tree_f v) m) => v -> FixA a (Tree_f v) -> m (FixA a (Tree_f v))
+> replicateMA :: AnnM a Tree_f m => Int -> FixA a Tree_f -> m (FixA a Tree_f)
 > replicateMA v = endoMA (replicateAlg v)
 
 \noindent
@@ -351,7 +351,7 @@ from the same problem their paramorphic counterparts, the (co)algberas do not
 have enough information to reason about the annotation type.  This can
 illustrated with the coalgebra for insertion into a binary tree.
 
-> insertCoalg1 :: Ord v => v -> Phi a (Tree_f v) (Fix1 (Tree_f v))
+> insertCoalg1 :: Int -> Phi a Tree_f (Fix1 Tree_f)
 > insertCoalg1 v s =
 >  case s of
 >    Branch w l r ->
@@ -388,7 +388,7 @@ value at the sub-positions, hence the nested sum type.
 >   cont (Right (Left  x))  = return x
 >   cont (Right (Right x))  = produce x
 
-> insertCoalg :: Ord v => v -> CoEndo a (Tree_f v)
+> insertCoalg :: Int -> CoEndo a Tree_f
 > insertCoalg v s =
 >   case s of
 >     Branch w l r ->
@@ -399,7 +399,7 @@ value at the sub-positions, hence the nested sum type.
 >     Leaf    -> Branch v  (Right (Right Leaf))  (Right (Right Leaf))
 
 
-> insert :: (Ord v, AnnM a (Tree_f v) m) => v -> FixA a (Tree_f v) -> m (FixA a (Tree_f v))
+> insert :: AnnM a Tree_f m => Int -> FixA a Tree_f -> m (FixA a Tree_f)
 > insert v = coendoMA (insertCoalg v)
 
 > coendoM :: (Traversable f, AM m) => CoEndo Id f -> Fix f -> m (Fix f) 
