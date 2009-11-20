@@ -381,12 +381,8 @@ value at the sub-positions, hence the nested sum type.
 \item The third means stopping and invention structure with pre-annotated sub-structures.
 \end{itemize}
 
-> coendoMA :: (Traversable f, AnnM a f m) => CoEndo a f -> FixA a f -> m (FixA a f)
-> coendoMA phi = modify (mapM cont . phi)
->   where
->   cont (Left x)           = coendoMA phi x
->   cont (Right (Left  x))  = return x
->   cont (Right (Right x))  = produce x
+Using the |CoEndo| type for endomorphic coalgberas we can rewrite the
+|insertCoalg| to take advantage of this and write a true insertion coalgbera.
 
 > insertCoalg :: Int -> CoEndo a Tree_f
 > insertCoalg v s =
@@ -394,22 +390,68 @@ value at the sub-positions, hence the nested sum type.
 >     Branch w l r ->
 >       case v `compare` w of
 >         LT  -> Branch w  (Left l)              (Right (Left r))
->         EQ  -> Branch v  (Right (Left l))      (Left r)
->         GT  -> Branch w  (Right (Left l))      (Right (Left r))
+>         EQ  -> Branch v  (Right (Left l))      (Right (Left r))
+>         GT  -> Branch w  (Right (Left l))      (Left r)
 >     Leaf    -> Branch v  (Right (Right Leaf))  (Right (Right Leaf))
 
+The |coendoMA| function takes a endomorphic coalgbera and an fully annotated
+input structure and produces an fully annotated output structure. Note that
+both the endomorphic paramorphism and the endomorphic apomorphism modify an
+input structure to an output structure of the same type. Where the endomorphic
+paramorphisms takes in input algberas and the endomorphic apomorphisms take
+coalgberas.
+
+> coendoMA :: (Traversable f, AnnM a f m) => CoEndo a f -> FixA a f -> m (FixA a f)
+> coendoMA phi = modify (mapM c . phi)
+>   where
+>   c (Left x)           = coendoMA phi x
+>   c (Right (Left  x))  = return x
+>   c (Right (Right x))  = produce x
+
+The |coendoMA| morphism applies the coalgbera |phi| to the annotated input
+structure throught the use of the |modify| function from the |AnnM| type class.
+The |modify| function makes sure the input structure is queried from the root
+annotation and will be supplied a new annotation after applying the specified
+function. After applying the coalgbera |phi| a case analysis will be done on
+the result. The three possible cases of the nested sum type will be: going into
+corecursion with a new seed value, reusing an existing fully annotated
+structure, or producing a new structure while reusing the fully annotated
+sub-structures.
+
+Combining the endomorphic apomorphism with the endomorphic coalgbera for binary
+tree insertion gives us back a true insert function on annotated binary trees.
 
 > insert :: AnnM a Tree_f m => Int -> FixA a Tree_f -> m (FixA a Tree_f)
 > insert v = coendoMA (insertCoalg v)
 
-> coendoM :: (Traversable f, AM m) => CoEndo Id f -> Fix f -> m (Fix f) 
-> coendoM = coendoMA
+We can test this by inserting the value |0| into the example tree binary tree
+produced before with the |fromList [1, 2]|. The debug trace shows the traversal
+that is being performed.
+
+\begin{verbatim}
+ghci> insert 0 it
+query: Branch 1 <D Leaf> <D (Branch 3 <D Leaf> <D Leaf>)>
+query: Leaf
+produce: Leaf
+produce: Leaf
+produce: Branch 0 <D Leaf> <D Leaf>
+produce: Branch 1 <D (Branch 0 <D Leaf> <D Leaf>)>
+                  <D (Branch 3 <D Leaf> <D Leaf>)>
+<D (Branch 1 <D (Branch 0 <D Leaf> <D Leaf>)>
+             <D (Branch 3 <D Leaf> <D Leaf>)>)>
+\end{verbatim}
+
+\noindent
+And additionally, in the line of the other morphisms defined, two
+specializations of this endomorphic apomorphism. The |coendoA| works for
+annotations not requiring any context, the |coendo| working on pure structures
+not requiring any context or annotation.
 
 > coendoA :: AnnM a f Identity => CoEndo a f -> FixA a f -> FixA a f 
 > coendoA phi = runIdentity . coendoMA phi
 
 > coendo :: Traversable f => CoEndo Id f -> Fix f -> Fix f
-> coendo phi = runIdentity . coendoM phi
+> coendo phi = coendoA phi
 
 \end{subsection}
 
