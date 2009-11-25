@@ -4,7 +4,7 @@
 %if False
 
 > {-# OPTIONS_GHC -F -pgmF she #-}
-> {-# LANGUAGE KindSignatures, UndecidableInstances #-}
+> {-# LANGUAGE UndecidableInstances #-}
 > module Morphisms where
 
 > import Control.Applicative
@@ -12,6 +12,7 @@
 > import Control.Monad.Identity
 > import Control.Monad.Reader hiding (mapM)
 > import System.IO.Unsafe
+> import Data.Foldable
 > import Data.Traversable
 > import Prelude hiding ((.), id, mapM, lookup)
 > import Fixpoints
@@ -457,36 +458,69 @@ not requiring any context or annotation.
 
 \begin{subsection}{Applicative paramorphisms}
 
+When writing modification functions over datatypes using morphisms like the
+ones defined above it is not always easy to compose small functions into bigger
+ones. Combining multilpe algebras into a single one that can be used in a
+single traversal is a well known problem in the world of functional
+programming. Attribute grammar systems can be used to combine different
+algebraic operations into a single tree traversal in an aspect-oriented way.
+
+This section describes a more lightweight and idiomatic approach to algebra
+composition. We make the paramorphic algebra type an instance of where
+Haskell's applicative functors type class.
+
+First we change the type for the algebra |Psi| from a type synonym into a real
+datatype using a GADT. We do so to be able to add additional constructor as we
+will later see is needed for the applicative instance. 
+
 > data Psi (a :: (* -> *) -> * -> *) (f :: * -> *) (r :: *) where
->   Alg  :: ((f r, f (FixA a f)) -> r)  -> Psi a f r
->   Prj  :: Psi a f (r -> s, r, s)      -> Psi a f s
-
-> instance Functor f => Functor (Psi a f) where
->   fmap f psi = Prj (pure f <++> psi)
-
-> instance Functor f => Applicative (Psi a f) where
->   pure     = Alg . const
->   a <*> b  = Prj (a <++> b)
-
-% endoMA  :: (Functor m, Lazy m, AnnQ a f m, AnnP a f m)
-%         => Endo a f -> FixA a f -> m (FixA a f)
-% endoMA psi = endoMA' (return `either` produce) Left psi
-% 
-% endoMA'  :: (Functor m, Lazy m, AnnQ a f m)
-%          => (x -> m r) -> (r -> x) -> Psi a f x -> FixA a f -> m r
-% endoMA' z y (Alg psi) f = 
-%   do  g   <- query f
-%       r   <- fmap' y `fmap` mapM (lazy . endoMA' z y (Alg psi)) g
-%       z (psi (r, g))
-% endoMA' z y (Prj psi) f = fmap' trd3 (endoMA' f0 f1 psi f)
-%     where  f0  (a, b, r) = z r >>= \r' -> return (a, b, r')
-%            f1  (a, b, r) = (a, b, y r)
-% \end{code}
+>   Alg  :: (f (FixA a f, r) -> r)  -> Psi a f r
 
 %if False
 
-> idPsi :: Functor f => Psi a f (r -> r)
-> idPsi = pure id
+>   Prj  :: Psi a f (r -> s, r, s)  -> Psi a f s
+
+%endif
+
+\noindent
+The applicative type class requires us to have a |Functor| instance and to
+implement two functions, |pure| and |<*>|.
+
+\begin{spec}
+class Functor f => Applicative f where
+  pure   :: f a
+  (<*>)  :: f (a -> b) -> f a -> f b
+\end{spec}
+
+\noindent
+When we unify the type |f| with the the |Psi| type we get the following
+function type we have to support when implementing applicative algebras.
+
+\begin{spec}
+Psi c f (a -> b) -> Psi c f a -> Psi c f b
+\end{spec}
+
+\noindent
+From this signature it is clear that combining an algebra that produces a
+function from |a -> b| and an algebra that produces a |a| into an algebra that
+produces only a |b| throws away any information about |a|. Because both the
+function and the argument are needed \emph{in every stage of the traversal} we
+first create a function |<++>| that groups together both the function, the
+argument and the result.
+
+> (<++>) :: Functor f => Psi a f (r -> s) -> Psi a f r -> Psi a f (r -> s, r, s)
+> Alg  f <++> Alg  g = Alg (\x -> f (fmap (fmap fst3) x) `mk` g  (fmap (fmap snd3) x))
+>   where mk x y = (x, y, x y)
+
+%if False
+
+> Prj  f <++> Prj  g = fmap trd3 f <++> fmap trd3 g 
+> Alg  f <++> Prj  g = Prj (pure id <++> Alg f) <++> Prj g
+> Prj  f <++> Alg  g = Prj f <++> Prj (pure id <++> Alg g)
+
+%endif
+
+%if False
 
 > fst3 :: (a, b, c) -> a
 > fst3 (x, _, _) = x
@@ -499,25 +533,77 @@ not requiring any context or annotation.
 
 %endif
 
-> (<++>)  :: (Functor f, Functor (Psi a f)) => Psi a f (r -> s) -> Psi a f r -> Psi a f (r -> s, r, s)
-> Alg  f <++> Prj  g = Prj (idPsi <++> Alg f) <++> Prj g
-> Prj  f <++> Alg  g = Prj f <++> Prj (idPsi <++> Alg g)
-> Prj  f <++> Prj  g = fmap' trd3 f <++> fmap' trd3 g 
-> Alg  f <++> Alg  g = Alg (\(a, b) -> f (fmap' fst3 a, b) `mk` g (fmap' snd3 a, b))
->   where mk x y = (x, y, x y)
+\noindent
+Now we add an additional constructor to the |Psi| datatype that projects the
+last component from the triple algebra created by the |<++>| function. It uses
+the |Psi| GADT to create an existential quantificaiton that hide the type
+variable |r| inside the |Prj| constructor.
 
-> paraMA :: (Traversable f, Lazy m, Functor m, AnnQ a f m) => Psi a f r -> FixA a f -> m r
-> paraMA (Prj psi) f = fmap' trd3 (paraMA psi f)
-> paraMA (Alg psi) f = elipses
+\begin{spec}
+Prj :: Psi a f (r -> s, r, s)  -> Psi a f s
+\end{spec}
+
+\noindent
+The new constructor requires us the to extend the grouping function with the
+three additional cases involving the projection constructor. The implementation
+is quite straightforward but note that it uses the |pure| function from the
+applicative instance we do not yet have defined.
+
+\begin{spec}
+Prj  f <++> Prj  g = fmap trd3 f <++> fmap trd3 g 
+Alg  f <++> Prj  g = Prj (pure id <++> Alg f) <++> Prj g
+Prj  f <++> Alg  g = Prj f <++> Prj (pure id <++> Alg g)
+\end{spec}
+
+\noindent
+With the both the grouping function and the projection function we have enough
+tools to easily create the applicative instance for paramorphic algebras. The
+applicative sequencing is a matter of grouping the input and output information
+together and then only throwing the input types away using the existential from
+the GADT.
+
+> instance Functor f => Applicative (Psi a f) where
+>   pure    = Alg . const
+>   a <*> b = Prj (a <++> b)
+
+\noindent
+We require a |Functor| super instance for this applicative instance which can
+easily be done more or less the same way as the applicative instance by lifting
+the function to fmap using |pure|.
+
+> instance Functor f => Functor (Psi a f) where
+>   fmap f psi = Prj (pure f <++> psi)
+
+Using the applicative instance we can now easily compose multiple algebras into
+one to be able to apply them to an input structure in one traversal. This
+composability can really help us to create more complicated algebras without
+creating very big tuples representing the all the components at once.
+
+Because the algebra type |Psi| has become more complicated the |paraMA| should
+be adapted to be able to produce both |Alg| and |Prj| constructors.
 
 %if False
 
->   where elipses =
->           do g <- query f
->              r <- mapM (lazy . paraMA (Alg psi)) g
->              return (psi (r, g))
+> instance Functor ((,,) a b) where
+>   fmap f (a, b, c) = (a, b, f c)
+
+> instance Foldable ((,,) a b) where
+>   foldMap f (_, _, c) = f c
+
+> instance Traversable ((,,) a b) where
+>   traverse f (a, b, c) = (| ((,,) a b) (f c) |)
 
 %endif
+
+> paraMA :: (Lazy m, AnnQ a f m) =>  Psi a f r -> FixA a f -> m r
+> paraMA (Prj  psi) = fmap trd3 . paraMA psi
+> paraMA (Alg  psi) = return . psi <=< mapM (g (lazy . paraMA (Alg psi))) <=< query
+>   where g f c = fmap ((,) c) (f c)
+
+The implementation of the projection aware |paraMA| is not very exciting and
+quite similar to the |paraMA| defined previously. The only conceptual
+difference is that for the |Prj| constructor the function unpacks the
+existential and recursively applies the paramorphism. 
 
 \end{subsection}
 
@@ -544,7 +630,7 @@ not requiring any context or annotation.
 %endif
 
 > para' :: (Lazy m, AnnQ a f m) => Psi1 a f r -> FixA a f -> m r
-> para' psi = fmap' dseq (fix (\pm -> return . psi <=< mapM (group (lazy . pm)) <=< query))
+> para' psi = fmap dseq (fix (\pm -> return . psi <=< mapM (group (lazy . pm)) <=< query))
 >   where group f c = fmap ((,) c) (f c)
 
 \end{subsection}

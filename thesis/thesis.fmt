@@ -69,7 +69,7 @@
 %format fromListCoalg = "fromList_{coalg}"
 %format fromListMA    = "fromList^m_{\alpha}"
 
-%format <++> = "\oplus"
+%format <++> = "\boxplus"
 %format paraMA = "para^m_{\alpha}"
 %format elipses = "\dots"
 
@@ -94,3 +94,6 @@
 %format coendoA   = "coendo_{\alpha}"
 %format coendo    = "coendo"
 
+%format fst3 = "fst_3"
+%format snd3 = "snd_3"
+%format trd3 = "trd_3"
