@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -F -pgmF she #-}
 module Generics.Morphism.Para where
 
 import Annotation.Annotation
@@ -6,6 +7,7 @@ import Control.Category
 import Control.Monad hiding (mapM)
 import Control.Monad.Identity
 import Control.Monad.Lazy
+import Data.Foldable
 import Data.Traversable
 import Generics.Regular.Seq
 import Generics.Types
@@ -33,6 +35,15 @@ snd3 (_, y, _) = y
 trd3 :: (a, b, c) -> c
 trd3 (_, _, z) = z
 
+instance Functor ((,,) a b) where
+  fmap f (a, b, c) = (a, b, f c)
+
+instance Foldable ((,,) a b) where
+  foldMap f (_, _, c) = f c
+
+instance Traversable ((,,) a b) where
+  traverse f (a, b, c) = (| ((,,) a b) (f c) |)
+
 (<++>) :: (Functor f, Functor (AlgA a f)) => AlgA a f (r -> s) -> AlgA a f r -> AlgA a f (r -> s, r, s)
 Proj f <++> Proj g = fmap trd3 f <++> fmap trd3 g 
 Psi  f <++> Proj g = Proj (pure id <++> Psi f) <++> Proj g
@@ -41,9 +52,9 @@ Psi  f <++> Psi  g = Psi (\x -> f (fmap2 fst3 x) `mk` g (fmap2 snd3 x))
   where mk x y = (x, y, x y)
 
 _para :: (Traversable f, Lazy m, AnnQ a f m) => (x -> m r) -> (r -> x) -> AlgA a f x -> FixA a f -> m r
-_para z y (Proj psi) = fmap trd3 . _para (\(a, b, r) -> z r >>= \r' -> return (a, b, r')) (\(a, b, r) -> (a, b, y r)) psi
-_para z y (Psi psi)  = z . psi <=< mapM (g (fmap y . lazy . _para z y (Psi psi))) <=< runQuery
-  where g f c = fmap ((,) c) (f c)
+_para z y (Proj psi) = fmap trd3 . _para (mapM z) (fmap y) psi
+_para z y (Psi psi)  = z . psi <=< mapM (grp (fmap y . lazy . _para z y (Psi psi))) <=< runQuery
+  where grp f c = fmap ((,) c) (f c)
 
 -- Lazy paramorphism in a monadic context for annotated structures.
 
