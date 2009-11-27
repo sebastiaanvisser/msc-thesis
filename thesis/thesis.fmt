@@ -97,3 +97,10 @@
 %format fst3 = "fst_3"
 %format snd3 = "snd_3"
 %format trd3 = "trd_3"
+
+%format lazyParaMA  = "lazyPara^m_{\alpha}"
+%format containsMA2 = "contains^m_{\alpha}"
+%format dseq1       = "gdseq"
+%format seq1        = "seq"
+%format paraMA'     = "para^m_{\alpha}"
+

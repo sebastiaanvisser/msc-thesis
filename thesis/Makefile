@@ -1,6 +1,7 @@
 DOC=Thesis
 
 all: ${DOC}.pdf
+	open *.pdf
 
 ${DOC}.pdf: \
 	abstract.tex \

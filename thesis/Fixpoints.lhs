@@ -134,6 +134,8 @@ positions of the structure it contains.
 
 > newtype FixA a f = In { out :: (a f) (FixA a f) }
 
+TODO: explain rationale behind newtype FixA a f. Why not just Fix (a f).
+
 \noindent
 Note the kind of the annotation variable |a|, the annotation is applied over
 the original container which has kind |* -> *|, because the annotation itself

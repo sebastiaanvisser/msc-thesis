@@ -25,8 +25,8 @@
   \input{Fixpoints} 
   \pagebreak
   \input{Morphisms} 
-  \pagebreak
-  \input{Example} 
-  \input{Storage} 
+%  \pagebreak
+%  \input{Example} 
+%  \input{Storage} 
 \end{document}
 
