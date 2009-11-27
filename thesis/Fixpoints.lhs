@@ -41,74 +41,107 @@
 
 \begin{subsection}{Fixed points}
 
-In Haskell, most container datatypes are written down with explicit recursion.
-An example of explicit recursion is the following binary tree datatype. This
-binary tree stores both a value and two explicit sub-trees in the branch
-constructor, empty trees are indicated by a leaf.
+\review{
+Most container datatypes in Haskell are written down with explicit recursion.
+An example of a container type using explicit recursion is the following binary
+tree datatype. This binary tree stores both a value and two explicit sub-trees
+in the branch constructor, empty trees are indicated by a leaf.
+}
 
 > data Tree_1 = Leaf_1 | Branch_1 Int Tree_1 Tree_1
 
 \noindent
+\review{
 To gain more control over the recursive positions of the datatype we can
 parametrize the binary tree with an additional type parameter used at the
 recursive positions. Not the tree datatype itself, but the users of the
-datatype mow decide what values to store as sub-trees.
+datatype may now decide what values to store as sub-trees. We call this new
+datatype |Tree_f|, the tree functor.
+}
 
 > data Tree_f f = Leaf | Branch Int f f
 >   deriving Show
 
 \noindent
-To get back a binary tree that is isomorphic to our original binary tree that
-stored actual sub-trees at the recursive points we can use an explicit fixed
-point combinator at the type level. This combinator, conveniently called
-|Fix_1|, takes a type constructor of kind |* -> *| and parametrizes this type
-with its own fixed point.
+\review{
+To get back a binary tree that is isomorphic to our original binary tree, in
+that it stores actual sub-trees at the recursive points, we can use an explicit
+fixed point combinator at the type level. This combinator, conventionally
+called |Fix_1|, takes a type constructor of kind |* -> *| and parametrizes this
+type with its own fixed point. \docite{fixpoint combinator}
+}
 
 > newtype Fix_1 (f :: * -> *) = In_1 { out_1 :: f (Fix_1 f) }
 
 \noindent
-By applying the fixed point combinator to the |Tree_f| datatype we get a back a
-real binary tree again with real sub-trees at the recursive positions.
+\review{
+By applying the fixed point combinator to the tree functor we get a back a true
+binary tree again, with real sub-trees at the recursive positions.
+}
 
 > type Tree_2 = Fix_1 Tree_f
 
 \noindent
+\review{
+We will call datatypes that abstract away from recursion using an additional
+type parameter \emph{open datatypes}.
+}
+
+\review{
 To make it easier to deal with the recursive structure of the binary tree we
-can make the |Tree_f| an instance of Haskell's |Functor| type class. The
-functorial |fmap| lifts the function to be applied against the sub-trees of the
-binary tree.
+can make the tree functor an instance of Haskell's |Functor| type class. The
+functorial |fmap| takes the input function and lifts it to be applied against
+the sub-structures of the binary tree.
+}
 
 > instance Functor Tree_f where
 >   fmap _  Leaf            = Leaf
 >   fmap f  (Branch v l r)  = Branch v (f l) (f r)
 
 \noindent
+\review{
 Besides |Functor| Haskell has two additional type classes that help with
 generic traversals over container data types. These are the |Foldable| and
 |Traversable| type classes\footnote{Note that these type class instances are
 very simple and mechanically derivable. The GHC Haskell compiler version 6.12.1
 and above is able to derive the instances for |Functor|, |Foldable| and
-|Traversable| for you automatically.}. The foldable type class allows us to
+|Traversable| for you automatically.}. The |Foldable| type class allows us to
 reduce an entire structure into a single value using some |Monoid| operation. 
+}
 
 > instance Foldable Tree_f where
 >   foldMap _  Leaf            = mempty
 >   foldMap f  (Branch _ l r)  = f l `mappend` f r
 
 \noindent
-The |Traversable| class allows us to traverse the structure from left to right
-and perform an actions for each element.
+\review{
+The |Traversable| type class, which requires |Foldable| as its super class,
+allows a generic traversal over a structure while performing an actions for
+each element. The actions performed are |Applicative| computations. The
+|Traversable| instance for our binary tree example is a straightforward
+preorder traversal. The actions are written down using idiom brackets.
+\docite{idiom brackets}
+}
 
 > instance Traversable Tree_f where
->   traverse _  Leaf            = (| Leaf |)
->   traverse f  (Branch v l r)  = (| (Branch v) (f l) (f r) |)
+>   traverse _  Leaf            = $< Leaf >$
+>   traverse f  (Branch v l r)  = $< (Branch v) (f l) (f r) >$
 
 \noindent
-The |Traversable| is very useful because it allows us to use the generic
-version of the Prelude's |mapM| function. This function allows us to |fmap| a
-monadic action over a structure and transpose the result:
+\review{
+Having instances of the |Traversable| class around is very useful, because it
+allows us to use the generic version of the Prelude's |mapM| function. This
+function enables us to |fmap| a monadic action over a structure and transpose
+the result.
+}
 
 > mapM1 :: (Traversable f, AM m) => (a -> m b) -> f a -> m (f b)
+
+\noindent
+\review{
+The |mapM1| function can be used to perform a very lightweight form of generic
+programming.
+}
 
 %if False
 
@@ -120,44 +153,48 @@ monadic action over a structure and transpose the result:
 
 \begin{subsection}{Annotations}
 
-In the previous we worked out some basic building blocks that can be useful
-when working with container data types with the recursive point parametrized.
-But why would it be useful to abstract away from the recursive points in the
-first place? This section show how we can store additional information in the
-recursive points using an annotated fixed point combinator.
+\review{
+In the previous section we worked out some basic building blocks that can be
+useful when working with container datatypes which are explicitly parametrized
+with the recursive structures.  But why would it be useful to abstract away
+from recursion in the first place? This section will show how we can store
+additional information at the recursive positions of open datatypes using an
+annotated fixed point combinator.
+}
 
-First we introduce an new fixed point combinator that stores an annotation over
-the container data type instead of a value of the data type itself. This type
-level fixed point combinator is called |FixA|, the \emph{alpha} postfix
-indicates it can store arbitrary stacks of annotations at the recursive
-positions of the structure it contains.
+\review{
+First we introduce a new fixed point combinator that stores an annotation over
+a container data type instead of a datatype directly. This type level fixed
+point combinator is called |FixA|. \footnote{ The |FixA| |newtype| might feel
+redundant at first sight, because we could as well just parametrize the
+original |Fix| with an annotated structure |(a f)|, yielding the same result.
+From the usage of the |FixA| it has become clear that expressing the more
+specific fixed point |Fix| in terms of the more general |FixA| helps us to more
+easily reuse functionality later on.} Throughout this document the \emph{alpha}
+postfix will be used to indicate that a type or a function is annotation aware.
+}
 
 > newtype FixA a f = In { out :: (a f) (FixA a f) }
 
-TODO: explain rationale behind newtype FixA a f. Why not just Fix (a f).
-
 \noindent
-Note the kind of the annotation variable |a|, the annotation is applied over
-the original container which has kind |* -> *|, because the annotation itself
-needs to have the same kind the type variable |a| has kind |(* -> *) -> (* -> *)|.
+\review{
+Note the kind of the annotation variable |a|, the annotation is applied to the
+original container type |f| which has kind |* -> *|. Because the annotation
+itself applied to the container type |f| needs to have the same kind as |f|,
+the variable |a| has kind |(* -> *) -> (* -> *)|.
+}
 
-Sometimes it is easier for functions to work with a structure with fully
-annotated sub-structures. We create a type synonym |FixA1| that represents
-this.
+\review{
+It is now we can very easy to describe a fully annotated binary tree by
+applying the annotated fixed point combinator to the tree functor.
+}
 
-> type FixA1 a f = f (FixA a f)
+> type TreeA a = FixA a Tree_f
 
-\noindent
-Sometimes it is easier for functions to work with a structure with annotated
-fixed points without having the first |In| constructor around, directly
-exposing the annotation value. We use the following type synonym -- which is
-isomorphic to |FixA1| --  for this:
-
-> type FixA2 a f = (a f) (FixA a f)
-
-\noindent
+\review{
 We now introduce the identity annotation, called |Id|, that stores no
 additional information but just encapsulates the underlying container type.
+}
 
 > newtype Id f a = Id { unId :: f a }
 
@@ -168,126 +205,196 @@ additional information but just encapsulates the underlying container type.
 %endif
 
 \noindent
+\review{
 The identity annotation can be used to get back the regular fixed point
 combinator defined in the previous section by plugging it into a |FixA|.
+Because the identity annotation stores no additional information we call a |Fix
+f| structure an unannotated or plain structure.
+}
 
 > type Fix f = FixA Id f
 
 \noindent
-We also introduce a type synonym |Fix1| similar to the |FixA1| and |Fix2|
-similar to |FixA2|, both aliases for the usage of identity annotations.
-
-> type Fix1  f =      f   (Fix f)
-> type Fix2  f = (Id  f)  (Fix f)
-
-\noindent
-Using an annotated fixed point |FixA| or using a regular fixed point |Fix| both
-require all sub-structures to be surrounded by an additional |In| constructor.
-To make the usage of plain binary trees more easy we create a |Tree| type
-synonym and two smart constructors: |leaf| and |branch|. Note these function
-run in some context |m|.
+\review{
+Working with a fully annotated structure using the |FixA| combinator or working
+with a plain structure using |Fix| combinator both require all sub-structures
+to be surrounded by an additional |In| constructor. To make the usage of plain
+binary trees more easy we create a |Tree| type synonym and two smart
+constructors: |leaf| and |branch|. 
+}
 
 > type Tree = Fix Tree_f
-
+>
 > leaf :: Tree
 > leaf = In (Id Leaf)
-
+>
 > branch :: Int -> Tree -> Tree -> Tree
 > branch v l r = In (Id (Branch v l r))
 
+\review{
+Sometimes it is easier for functions to work directly with a structure which
+has fully annotated sub-structures. From now on we will call one single and
+unannotated level of a recursive datatype a \emph{node}, nodes might contain
+zero or more sub-structures. We create a type synonym |FixA1| that represents a
+single node with fully annotated sub-structures.
+}
+
+> type FixA1 a f = f (FixA a f)
+
 \noindent
+\review{
+We also introduce a type synonym |Fix1| similar to the |FixA1|, an alias for
+the usage of a single node containing unannotated sub-structures. Note that
+because the identity annotation does not store any additional information the
+|Fix1| is isomorphic to |Fix|, but might sometimes be more convenient to use.
+}
+
+> type Fix1 f = f (Fix f)
+
+\noindent
+\review{
 The annotated fixed points can be used to store arbitrary pieces of data at the
-recursive points of a recursive structure. For example, when you want a binary
-tree annotated with the times at which some sub-tree was last modified you
-could write something like this:
+recursive positions of a recursive structure. To illustrate this using
+something more interesting than the identity annotation we annotate a binary
+tree with local modification times. In the following example every
+sub-structure will be surrounded with an annotation that stores a Haskell
+|LocalTime|, which might be filled in with the last time a sub-structure was
+modified.
+}
 
 > data TimeAnn f a = TA LocalTime (f a)
 > type TimedTree = FixA TimeAnn Tree_f
 
 \end{subsection}
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 \begin{subsection}{Annotation associated functionality}
 
-In the previous section we showed how to store arbitrary pieces of information
-at the recursive points of a data type. In this section we will show how to
-associate functionality to these annotations. For every annotation type we will
-describe how to obtain an annotation for a certain recursive point, we will
-call this the |produce| function and how to get the recursive structure back
-from the annotation, we call this the |query| function. The following type
-signatures describe these two actions.
+\review{
+In the previous section we have shown how to store arbitrary pieces of
+information at the recursive positions of a datatype. In this section we will
+show how to associate functionality with these annotations. For every
+annotation type we will describe how to obtain an annotation for a previously
+unannotated node and how to get a node out of a fully annotated structure. The
+process of creating new annotations we will call \emph{producing}, the process
+of obtaining a node from an annotation we will call \emph{querying}. The
+following two type signatures describe the produce and query actions.
+}
 
-> type Produce  a f m  =      f (  FixA   a f)   -> m (     FixA   a f)
-
-> type Query    a f m  =           FixA   a f    -> m (f (  FixA   a f))
+> type Produce  a f m  =  f (  FixA   a f)  -> m (     FixA   a f)
+> type Query    a f m  =       FixA   a f   -> m (f (  FixA   a f))
 
 \noindent
-As the type signature shows, a producer will take a structure with an annotated
-substructure and introduces a new annotation for this structure. The function
-might run in some -- possibly monadic -- context |m|, when this is required for
-the annotation. The type signature for queries shows that it will take an
-annotated structure and will use the annotation to give back the structure
-itself. This functions can also run in the context |m|.
+\review{
+As the type signature shows, a producer will take a node with fully annotated
+sub-structures and introduces a new annotation for this node making it a fully
+annotated structure again.  The function might run in some -- possibly monadic
+-- context |m| when this is required for the annotation.  The type signature
+for queries shows that it will take a fully annotated structure and will use
+the annotation to give back an unannotated node with the sub-structures still
+fully annotated.  Like the producer, this functions can also run in some
+context |m|.
+}
 
-Two type classes are used to associate specific functionality to an annotation,
-for queries this class is called |AnnQ|, for producers this class is called
-|AnnM|. They both contains a single function with the type signature defined
-above. The first parameter of the type class |a| is the annotation type, the
-second parameter |f| is the structure to annotate, the third |m| is the context
-it may run in.
+\review{
+Two type classes are used to associate specific functionality to annotations.
+For producers this class is called |AnnP|, for queries this class is called
+|AnnQ|. Both type classes contain a single function with the type signature as
+defined above. The first parameter of the type class, |a|, is the annotation
+type, the second parameter, |f|, is the structure to annotate, the third, |m|,
+is the context it may run in.
+}
 
 > class (Traversable f, AM m) => AnnQ a f m where
 >   query :: Query a f m
-
+>
 > class (Traversable f, AM m) => AnnP a f m where
 >   produce :: Produce a f m
 
 \noindent
-Making an annotation type instance of this class means we can come up with an
-annotation for a structure and can get back to the structure again. Note that
-the |Traversable| and the |Monad| classes in the context are not strictly
-necessary here. These super classes only help to prune the contexts when using
-the |AnnQ| and |AnnM| classes. 
+\review{
+Making an annotation type an instance of these type classes means we can come
+up with an annotation for a structure and we can get back a structure from an
+annotation again.  Note that the |Traversable| and the |Monad| \footnote{In all
+the examples that follow we assume that the occurance of |Monad| in a type
+context also assume the existinence of an |Applicative| instance.  Although
+this assumption is not strictly the case in Haskell it is valid in theory and
+saves us some typing.} classes in the context are not strictly necessary super
+classes here. These constraints only help to prune the contexts when using the
+|AnnQ| and |AnnM| classes, because then |Traversable| and |Monad| are both
+implied.
+}
 
-In all the examples that follow we assume that the notion of |Monad| in
-a type context also assume the existinence of an |Applicative| instance.
-Although this assumption is not strictly the case in Haskell it is valid in
-theory and saves us some typing.
-
-Now the instances for the identity annotation is very easy, we just unpack and
-pack the annotation and strips off or introduces the |In| constructor.
+\review{
+Now we can very easily make the identity annotation an instance of both the
+|AnnP| and |AnnQ| type classes. We just unpack or pack the annotation and strip
+off or introduce the |In| constructor.
+}
 
 > instance (Traversable f, AM m) => AnnQ Id f m where
 >   query = return . unId . out
-
+>
 > instance (Traversable f, AM m) => AnnP Id f m where
 >   produce = return . In . Id
 
 \noindent
-Although redundant in the general case, for possible optimizations we also
-introduce a type class for modification of a sub-structure, called |AnnM|. The
-|modify| function is used to apply a function over an annotated structure.
-There is a default implementation available which is just the Kleisli
-composition (denoted by |<=<|) of the query, the function, and the producer.
+\review{
+Although redundant in the general case, for possible future optimizations we
+also introduce a type class for the modification of a sub-structure, called
+|AnnM|. The |modify| function is used to apply a function over a single node
+within a fully annotated structure.  There is a default implementation
+available which is just the Kleisli composition (denoted by |<=<|) of the
+query, the function, and the producer.
+}
 
-> type Modify   a f m  =   (  f (  FixA   a f)   -> m (f (  FixA   a f)))
->                      ->  (       FixA   a f    -> m (     FixA   a f))
-
+> type Modify a f m = (f (FixA a f) -> m (f (FixA a f))) -> (FixA a f -> m (FixA a f))
+>
 > class (AnnQ a f m, AnnP a f m) => AnnM a f m where
 >   modify :: Modify a f m
 >   modify f = produce <=< f <=< query
 
 \noindent
-For the identity we just use the default implementation.
+\review{
+For the identity annotation we just use the default implementation for |AnnM|.
+}
 
 > instance (Traversable f, AM m) => AnnM Id f m
 
 \noindent
-Now we have both defined annotated fixed points and a type class to associate
-functionality with these annotations we can create two smart constructors to
-simplify creating annotated trees manually.
+\review{
+Now we have defined both annotated fixed points and a type class to associate
+functionality with annotations we can create two smart constructors to simplify
+creating annotated binary trees manually.
+}
 
 > type TreeA a = FixA a Tree_f
-
+>
 > leafA :: AnnP a Tree_f m => m (TreeA a)
 > leafA = produce Leaf
 > 

@@ -3,6 +3,9 @@
 %include polycode.fmt
 \usepackage{amsmath}
 \usepackage{pxfonts}
+% \usepackage[charter]{mathdesign}
+\usepackage[usenames]{color}
+\usepackage{draft}
 
 \title{notitle}
 \author{Sebastiaan Visser}
@@ -19,8 +22,8 @@
 
 \begin{document}
   \tableofcontents
-  \pagebreak
-  \input{Introduction} 
+%  \pagebreak
+%  \input{Introduction} 
   \pagebreak
   \input{Fixpoints} 
   \pagebreak

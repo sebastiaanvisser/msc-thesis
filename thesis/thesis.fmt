@@ -7,6 +7,8 @@
 %format fixp      = "fix"
 %format Left      = "L"
 %format Right     = "R"
+%format $<        = "\llbracket "
+%format >$        = " \rrbracket"
 
 %format :*: = "\times"
 %format :+: = "+"
@@ -43,9 +45,9 @@
 %format AnnP = "Ann_P"
 %format AnnM = "Ann_M"
 
-%format TreeA   = "Tree_{\alpha}"
-%format leafA   = "leaf_{\alpha}"
-%format branchA = "branch_{\alpha}"
+%format TreeA   = "\Varid{Tree_{\alpha}}"
+%format leafA   = "\Varid{leaf_{\alpha}}"
+%format branchA = "\Varid{branch_{\alpha}}"
 
 %format paraMA1 = "para^m_{\alpha}"
 %format paraM1  = "para^m"

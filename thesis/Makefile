@@ -10,7 +10,6 @@ ${DOC}.pdf: \
 	Morphisms.tex \
 	Example.tex \
 	Storage.tex \
-	thesis.fmt \
 	${DOC}.tex
 
 %.tex: %.lhs
