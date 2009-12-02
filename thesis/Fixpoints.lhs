@@ -31,6 +31,8 @@
 
 > class (Applicative m, Monad m) => AM m
 > instance (Applicative m, Monad m) => AM m
+> class (Applicative m, MonadIO m) => AMIO m
+> instance (Applicative m, MonadIO m) => AMIO m
 
 > fixp :: (t -> t) -> t
 > fixp a = a (fixp a)
@@ -38,6 +40,8 @@
 %endif
 
 \begin{section}{Annotated fixed points}
+
+% -----------------------------------------------------------------------------
 
 \begin{subsection}{Fixed points}
 
@@ -124,8 +128,8 @@ preorder traversal. The actions are written down using idiom brackets.
 }
 
 > instance Traversable Tree_f where
->   traverse _  Leaf            = $< Leaf >$
->   traverse f  (Branch v l r)  = $< (Branch v) (f l) (f r) >$
+>   traverse _  Leaf            = (| Leaf |)
+>   traverse f  (Branch v l r)  = (| (Branch v) (f l) (f r) |)
 
 \noindent
 \review{
@@ -150,6 +154,8 @@ programming.
 %endif
 
 \end{subsection}
+
+% -----------------------------------------------------------------------------
 
 \begin{subsection}{Annotations}
 
@@ -217,10 +223,10 @@ f| structure an unannotated or plain structure.
 \noindent
 \review{
 Working with a fully annotated structure using the |FixA| combinator or working
-with a plain structure using |Fix| combinator both require all sub-structures
-to be surrounded by an additional |In| constructor. To make the usage of plain
-binary trees more easy we create a |Tree| type synonym and two smart
-constructors: |leaf| and |branch|. 
+with a plain structure using the |Fix| combinator both require all
+sub-structures to be surrounded by an additional |In| constructor. To make the
+usage of plain binary trees more easy we create a |Tree| type synonym and two
+smart constructors: |leaf| and |branch|. 
 }
 
 > type Tree = Fix Tree_f
@@ -267,32 +273,7 @@ modified.
 
 \end{subsection}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+% -----------------------------------------------------------------------------
 
 \begin{subsection}{Annotation associated functionality}
 
@@ -342,8 +323,8 @@ is the context it may run in.
 Making an annotation type an instance of these type classes means we can come
 up with an annotation for a structure and we can get back a structure from an
 annotation again.  Note that the |Traversable| and the |Monad| \footnote{In all
-the examples that follow we assume that the occurance of |Monad| in a type
-context also assume the existinence of an |Applicative| instance.  Although
+the examples that follow we assume that the occurrence of |Monad| in a type
+context also assume the existence of an |Applicative| instance.  Although
 this assumption is not strictly the case in Haskell it is valid in theory and
 saves us some typing.} classes in the context are not strictly necessary super
 classes here. These constraints only help to prune the contexts when using the
@@ -388,13 +369,11 @@ For the identity annotation we just use the default implementation for |AnnM|.
 
 \noindent
 \review{
-Now we have defined both annotated fixed points and a type class to associate
-functionality with annotations we can create two smart constructors to simplify
-creating annotated binary trees manually.
+Now that we have defined both annotated fixed points and a type class to
+associate functionality with annotations we can create two smart constructors
+to simplify creating annotated binary trees manually.
 }
 
-> type TreeA a = FixA a Tree_f
->
 > leafA :: AnnP a Tree_f m => m (TreeA a)
 > leafA = produce Leaf
 > 
@@ -403,16 +382,22 @@ creating annotated binary trees manually.
 
 \end{subsection}
 
+% -----------------------------------------------------------------------------
+
 \begin{subsection}{Debug annotation}
 
-To demonstrate the usage of generic traversals over annotated structures we
-introduce the |Debug| annotation. In contrast to the identity annotation the
-debug annotation does have associated functionality. We will make sure that the
-debug annotation takes care of printing out every non-recursive piece it
-traverses.
+\review{
+To more clearly demonstrate the usage of generic traversals over annotated
+structures in the next section we first introduce the |Debug| annotation. In
+contrast to the identity the debug annotation does have associated
+functionality. It will print out a trace of every node that gets |produced| or
+|queried|.
+}
 
+\review{
 First we define the |Debug| data type that is just a |newtype| similar to the
 identity annotation.
+}
 
 > newtype Debug f c = D { unD :: f c }
 
@@ -423,10 +408,12 @@ identity annotation.
 %endif
 
 \noindent
+\review{
 Now we create a little helper function that can print out a predefined prefix
-together with the some value and return that value again. Note that function
-does not directly run in the |IO| monad, but in some monad |m| for which there
-is a |MonadIO| instance, making it a bit more generally applicable.
+together with the some value and returns that same value again. Note that
+function does not directly run in the |IO| monad, but in some monad |m| for
+which there is a |MonadIO| instance, making it a bit more generally applicable.
+}
 
 > printer :: (MonadIO m, Show b) => String -> b -> m b
 > printer s f =
@@ -434,39 +421,53 @@ is a |MonadIO| instance, making it a bit more generally applicable.
 >       return f
 
 \noindent
-Now we can supply the |AnnQ| instance for the |Debug| annotation by just
-unpacking the constructor and printing out the structure we recurse.
+\review{
+The |AnnQ| instance for the |Debug| annotation justs unpacks the constructor
+and prints out the node that is queried, including the fully annotated
+sub-structures.
+}
 
-> instance  (Traversable f, Applicative m, MonadIO m, Show (FixA1 Debug f))
->       =>  AnnQ Debug f m where
->   query = printer "query" . unD . out
-
-\noindent
-The same trick can be used for the dual instance |AnnM|.
-
-> instance  (Traversable f, Applicative m, MonadIO m, Show (FixA1 Debug f))
->       =>  AnnP Debug f m where
->   produce = fmap (In . D) . printer "produce"
+> instance  (Traversable f, AMIO m, Show (FixA1 Debug f))
+>       =>  AnnQ Debug f m
+>    where  query = printer "query" . unD . out
 
 \noindent
+\review{
+The same trick can be done for the dual instance |AnnP|. This function adds the
+|In| and |D| constructors and also prints out the node that is being produced.
+}
+
+> instance  (Traversable f, AMIO m, Show (FixA1 Debug f))
+>       =>  AnnP Debug f m
+>    where  produce = fmap (In . D) . printer "produce"
+
+\noindent
+\review{
 For the |AnnM| we use the default implementation.
+}
 
-> instance  (Traversable f, Applicative m, MonadIO m, Show (FixA1 Debug f))
+> instance  (Traversable f, AMIO m, Show (FixA1 Debug f))
 >       =>  AnnM Debug f m
 
 \noindent
-In order to get these function to work properly we additionally need a |Show|
-instance for our recursive structures.
+\review{
+In order to get the above class instances to work properly we additionally need
+a |Show| instance for our recursive structures. We represent the |In|
+constructor by surrounding recursive structures with triangular brackets.
+}
 
-> instance Show (FixA2 a f) => Show (FixA a f) where
+> instance Show ((a f) (FixA a f)) => Show (FixA a f) where
 >   show f = "<" ++ show (out f) ++ ">"
 
 \noindent
+\review{
 In the next chapters we will see how we can use the |Debug| annotation to print
 out debug traces of generic traversals over annotated structures. Printing out
 debug traces is just one example of what you can do with the annotation type
-classes, in chapter TODO we will show how to use the same trick to store and
-retrieve annotated structures on and from disk.
+classes. In section \todo{ref to section} we will show how to use the same
+annotation type classes to store and retrieve annotated structures to and from
+disk.
+}
 
 \end{subsection}
 
