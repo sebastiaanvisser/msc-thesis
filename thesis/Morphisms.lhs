@@ -24,28 +24,39 @@
 
 \begin{subsection}{Paramorphisms}
 
-Now we have a way to associate functionality with annotations we should able to
-write operations over our annotated structures -- like the binary tree example
--- and perform actions each time we would normally go directly into recursion.
-To generalize this pattern we abstract away from recursion when writing the
-structure-processing algorithms using morphisms. We start out with the
-\emph{paramorphism}, which is a generalization of the \emph{catamorphism}, a
-bottom up traversal that can fold an entire structure into a single value.
+\review{
+Now that we have a way to associate functionality with annotations we should be
+able to write operations over our annotated structures and perform actions each
+time we would normally go directly into recursion.  To generalize this pattern
+we abstract away from recursion when writing the structure-processing
+algorithms and use \emph{morphisms}. We start out with the \emph{paramorphism},
+which is a generalization of the \emph{catamorphism}, a bottom up traversal
+that can fold an entire structure into a single value. \docite{paramorphisms}
+}
 
-We first write down the type signature of the algebra for the paramorphism, we
+\review{
+We first write down the type signature of the algebra for paramorphisms, we
 call this algebra |Psi1|. 
+}
 
 > type Psi1 a f r = f (FixA a f :*: r) -> r
 
 \noindent
-This type signature describes that an algebra should be able to produce an
-value of type |r| from one non-recursive pieces of a recursive structure, all
-the recursive sub-results of the computation and the original sub-structures.
+\review{
+This type signature describes an algebra that should be able to produce an
+value of type |r| from one single node containing both the fully annotated
+sub-structures \emph{and} the recursive results of the paramorphic computation.
+}
 
-An example of such an algebra is the |containsAlg| function for binary trees.
-Because the algebra only uses the recursive sub-results and not the original
-sub-structures this algebra is actually a catamorphism, a special case of the
-more general paramorpism.
+\review{
+An example of such an algebra is the function |containsAlg| for binary
+trees.\footnote{Note that because the |containsAlg| algebra only uses the
+recursive sub-results and not the original sub-structures this algebra is
+actually a catamorphism, a special case of the more general paramorphism.
+Because all catamorphisms are paramorphisms this does not invalidate the
+example.} This algebra describes a recursive traversal over a binary tree that
+checks whether a certain integer value is included in the tree or not.
+}
 
 > containsAlg :: Int -> Psi1 a Tree_f Bool
 > containsAlg _  Leaf                      = False
@@ -56,44 +67,57 @@ more general paramorpism.
 >     GT  -> r
 
 \noindent
-The paramorphism function performs a bottom up traversal over some |Functor|
-and for every non-recursive piece applies the algebra. The most generic version
-of this paramorphism within our annotation framework is the |paraMA1|. This
-function runs is some monadic context |m| and performs a traversal over some
-annotated structure |FixA a f| using the |AnnQ| type class to perform
-annotation specific computations, hence the $(_{\alpha}^m)$ postfixes.
+\review{
+The paramorphism function performs a bottom up traversal over some
+|Traversable| |Functor| and for every node applies the algebra, the result of
+the algebra will be returned. The most generic version of this paramorphism
+within our framework is the |paraMA1|.  This function runs is some monadic
+context |m| and performs a traversal over some annotated structure |FixA a f|
+using the |AnnQ| type class to perform annotation specific queries.
+}
 
 > paraMA1 :: AnnQ a f m => Psi1 a f r -> FixA a f -> m r
 > paraMA1 psi = return . psi <=< mapM (group (paraMA1 psi)) <=< query
 >   where group f c = fmap ((,) c) (f c)
 
-\noindent
+\review{
+From now on the $(_{\alpha}^m)$ postfix will be used to indicate that a
+function requires a context and works on annotated strucutres.
+}
+
+\review{
 The implementation of this generic paramorphism might seem a bit cryptic at
 first sight, this is due to its very generic behaviour. Quickly summarized this
-function performs a bottom up traversal over a recursively annotation
-structure. This functions gets a fully annotated structure as input and uses
-the |query| function to get the original structure out of the annotation. The
-|Traversable| instance that is an implicit super class of the |AnnQ| class
-allows us to use the |mapM| function to recursively apply this |paraMA1|
-function to the sub-structures to come up with the sub-results.  The
-sub-results will be grouped together with the original sub-structures these
-results are computed from. The original non-recursive piece of the input with
-these grouped results in as the values will be passed into the algebra |psi|.
-The algebra can now compute the result value for one level of the recursive
-computation. 
+function performs a bottom-up traversal over a recursive structure like our
+binary tree example.  As input it receives a fully annotated structure and it
+uses the |query| function to get a true node out of the annotation.  The
+|Traversable| instance, which is an implicit super class of the |AnnQ| class,
+allows us to use the |mapM| function to recursively apply the |paraMA1|
+function to the sub-structures. This recursive invocation is used to come up
+with the sub-results.  The sub-results will be grouped together with the
+original sub-structures these results are computed from. The original input
+node with these grouped results as the values will be passed into the algebra
+|psi|.  The algebra can now compute the result value for one level of the
+recursive computation, possible using the results of deeper traversals.
+}
 
-To illustrate the usage of the |paraMA1| function we apply this paramorphism to
-the |contains| algebra and get back a function that performs a |contains| over
-an annotation binary tree.
+\review{
+To illustrate the usage of the |paraMA1| function we apply it to the
+|containsAlg| algebra and get back a true function that performs a containment
+check over a fully annotation binary tree.
+}
 
 > containsMA :: AnnQ a Tree_f m => Int -> FixA a Tree_f -> m Bool
 > containsMA v = paraMA1 (containsAlg v)
 
 \noindent
-We can easily test this function in our interactive environment.
-We first manually constructi a binary tree and constraining this to the |IO|
-context and |Debug| annotation. While constructing the annotation prints out a
-debug trace of all sub-structures being produced, exactly as defined.
+\review{
+We can easily test this function in the interactive environment of the GHC
+compiler.  We first manually construct a binary tree and constrain this to the
+|IO| context and |Debug| annotation. While the binary tree is being
+constructed, using our previously defined smart constructors, the debug
+annotation prints out a trace of all nodes being produced.
+}
 
 \begin{verbatim}
 ghci> join (branchA 3 <$> leafA <*> leafA) :: IO (TreeA Debug)
@@ -103,10 +127,13 @@ produce: Branch 3 <D Leaf> <D Leaf>
 <D Branch 3 <D Leaf> <D Leaf>>
 \end{verbatim}
 
+\noindent
+\review{
 Now we can apply the |containsMA| function to the resulting binary tree and
-check for the existinence of a |Branch| with value |True|. While running this
-function the annotation print out a trace of all sub-structures being read from
-the debug annotation.
+check for the existence of a |Branch| with value |3|. While running this
+function the debug annotation prints out a trace of all sub-structures being
+queried.
+}
 
 \begin{verbatim}
 ghci> containsMA 3 it
@@ -116,30 +143,39 @@ query: Leaf
 True
 \end{verbatim}
 
-Note that the paramorphism is as strict as the context it runs in. This means
-that when because the |Debug| annotation requires the |IO| monad to run in the
-containsMA function seems more strict then neccesairy. In chapter TODO we will
-describe a method to gain more lazyness for paramorphism running in strict
-contexts.
-
 \noindent
+\review{
+Note that the paramorphic traversal is as strict as the context it runs in.
+This means that because the |Debug| annotation requires the |IO| monad the
+|containsMA| function becomes more strict then necessary. In section
+\todo{section} we will describe a method to regain laziness for paramorphisms
+running in strict contexts.
+}
+
+\review{
+The paramorphism we have defined above is generic in the sense that it works
+on structures with arbitrary annotations that run in an arbitrary context.
 When an annotation does not have any requirements about the type of context to
 run in we can use the |Identity| monad to create a pure paramorphic traversal.
+}
 
 > paraA1 :: (AnnQ a f Identity, Traversable f) => Psi1 a f c -> FixA a f -> c
 > paraA1 psi = runIdentity . paraMA1 psi
 
 \noindent
+\review{
 When we further restrict the annotation to be the identity annotation we get
-back a true pure paramorphism functions that works on plain in-memory data
-structures.
+back a pure paramorphism that works on plain unannotated structures.
+}
 
 > para1 :: Traversable f => Psi1 Id f c -> Fix f -> c
 > para1 psi = paraA1 psi
 
 \noindent
-To illustrate this pure paramorphism we apply it to the |contains| algebra and
-get back a pure |contains| function.
+\review{
+To illustrate this pure paramorphism we apply it to the |containsAlg| algebra
+and get back a pure |contains| function.
+}
 
 > contains :: Int -> Tree -> Bool
 > contains v = para1 (containsAlg v)
@@ -148,28 +184,38 @@ get back a pure |contains| function.
 
 \begin{subsection}{Apomorphisms}
 
-Dual to the paramorphism is the apomorphisms. Where the paramorphism abstract
-away from recursion, the apomorphisms abstracts away from corecursion.
-Similarly, apomorphisms use coalgebras to describe corecursive operations.
-Apomorphisms are generalizations of anamorphisms, the |unfold| function that
-can be used to create lists from a seed value is an example of an anamorphisms.
+\review{
+Dual to the paramorphism is the \emph{apomorphism}. Where the paramorphism
+abstract away from recursion, the apomorphisms abstracts away from corecursion.
+\docite{apomorphisms} Similarly, where paramorphisms use algebras to describe
+recursive operations, apomorphisms use coalgebras to describe corecursive
+operations. Apomorphisms are generalizations of the more well known
+\emph{anamorphisms}. The standard Haskell function |unfold|, which can be used
+to create lists from a seed value, is an example of an anamorphisms.
+}
 
+\review{
 The coalgebra for an apomorphism, called |Phi|, takes a seed value of some type
-|s| and should be able to produce an new seed or a recursive structure.
+|s| and should be able to produce a node containing either a new seed or a
+new recursive structure.
+}
 
-> type Phi a f s = s -> f (s :+: f (FixA a f))
+> type Phi a f s = s -> f (s :+: FixA a f)
 
 \noindent
+\review{
 From the type signature of the |Phi| coalgebra it is obvious that it is dual to
 the |Psi| algebra for paramorphisms. Paramorphisms destruct recursive
 structures to some result value |r|, apomorphisms construct recursive
 structures from some seed value |s|.
+}
 
-To illustrate the usage of this coalgebra we define the function
-|fromListCoalg| that describeds how to create a balanced binary tree from an
-input list. Note that because this coalgebra only produces new seeds (using the
-|Left| constructor) instead of directly creating sub-structures it actually is
-an anamorphism.
+To illustrate the usage of coalgebras we define the function |fromListCoalg|
+that describes how to create a balanced binary tree from an input list of
+integer values. \footnote{Note that because the |fromListCoalg| coalgebra only
+produces new seeds, using the |Left| constructor, instead of directly producing
+sub-structures it is actually an anamorphism. Because all anamorphisms are
+apomorphisms this does not invalidate the example.} 
 
 > fromListCoalg :: Phi a Tree_f [Int]
 > fromListCoalg []      = Leaf
@@ -185,7 +231,7 @@ function |apoMA|. This apomorphism takes a coalgebra |Phi| and some initial
 seed value |s| and uses this to produce an annotated structure |FixA a f|.
 
 > apoMA :: AnnP a f m => Phi a f s -> s -> m (FixA a f)
-> apoMA phi = produce <=< mapM (apoMA phi `either` produce) . phi
+> apoMA phi = produce <=< mapM (apoMA phi `either` return) . phi
 
 \noindent
 This apomorphism first applies the algebra |phi| to the initial seed value |s|
@@ -359,6 +405,8 @@ from the same problem their paramorphic counterparts, the (co)algberas do not
 have enough information to reason about the annotation type.  This can
 illustrated with the coalgebra for insertion into a binary tree.
 
+\todo{this example might be a bit to undefined}
+
 > insertCoalg1 :: Int -> Phi a Tree_f (Fix1 Tree_f)
 > insertCoalg1 v s =
 >  case s of
@@ -367,7 +415,7 @@ illustrated with the coalgebra for insertion into a binary tree.
 >        LT  -> Branch w  (Left (unId (out l)))  (Right undefined)
 >        EQ  -> Branch v  (Right undefined)      (Left (unId (out r)))
 >        GT  -> Branch w  (Right undefined)      (Right undefined)
->    Leaf    -> Branch v  (Right Leaf)           (Right Leaf)
+>    Leaf    -> Branch v  (Right undefined)      (Right undefined)
 
 Remeber that the coalgebra for apomorphisms could decide whether to produce a
 new seed or a new sub-structure directly using the |Left| and |Right|
@@ -616,7 +664,7 @@ existential and recursively applies the paramorphism.
 
 \begin{subsection}{Lazy IO and strict paramorphisms}
 
-As decribed in chapter TODO. 
+As decribed in section TODO. 
 
 The |paraMA| function implemented earlier is as strict as the context it is
 executed in. The context is dependent on the annotation type, for example, the

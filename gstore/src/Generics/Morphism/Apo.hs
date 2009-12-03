@@ -11,12 +11,12 @@ import Generics.Types
 import Prelude hiding ((.), id, mapM)
 
 data CoalgA (a :: (* -> *) -> * -> *) (f :: * -> *) (s :: *) where
-  Phi :: (s -> f (s :+: f (FixA a f))) -> CoalgA a f s
+  Phi :: (s -> f (s :+: FixA a f)) -> CoalgA a f s
 
 type Coalg s f = forall a. CoalgA a f s
 
 apoMA :: (Traversable f, AnnM a f m) => CoalgA a f s -> s -> m (FixA a f)
-apoMA (Phi phi) = runProduce <=< mapM (apoMA (Phi phi) `either` runProduce) . phi
+apoMA (Phi phi) = runProduce <=< mapM (apoMA (Phi phi) `either` return) . phi
 
 apoM :: (Traversable f, AnnM Id f m) => CoalgA Id f s -> s -> m (Fix f)
 apoM = apoMA
