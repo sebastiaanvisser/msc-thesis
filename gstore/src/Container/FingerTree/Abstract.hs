@@ -73,8 +73,14 @@ node1 a = HIn (Node1 a)
 node2 :: Node a c -> Node a c -> Node a (S c)
 node2 a b = HIn (Node2 a b)
 
+digit2 :: Node a c -> Node a c -> Digit a (S c)
+digit2 a b = digit (node2 a b)
+
 node3 :: Node a c -> Node a c -> Node a c -> Node a (S c)
 node3 a b c = HIn (Node3 a b c)
+
+digit3 :: Node a c -> Node a c -> Node a c -> Digit a (S c)
+digit3 a b c = digit (node3 a b c)
 
 node4 :: Node a c -> Node a c -> Node a c -> Node a c -> Digit a (S c)
 node4 a b c d = HIn (Node4 a b c d)
@@ -115,23 +121,23 @@ instance HTraversable (Tree a) where
 infixr 5 <|
 
 (<|) :: Node a c -> Spine a (S c) -> Spine a (S c)
-a <| (HIn (Deep (            HIn (Node1 b      ))   m sf)) = deep   (digit (node2 a b    )) m                  sf
-a <| (HIn (Deep (HIn (Digit (HIn (Node2 b c    )))) m sf)) = deep   (digit (node3 a b c  )) m                  sf
-a <| (HIn (Deep (HIn (Digit (HIn (Node3 b c d  )))) m sf)) = deep          (node4 a b c d ) m                  sf
-a <| (HIn (Deep (            HIn (Node4 b c d e))   m sf)) = deep   (digit (node2 a b    )) (node3 c d e <| m) sf
-a <| (HIn (Single b                                     )) = deep   (node1 a)               empty_             b
-a <| (HIn  Empty                                         ) = single (node1 a)
+a <| (HIn (Deep (            HIn (Node1 b      ))   m sf)) = deep   (digit2 a b    ) m                  sf
+a <| (HIn (Deep (HIn (Digit (HIn (Node2 b c    )))) m sf)) = deep   (digit3 a b c  ) m                  sf
+a <| (HIn (Deep (HIn (Digit (HIn (Node3 b c d  )))) m sf)) = deep   (node4  a b c d) m                  sf
+a <| (HIn (Deep (            HIn (Node4 b c d e))   m sf)) = deep   (digit2 a b    ) (node3 c d e <| m) sf
+a <| (HIn (Single b                                     )) = deep   (node1  a)       empty_             b
+a <| (HIn  Empty                                         ) = single (node1  a)
 _ <| x                                                     = x
 
 infixr 5 |>
 
 (|>) :: Spine a (S c) -> Node a c -> Spine a (S c)
-(HIn (Deep pr m (            HIn (Node1       b  )))) |> a = deep   pr m                  (digit (node2     b a))
-(HIn (Deep pr m (HIn (Digit (HIn (Node2     c b)))))) |> a = deep   pr m                  (digit (node3   c b a))
-(HIn (Deep pr m (HIn (Digit (HIn (Node3   d c b)))))) |> a = deep   pr m                  (       node4 d c b a)
-(HIn (Deep pr m (HIn             (Node4 e d c b  )))) |> a = deep   pr (node3 e d c <| m) (digit (node2 b a    ))
-(HIn (Single b                                     )) |> a = deep   b  empty_             (node1 a)
-(HIn  Empty                                         ) |> a = single (node1 a)
+(HIn (Deep pr m (            HIn (Node1       b  )))) |> a = deep   pr m                  (digit2     b a)
+(HIn (Deep pr m (HIn (Digit (HIn (Node2     c b)))))) |> a = deep   pr m                  (digit3   c b a)
+(HIn (Deep pr m (HIn (Digit (HIn (Node3   d c b)))))) |> a = deep   pr m                  (node4  d c b a)
+(HIn (Deep pr m (HIn             (Node4 e d c b  )))) |> a = deep   pr (node3 e d c <| m) (digit2     b a)
+(HIn (Single b                                     )) |> a = deep   b  empty_             (node1        a)
+(HIn  Empty                                         ) |> a = single                       (node1        a)
 x |> _                                                     = x
 
 (|<|) :: [Value a] -> FingerTree a -> FingerTree a
