@@ -1,8 +1,9 @@
+{-# LANGUAGE DeriveFunctor #-}
 module Generics.Types where
 
 import Control.Applicative
 import Data.Monoid
-import Prelude hiding (sum)
+import Prelude
 
 -- Sum and product types. Just like Either and (,).
 
@@ -42,9 +43,28 @@ type Fix  f = FixA Id f
 type Fix1 f = f (FixA Id f)
 type Fix2 f = Id f (FixA Id f)
 
+-- Constant functor.
+
+newtype K h a = K { unK :: h }
+  deriving Monoid
+
+-- Functor composition.
+
+infixl 2 :.:
+data (f :.: g) a = C { unC :: f (g a) }
+  deriving Functor
+
+instance (Applicative f, Applicative g) => Applicative (f :.: g) where
+  pure        = C . pure . pure
+  C a <*> C b = C ((<*>) <$> a <*> b)
+
 -- Naturial transformation.
 
-type Nat f g = forall a. f a -> g a
+infixl 1 :~>
+type f :~> g = forall a. f a -> g a
+
+infixl 2 ::~>
+type f ::~> b = forall a. f a -> b
 
 -- Higher order identity annotation.
 
@@ -64,13 +84,19 @@ newtype HFixA -- (a  :: ((* -> *) -> * -> *) -> ((* -> *) -> * -> *))
 -- type HFix h ix = HFixA HId h ix
 
 class HFunctor h where
-  hfmap :: (forall a. ix a -> jx a) -> h ix b -> h jx b
+  hfmap :: (a :~> b) -> h a :~> h b
+
+instance Functor f => HFunctor ((:.:) f) where
+  hfmap f = C . fmap f . unC
 
 class HFoldable h where
-  hfoldMap :: Monoid m => (forall a. ix a -> m) -> h ix b -> m
+  hfoldMap :: Monoid m => (a ::~> m) -> h a ::~> m
 
 class (HFunctor h, HFoldable h) => HTraversable h where
-  htraverse :: Applicative f => (forall a. ix a -> f (jx a)) -> h ix b -> f (h jx b)
+  htraverse :: Applicative f => (a :~> f :.: b) -> (h a :~> f :.: h b)
+
+hfold :: HFunctor f => f g :~> g -> HFixA f :~> g
+hfold f (HIn u) = f (hfmap (hfold f) u)
 
 -- Fixed point combinator for nested data types with regular nesting.
 

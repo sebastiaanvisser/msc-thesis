@@ -108,15 +108,15 @@ instance HFoldable (Tree a) where
   hfoldMap f (Digit4 a b c d) = mconcat [f a, f b, f c, f d]
 
 instance HTraversable (Tree a) where
-  htraverse _ Empty            = pure Empty
-  htraverse f (Single a)       = Single <$> f a
-  htraverse f (Deep a c b)     = Deep <$> f a <*> f c <*> f b
-  htraverse f (Digit a)        = Digit <$> f a
-  htraverse _ (Value a)        = pure (Value a)
-  htraverse f (Digit1 a)       = Digit1 <$> f a
-  htraverse f (Node2 a b)      = Node2 <$> f a <*> f b
-  htraverse f (Node3 a b c)    = Node3 <$> f a <*> f b <*> f c
-  htraverse f (Digit4 a b c d) = Digit4 <$> f a <*> f b <*> f c <*> f d
+  htraverse _ Empty            = C (pure Empty)
+  htraverse f (Single a)       = C (Single <$> unC (f a))
+  htraverse f (Deep a c b)     = C (Deep <$> unC (f a) <*> unC (f c) <*> unC (f b))
+  htraverse f (Digit a)        = C (Digit <$> unC (f a))
+  htraverse _ (Value a)        = C (pure (Value a))
+  htraverse f (Digit1 a)       = C (Digit1 <$> unC (f a))
+  htraverse f (Node2 a b)      = C (Node2  <$> unC (f a) <*> unC (f b))
+  htraverse f (Node3 a b c)    = C (Node3  <$> unC (f a) <*> unC (f b) <*> unC (f c))
+  htraverse f (Digit4 a b c d) = C (Digit4 <$> unC (f a) <*> unC (f b) <*> unC (f c) <*> unC (f d))
 
 infixr 5 <|
 
@@ -127,7 +127,7 @@ a <| (HIn (Deep (HIn (Digit (HIn (Node3  b c d  )))) m sf)) = deep   (digit4 a b
 a <| (HIn (Deep (            HIn (Digit4 b c d e))   m sf)) = deep   (digit2 a b    ) (node3 c d e <| m) sf
 a <| (HIn (Single b                                      )) = deep   (digit1 a)       empty_             b
 a <| (HIn  Empty                                          ) = single (digit1 a)
-_ <| x                                                     = x
+_ <| x                                                      = x
 
 infixr 5 |>
 
