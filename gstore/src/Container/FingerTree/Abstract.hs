@@ -1,8 +1,13 @@
 {-# LANGUAGE
-    TemplateHaskell
-  , DeriveFunctor
+    DeriveFunctor
   , DeriveFoldable
+  , TypeOperators
   , DeriveTraversable
+  , RankNTypes
+  , KindSignatures
+  , GADTs
+  , EmptyDataDecls
+  , ScopedTypeVariables
  #-}
 module Container.FingerTree.Abstract where
 

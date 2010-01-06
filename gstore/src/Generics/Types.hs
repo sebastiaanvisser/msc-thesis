@@ -1,4 +1,11 @@
-{-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE
+    DeriveFunctor
+  , GeneralizedNewtypeDeriving
+  , TypeOperators
+  , TypeFamilies
+  , RankNTypes
+  , KindSignatures
+ #-}
 module Generics.Types where
 
 import Control.Applicative
