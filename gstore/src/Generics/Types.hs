@@ -55,6 +55,9 @@ type Fix2 f = Id f (FixA Id f)
 newtype K h a = K { unK :: h }
   deriving Monoid
 
+hcast :: K h a -> K h b
+hcast = K . unK
+
 -- Functor composition.
 
 infixl 2 :.:
@@ -102,8 +105,26 @@ class HFoldable h where
 class (HFunctor h, HFoldable h) => HTraversable h where
   htraverse :: Applicative f => (a :~> f :.: b) -> (h a :~> f :.: h b)
 
-hfold :: HFunctor f => f g :~> g -> HFixA f :~> g
+class HApplicative h where
+  hpure :: a :~> h a
+  (<#>) :: (a :~> b) -> h a :~> f b
+
+type HAlg f g = f g :~> g
+
+hfold :: HFunctor f => HAlg f a -> HFixA f :~> a
 hfold f (HIn u) = f (hfmap (hfold f) u)
+
+foldm :: (HFoldable h, Monoid m) => (forall b. h b ::~> m) -> HFixA h c -> m
+foldm f = hfoldMap (\x -> f (hout x) `mappend` foldm f x) . hout
+
+newtype Ran g h a = Ran { unRan :: (a -> g) -> h }
+
+-- gfold :: HAlg f g -> (HFixA f :.: g) :~> h
+-- gfold = undefined
+
+-- gfoldk :: HFunctor h => (h (Ran g f) :~> Ran g f) -> (a -> g) -> FixA h a -> f
+-- gfoldk alg g m = unRan (hfold alg m) g
+
 
 -- Fixed point combinator for nested data types with regular nesting.
 

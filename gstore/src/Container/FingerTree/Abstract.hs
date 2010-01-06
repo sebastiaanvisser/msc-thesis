@@ -11,7 +11,9 @@
  #-}
 module Container.FingerTree.Abstract where
 
+import Prelude hiding (foldr, foldl, sum)
 import Control.Applicative
+import Data.Foldable hiding (toList, sum)
 import Data.Monoid
 import Generics.Types
 
@@ -90,6 +92,8 @@ digit3 a b c = digit (node3 a b c)
 digit4 :: Node a c -> Node a c -> Node a c -> Node a c -> Digit a (S c)
 digit4 a b c d = HIn (Digit4 a b c d)
 
+-- Higher order functor, foldable and traversable instances.
+
 instance HFunctor (Tree a) where
   hfmap _ Empty            = Empty
   hfmap f (Single a)       = Single (f a)
@@ -123,6 +127,8 @@ instance HTraversable (Tree a) where
   htraverse f (Node3 a b c)    = C (Node3  <$> unC (f a) <*> unC (f b) <*> unC (f c))
   htraverse f (Digit4 a b c d) = C (Digit4 <$> unC (f a) <*> unC (f b) <*> unC (f c) <*> unC (f d))
 
+-- Left and right biased insertions.
+
 infixr 5 <|
 
 (<|) :: Node a c -> Spine a (S c) -> Spine a (S c)
@@ -145,19 +151,55 @@ infixr 5 |>
 (HIn  Empty                                          ) |> a = single                       (digit1       a)
 x |> _                                                      = x
 
-(|<|) :: [Value a] -> FingerTree a -> FingerTree a
+(|<|) :: Foldable f => f (Value a) -> FingerTree a -> FingerTree a
 (|<|) = flip (foldr (<|))
 
-(|>|) :: [Value a] -> FingerTree a -> FingerTree a
+(|>|) :: Foldable f => f (Value a) -> FingerTree a -> FingerTree a
 (|>|) = flip (foldl (|>))
 
 fromList :: [Value a] -> FingerTree a
 fromList = (|<| empty_)
 
+getValue :: Tree a f ix -> [a]
+getValue (Value a) = pure a
+getValue _         = mempty
+
+toList :: HFixA (Tree a) c -> [a]
+toList = foldm getValue
+
 -------------------
 
 test :: FingerTree Int
-test = fromList (map value [30, 40, 40, 40, 40, 40, 20])
+test = fromList (map value [3, 12, 44, 5, 2, 100, 20])
+
+sumAlg :: Tree Int (K Int) ix -> Int
+sumAlg (Empty         ) = 0
+sumAlg (Single a      ) = unK a
+sumAlg (Value  a      ) = a
+sumAlg (Digit  a      ) = unK a
+sumAlg (Digit1 a      ) = unK a
+sumAlg (Digit4 a b c d) = unK a + unK b + unK c + unK d
+sumAlg (Node2  a b    ) = unK a + unK b
+sumAlg (Node3  a b c  ) = unK a + unK b + unK c
+sumAlg (Deep   a b c  ) = unK a + unK b + unK c
+
+sum :: HFixA (Tree Int) ix -> Int
+sum = unK . hfold (K . sumAlg)
+
+containsAlg :: Eq a => a -> Tree a (K Bool) ix -> Bool
+containsAlg _ (Empty         ) = False
+containsAlg _ (Single a      ) = unK a
+containsAlg v (Value  a      ) = a == v
+containsAlg _ (Digit  a      ) = unK a
+containsAlg _ (Digit1 a      ) = unK a
+containsAlg _ (Digit4 a b c d) = unK a || unK b || unK c || unK d
+containsAlg _ (Node2  a b    ) = unK a || unK b
+containsAlg _ (Node3  a b c  ) = unK a || unK b || unK c
+containsAlg _ (Deep   a b c  ) = unK a || unK b || unK c
+
+contains :: Eq a => a -> HFixA (Tree a) ix -> Bool
+contains v = unK . hfold (K . containsAlg v)
+
 
 
 
