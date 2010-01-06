@@ -36,8 +36,6 @@ newtype Id f a = Id { unId :: f a } deriving Show
 
 -- Fixed point combinators and fixed point combinator transformers.
 
-newtype OFix f = OIn (f (OFix f))
-
 newtype FixA (a :: (* -> *) -> (* -> *))
              (f :: (* -> *))
            = In { out :: a f (FixA a f) }
