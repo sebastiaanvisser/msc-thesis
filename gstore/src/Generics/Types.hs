@@ -53,8 +53,8 @@ type Fix2 f = Id f (FixA Id f)
 newtype K h a = K { unK :: h }
   deriving Monoid
 
-hcast :: K h a -> K h b
-hcast = K . unK
+kcast :: K h a -> K h b
+kcast = K . unK
 
 -- Functor composition.
 
