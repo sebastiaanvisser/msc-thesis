@@ -225,29 +225,26 @@ t0 = hfst
 t1 :: (:*:) f g ix -> g ix
 t1 = hsnd
 
-insertAlg :: 
+data K0 a jx real = K0 (Maybe (HFix (Tree a) (Nd, jx)))
+data K1 a jx real = K1 (Maybe (HFix (Tree a) (Nd, jx)))
+
+insertAlg :: forall tree a ix jx.
+    
         tree ~ HFix (Tree a)
 
-     => Tree a (tree :*: (K (Maybe (tree (Nd, jx))) :-> (tree :*: K (Maybe (tree (Nd, jx)))))) (ix, S jx)
-     ->                  (K (Maybe (tree (Nd, jx))) :-> (tree :*: K (Maybe (tree (Nd, jx)))))  (ix, S jx)
+     => Tree a (tree :*: (K0 a jx :-> (tree :*: K1 a (S jx)))) (ix, S jx)
+     ->                  (K0 a jx :-> (tree :*: K1 a (S jx)))  (ix, S jx)
 
-insertAlg (Empty         ) = F$ \(K a) -> maybe (empty_                             :*: K Nothing) (\z -> single (digit1 z)             :*: K Nothing) a
-insertAlg (Single b      ) = F$ \(K a) -> maybe (single (t0 b)                      :*: K Nothing) (\z -> deep (t0 b) empty_ (digit1 z) :*: K Nothing) a
-insertAlg (Deep   b m sf ) = F$ \(K a) -> maybe (deep   (t0 b) (t0 m) (t0 sf)       :*: K Nothing) (\_ -> deep (t0 b) (t0 m) (t0 sf)    :*: K Nothing) a
+insertAlg (Empty         ) = F$ \(K0 a) -> maybe (empty_                             :*: K1 Nothing) (\z -> single (digit1 z)               :*: K1 Nothing) a
+insertAlg (Single b      ) = F$ \(K0 a) -> maybe (single (t0 b)                      :*: K1 Nothing) (\z -> deep   (t0 b) empty_ (digit1 z) :*: K1 Nothing) a
+insertAlg (Deep   b m sf ) = F$ \(K0 a) -> maybe (deep   (t0 b) (t0 m) (t0 sf)       :*: K1 Nothing) (\_ -> let l0 :*: K1 l1 = t1 b # K0 a 
+                                                                                                                _l1 = l1 :: Maybe (tree (Nd, S jx))
+                                                                                                                r0 :*: K1 r1 = t1 m # K0 undefined
+                                                                                                            in deep l0 r0 (t0 sf) :*: K1 r1) a
+insertAlg (Digit1 b      ) = F$ \(K0 a) -> maybe (digit1 (t0 b)                      :*: K1 Nothing) (\z -> digit2 z (t0 b)               :*: K1 Nothing) a
+insertAlg (Digit2 b c    ) = F$ \(K0 a) -> maybe (digit2 (t0 b) (t0 c)               :*: K1 Nothing) (\z -> digit3 z (t0 b) (t0 c)        :*: K1 Nothing) a
+insertAlg (Digit3 b c d  ) = F$ \(K0 a) -> maybe (digit3 (t0 b) (t0 c) (t0 d)        :*: K1 Nothing) (\z -> digit4 z (t0 b) (t0 c) (t0 d) :*: K1 Nothing) a
+insertAlg (Digit4 b c d e) = F$ \(K0 a) -> maybe (digit4 (t0 b) (t0 c) (t0 d) (t0 e) :*: K1 Nothing) (\z -> digit2 z (t0 b)               :*: K1 (Just (node3 (t0 c) (t0 d) (t0 e)))) a
+insertAlg (Node2  b c    ) = F$ \_      ->       (node2  (t0 b) (t0 c)               :*: K1 Nothing)
+insertAlg (Node3  b c d  ) = F$ \_      ->       (node3  (t0 b) (t0 c) (t0 d)        :*: K1 Nothing)
 
-insertAlg (Digit1 b      ) = F$ \(K a) -> maybe (digit1 (t0 b)                      :*: K Nothing) (\z -> digit2 z (t0 b)               :*: K Nothing) a
-insertAlg (Digit2 b c    ) = F$ \(K a) -> maybe (digit2 (t0 b) (t0 c)               :*: K Nothing) (\z -> digit3 z (t0 b) (t0 c)        :*: K Nothing) a
-insertAlg (Digit3 b c d  ) = F$ \(K a) -> maybe (digit3 (t0 b) (t0 c) (t0 d)        :*: K Nothing) (\z -> digit4 z (t0 b) (t0 c) (t0 d) :*: K Nothing) a
-insertAlg (Digit4 b c d e) = F$ \(K a) -> maybe (digit4 (t0 b) (t0 c) (t0 d) (t0 e) :*: K Nothing) (\z -> digit2 z (t0 b)               :*: K Nothing) a
-
--- should not happen 
-insertAlg (Node2  b c    ) = F$ \_     ->       (node2  (t0 b) (t0 c)              )                                         :*: K Nothing
-insertAlg (Node3  b c d  ) = F$ \_     ->       (node3  (t0 b) (t0 c) (t0 d)       )                                         :*: K Nothing
-
-
-{-
--- freeAlg :: Tree a ( HFix (Tree a) :*: K Bool) (Dg c) -> Bool
--- freeAlg (Digit  _      ) = True
--- freeAlg (Digit1 _      ) = True
--- freeAlg (Digit4 _ _ _ _) = False
--}
