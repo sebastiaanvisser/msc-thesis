@@ -1,13 +1,14 @@
 {-# LANGUAGE
-    DeriveFunctor
-  , DeriveFoldable
-  , TypeOperators
+    DeriveFoldable
+  , DeriveFunctor
   , DeriveTraversable
-  , RankNTypes
-  , KindSignatures
-  , GADTs
   , EmptyDataDecls
+  , GADTs
+  , KindSignatures
+  , RankNTypes
   , ScopedTypeVariables
+  , TypeFamilies
+  , TypeOperators
  #-}
 module Container.FingerTree.Abstract where
 
@@ -34,32 +35,35 @@ type Four  = S Three
 -- level of 1-4. The lower levels of the fingers are nodes which can have a 2-3
 -- branch level. At the lowest level are the values.
 
-data Sp c
-data Dg c
-data Nd c
+data Sp
+data Dg
+data Nd
 
 data Tree (a :: *) (f :: * -> *) :: * -> * where
-  Empty  ::                                                 Tree a f (Sp (S c))
-  Single :: f (Dg c)                                     -> Tree a f (Sp c)
-  Deep   :: f (Dg c) -> f (Sp (S c)) -> f (Dg c)         -> Tree a f (Sp c)
-  Digit  :: f (Nd c)                                     -> Tree a f (Dg c)
-  Digit1 :: f (Nd c)                                     -> Tree a f (Dg (S c))
-  Digit4 :: f (Nd c) -> f (Nd c) -> f (Nd c) -> f (Nd c) -> Tree a f (Dg (S c))
-  Value  :: a                                            -> Tree a f (Nd Zero)
-  Node2  :: f (Nd c) -> f (Nd c)                         -> Tree a f (Nd (S c))
-  Node3  :: f (Nd c) -> f (Nd c) -> f (Nd c)             -> Tree a f (Nd (S c))
+  Empty  ::                                                     Tree a f (Sp, c)
+  Single :: f (Dg, c)                                        -> Tree a f (Sp, c)
+  Deep   :: f (Dg, c) -> f (Sp, S c) -> f (Dg, c)            -> Tree a f (Sp, c)
+
+  Digit1 :: f (Nd, c)                                        -> Tree a f (Dg, S c)
+  Digit2 :: f (Nd, c) -> f (Nd, c)                           -> Tree a f (Dg, S c)
+  Digit3 :: f (Nd, c) -> f (Nd, c) -> f (Nd, c)              -> Tree a f (Dg, S c)
+  Digit4 :: f (Nd, c) -> f (Nd, c) -> f (Nd, c) -> f (Nd, c) -> Tree a f (Dg, S c)
+
+  Node2  :: f (Nd, c) -> f (Nd, c)                           -> Tree a f (Nd, S c)
+  Node3  :: f (Nd, c) -> f (Nd, c) -> f (Nd, c)              -> Tree a f (Nd, S c)
+  Value  :: a                                                -> Tree a f (Nd, Zero)
 
 -- Pretty names for common structures.
 
-type Node       a c = HFixA (Tree a) (Nd c)
+type Node       a c = HFix (Tree a) (Nd, c)
 type Value      a   = Node a Zero
-type Digit      a c = HFixA (Tree a) (Dg c)
-type Spine      a c = HFixA (Tree a) (Sp c)
-type FingerTree a   = HFixA (Tree a) (Sp One)
+type Digit      a c = HFix (Tree a) (Dg, c)
+type Spine      a c = HFix (Tree a) (Sp, c)
+type FingerTree a   = HFix (Tree a) (Sp, One)
 
 -- Bunch of smart constructors taking into the account the fixed point constructor HIn.
 
-empty_ :: Spine a (S c)
+empty_ :: Spine a c
 empty_ = HIn Empty
 
 single :: Digit a c -> Spine a c
@@ -68,11 +72,17 @@ single a = HIn (Single a)
 deep :: Digit a c -> Spine a (S c) -> Digit a c -> Spine a c
 deep a c b = HIn (Deep a c b)
 
-digit :: Node a c -> Digit a c
-digit a = HIn (Digit a)
+digit1 :: Node a c -> Digit a (S c)
+digit1 a = HIn (Digit1 a)
 
-value :: a -> Value a
-value i = HIn (Value i)
+digit2 :: Node a c -> Node a c -> Digit a (S c)
+digit2 a b = HIn (Digit2 a b)
+
+digit3 :: Node a c -> Node a c -> Node a c -> Digit a (S c)
+digit3 a b c = HIn (Digit3 a b c)
+
+digit4 :: Node a c -> Node a c -> Node a c -> Node a c -> Digit a (S c)
+digit4 a b c d = HIn (Digit4 a b c d)
 
 node2 :: Node a c -> Node a c -> Node a (S c)
 node2 a b = HIn (Node2 a b)
@@ -80,76 +90,68 @@ node2 a b = HIn (Node2 a b)
 node3 :: Node a c -> Node a c -> Node a c -> Node a (S c)
 node3 a b c = HIn (Node3 a b c)
 
-digit1 :: Node a c -> Digit a (S c)
-digit1 a = HIn (Digit1 a)
-
-digit2 :: Node a c -> Node a c -> Digit a (S c)
-digit2 a b = digit (node2 a b)
-
-digit3 :: Node a c -> Node a c -> Node a c -> Digit a (S c)
-digit3 a b c = digit (node3 a b c)
-
-digit4 :: Node a c -> Node a c -> Node a c -> Node a c -> Digit a (S c)
-digit4 a b c d = HIn (Digit4 a b c d)
+value :: a -> Value a
+value i = HIn (Value i)
 
 -- Higher order functor, foldable and traversable instances.
 
 instance HFunctor (Tree a) where
-  hfmap _ Empty            = Empty
-  hfmap f (Single a)       = Single (f a)
-  hfmap f (Deep a c b)     = Deep (f a) (f c) (f b)
-  hfmap f (Digit a)        = Digit (f a)
-  hfmap _ (Value a)        = Value a
-  hfmap f (Digit1 a)       = Digit1 (f a)
-  hfmap f (Node2 a b)      = Node2 (f a) (f b)
-  hfmap f (Node3 a b c)    = Node3 (f a) (f b) (f c)
+  hfmap _ (Empty         ) = Empty
+  hfmap f (Single a      ) = Single (f a)
+  hfmap f (Deep   a c b  ) = Deep   (f a) (f c) (f b)
+  hfmap f (Digit1 a      ) = Digit1 (f a)
+  hfmap f (Digit2 a b    ) = Digit2 (f a) (f b)
+  hfmap f (Digit3 a b c  ) = Digit3 (f a) (f b) (f c)
   hfmap f (Digit4 a b c d) = Digit4 (f a) (f b) (f c) (f d)
+  hfmap f (Node2  a b    ) = Node2  (f a) (f b)
+  hfmap f (Node3  a b c  ) = Node3  (f a) (f b) (f c)
+  hfmap _ (Value  a      ) = Value  a
 
 instance HFoldable (Tree a) where
-  hfoldMap _ Empty            = mempty
-  hfoldMap f (Single a)       = f a
-  hfoldMap f (Deep a c b)     = mconcat [f a, f c, f b]
-  hfoldMap f (Digit a)        = f a
-  hfoldMap _ (Value _)        = mempty
-  hfoldMap f (Digit1 a)       = f a
-  hfoldMap f (Node2 a b)      = mconcat [f a, f b]
-  hfoldMap f (Node3 a b c)    = mconcat [f a, f b, f c]
+  hfoldMap _ (Empty         ) = mempty
+  hfoldMap f (Single a      ) =          f a
+  hfoldMap f (Deep   a c b  ) = mconcat [f a, f c, f b]
+  hfoldMap f (Digit1 a      ) =          f a
+  hfoldMap f (Digit2 a b    ) = mconcat [f a, f b]
+  hfoldMap f (Digit3 a b c  ) = mconcat [f a, f b, f c]
   hfoldMap f (Digit4 a b c d) = mconcat [f a, f b, f c, f d]
+  hfoldMap f (Node2  a b    ) = mconcat [f a, f b]
+  hfoldMap f (Node3  a b c  ) = mconcat [f a, f b, f c]
+  hfoldMap _ (Value  _      ) = mempty
 
 instance HTraversable (Tree a) where
-  htraverse _ Empty            = C (pure Empty)
-  htraverse f (Single a)       = C (Single <$> unC (f a))
-  htraverse f (Deep a c b)     = C (Deep <$> unC (f a) <*> unC (f c) <*> unC (f b))
-  htraverse f (Digit a)        = C (Digit <$> unC (f a))
-  htraverse _ (Value a)        = C (pure (Value a))
-  htraverse f (Digit1 a)       = C (Digit1 <$> unC (f a))
-  htraverse f (Node2 a b)      = C (Node2  <$> unC (f a) <*> unC (f b))
-  htraverse f (Node3 a b c)    = C (Node3  <$> unC (f a) <*> unC (f b) <*> unC (f c))
+  htraverse _ (Empty         ) = C (pure Empty)
+  htraverse f (Single a      ) = C (Single <$> unC (f a))
+  htraverse f (Deep   a c b  ) = C (Deep   <$> unC (f a) <*> unC (f c) <*> unC (f b))
+  htraverse f (Digit1 a      ) = C (Digit1 <$> unC (f a))
+  htraverse f (Digit2 a b    ) = C (Digit2 <$> unC (f a) <*> unC (f b))
+  htraverse f (Digit3 a b c  ) = C (Digit3 <$> unC (f a) <*> unC (f b) <*> unC (f c))
   htraverse f (Digit4 a b c d) = C (Digit4 <$> unC (f a) <*> unC (f b) <*> unC (f c) <*> unC (f d))
+  htraverse f (Node2  a b    ) = C (Node2  <$> unC (f a) <*> unC (f b))
+  htraverse f (Node3  a b c  ) = C (Node3  <$> unC (f a) <*> unC (f b) <*> unC (f c))
+  htraverse _ (Value  a      ) = C (pure (Value a))
 
 -- Left and right biased insertions.
 
 infixr 5 <|
 
 (<|) :: Node a c -> Spine a (S c) -> Spine a (S c)
-a <| (HIn (Deep (            HIn (Digit1 b      ))   m sf)) = deep   (digit2 a b    ) m                  sf
-a <| (HIn (Deep (HIn (Digit (HIn (Node2  b c    )))) m sf)) = deep   (digit3 a b c  ) m                  sf
-a <| (HIn (Deep (HIn (Digit (HIn (Node3  b c d  )))) m sf)) = deep   (digit4 a b c d) m                  sf
-a <| (HIn (Deep (            HIn (Digit4 b c d e))   m sf)) = deep   (digit2 a b    ) (node3 c d e <| m) sf
-a <| (HIn (Single b                                      )) = deep   (digit1 a)       empty_             b
-a <| (HIn  Empty                                          ) = single (digit1 a)
-_ <| x                                                      = x
+a <| (HIn (Deep ( HIn (Digit1 b      ))   m sf)) = deep   (digit2 a b    ) m                  sf
+a <| (HIn (Deep ( HIn (Digit2 b c    ))   m sf)) = deep   (digit3 a b c  ) m                  sf
+a <| (HIn (Deep ( HIn (Digit3 b c d  ))   m sf)) = deep   (digit4 a b c d) m                  sf
+a <| (HIn (Deep ( HIn (Digit4 b c d e))   m sf)) = deep   (digit2 a b    ) (node3 c d e <| m) sf
+a <| (HIn (Single b                           )) = deep   (digit1 a)       empty_             b
+a <| (HIn (Empty                              )) = single (digit1 a)
 
 infixr 5 |>
 
 (|>) :: Spine a (S c) -> Node a c -> Spine a (S c)
-(HIn (Deep pr m (            HIn (Digit1       b  )))) |> a = deep   pr m                  (digit2     b a)
-(HIn (Deep pr m (HIn (Digit (HIn (Node2      c b)))))) |> a = deep   pr m                  (digit3   c b a)
-(HIn (Deep pr m (HIn (Digit (HIn (Node3    d c b)))))) |> a = deep   pr m                  (digit4 d c b a)
-(HIn (Deep pr m (HIn             (Digit4 e d c b  )))) |> a = deep   pr (node3 e d c <| m) (digit2     b a)
-(HIn (Single b                                      )) |> a = deep   b  empty_             (digit1       a)
-(HIn  Empty                                          ) |> a = single                       (digit1       a)
-x |> _                                                      = x
+(HIn (Deep pr m (HIn (Digit1       b  )))) |> a = deep   pr m                  (digit2     b a)
+(HIn (Deep pr m (HIn (Digit2     c b  )))) |> a = deep   pr m                  (digit3   c b a)
+(HIn (Deep pr m (HIn (Digit3   d c b  )))) |> a = deep   pr m                  (digit4 d c b a)
+(HIn (Deep pr m (HIn (Digit4 e d c b  )))) |> a = deep   pr (node3 e d c <| m) (digit2     b a)
+(HIn (Single b                          )) |> a = deep   b  empty_             (digit1       a)
+(HIn (Empty                             )) |> a = single                       (digit1       a)
 
 (|<|) :: Foldable f => f (Value a) -> FingerTree a -> FingerTree a
 (|<|) = flip (foldr (<|))
@@ -164,7 +166,7 @@ getValue :: Tree a f ix -> [a]
 getValue (Value a) = pure a
 getValue _         = mempty
 
-toList :: HFixA (Tree a) c -> [a]
+toList :: HFix (Tree a) c -> [a]
 toList = foldm getValue
 
 -------------------
@@ -174,43 +176,78 @@ test = fromList (map value [3, 12, 44, 5, 2, 100, 20])
 
 sumAlg :: HAlg (Tree Int) (K Int)
 sumAlg (Empty         ) = K 0
-sumAlg (Single a      ) = kcast a
-sumAlg (Value  a      ) = K a
-sumAlg (Digit  a      ) = kcast a
-sumAlg (Digit1 a      ) = kcast a
+sumAlg (Single a      ) = K (unK a)
+sumAlg (Deep   a b c  ) = K (unK a + unK b + unK c)
+sumAlg (Digit1 a      ) = K (unK a)
+sumAlg (Digit2 a b    ) = K (unK a + unK b)
+sumAlg (Digit3 a b c  ) = K (unK a + unK b + unK c)
 sumAlg (Digit4 a b c d) = K (unK a + unK b + unK c + unK d)
 sumAlg (Node2  a b    ) = K (unK a + unK b)
 sumAlg (Node3  a b c  ) = K (unK a + unK b + unK c)
-sumAlg (Deep   a b c  ) = K (unK a + unK b + unK c)
+sumAlg (Value  a      ) = K a
 
 sum :: FingerTree Int -> Int
 sum = unK . hfold (sumAlg)
 
 containsAlg :: Eq a => a -> HAlg (Tree a) (K Bool)
 containsAlg _ (Empty         ) = K False
-containsAlg _ (Single a      ) = kcast a
-containsAlg v (Value  a      ) = K (a == v)
-containsAlg _ (Digit  a      ) = kcast a
-containsAlg _ (Digit1 a      ) = kcast a
+containsAlg _ (Single a      ) = K (unK a)
+containsAlg _ (Deep   a b c  ) = K (unK a || unK b || unK c)
+containsAlg _ (Digit1 a      ) = K (unK a)
+containsAlg _ (Digit2 a b    ) = K (unK a || unK b)
+containsAlg _ (Digit3 a b c  ) = K (unK a || unK b || unK c)
 containsAlg _ (Digit4 a b c d) = K (unK a || unK b || unK c || unK d)
 containsAlg _ (Node2  a b    ) = K (unK a || unK b)
 containsAlg _ (Node3  a b c  ) = K (unK a || unK b || unK c)
-containsAlg _ (Deep   a b c  ) = K (unK a || unK b || unK c)
+containsAlg v (Value  a      ) = K (a == v)
 
 contains :: Eq a => a -> FingerTree a -> Bool
 contains v = unK . hfold (containsAlg v)
 
 lookupAlg :: Eq a => a -> HAlg (Tree (a, b)) (K (Maybe b))
 lookupAlg _ (Empty         ) = K Nothing
-lookupAlg _ (Single a      ) = kcast a
-lookupAlg v (Value  (a, b) ) = K (if a == v then Just b else Nothing)
-lookupAlg _ (Digit  a      ) = kcast a
-lookupAlg _ (Digit1 a      ) = kcast a
+lookupAlg _ (Single a      ) = castK a
+lookupAlg _ (Deep   a b c  ) = K (unK a <|> unK b <|> unK c)
+lookupAlg _ (Digit1 a      ) = K (unK a)
+lookupAlg _ (Digit2 a b    ) = K (unK a <|> unK b)
+lookupAlg _ (Digit3 a b c  ) = K (unK a <|> unK b <|> unK c)
 lookupAlg _ (Digit4 a b c d) = K (unK a <|> unK b <|> unK c <|> unK d)
 lookupAlg _ (Node2  a b    ) = K (unK a <|> unK b)
 lookupAlg _ (Node3  a b c  ) = K (unK a <|> unK b <|> unK c)
-lookupAlg _ (Deep   a b c  ) = K (unK a <|> unK b <|> unK c)
+lookupAlg v (Value  (a, b) ) = K (if a == v then Just b else Nothing)
 
 lookup :: Eq a => a -> FingerTree (a, b) -> Maybe b
 lookup v = unK . hfold (lookupAlg v)
 
+t0 :: (:*:) f g ix -> f ix
+t0 = hfst
+
+t1 :: (:*:) f g ix -> g ix
+t1 = hsnd
+
+insertAlg :: 
+        tree ~ HFix (Tree a)
+
+     => Tree a (tree :*: (K (Maybe (tree (Nd, jx))) :-> (tree :*: K (Maybe (tree (Nd, jx)))))) (ix, S jx)
+     ->                  (K (Maybe (tree (Nd, jx))) :-> (tree :*: K (Maybe (tree (Nd, jx)))))  (ix, S jx)
+
+insertAlg (Empty         ) = F$ \(K a) -> maybe (empty_                             :*: K Nothing) (\z -> single (digit1 z)             :*: K Nothing) a
+insertAlg (Single b      ) = F$ \(K a) -> maybe (single (t0 b)                      :*: K Nothing) (\z -> deep (t0 b) empty_ (digit1 z) :*: K Nothing) a
+insertAlg (Deep   b m sf ) = F$ \(K a) -> maybe (deep   (t0 b) (t0 m) (t0 sf)       :*: K Nothing) (\_ -> deep (t0 b) (t0 m) (t0 sf)    :*: K Nothing) a
+
+insertAlg (Digit1 b      ) = F$ \(K a) -> maybe (digit1 (t0 b)                      :*: K Nothing) (\z -> digit2 z (t0 b)               :*: K Nothing) a
+insertAlg (Digit2 b c    ) = F$ \(K a) -> maybe (digit2 (t0 b) (t0 c)               :*: K Nothing) (\z -> digit3 z (t0 b) (t0 c)        :*: K Nothing) a
+insertAlg (Digit3 b c d  ) = F$ \(K a) -> maybe (digit3 (t0 b) (t0 c) (t0 d)        :*: K Nothing) (\z -> digit4 z (t0 b) (t0 c) (t0 d) :*: K Nothing) a
+insertAlg (Digit4 b c d e) = F$ \(K a) -> maybe (digit4 (t0 b) (t0 c) (t0 d) (t0 e) :*: K Nothing) (\z -> digit2 z (t0 b)               :*: K Nothing) a
+
+-- should not happen 
+insertAlg (Node2  b c    ) = F$ \_     ->       (node2  (t0 b) (t0 c)              )                                         :*: K Nothing
+insertAlg (Node3  b c d  ) = F$ \_     ->       (node3  (t0 b) (t0 c) (t0 d)       )                                         :*: K Nothing
+
+
+{-
+-- freeAlg :: Tree a ( HFix (Tree a) :*: K Bool) (Dg c) -> Bool
+-- freeAlg (Digit  _      ) = True
+-- freeAlg (Digit1 _      ) = True
+-- freeAlg (Digit4 _ _ _ _) = False
+-}

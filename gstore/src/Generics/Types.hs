@@ -14,11 +14,11 @@ import Prelude
 
 -- Sum and product types. Just like Either and (,).
 
-infixl 6 :+:
-infixl 7 :*:
+-- infixl 6 :+:
+-- infixl 7 :*:
 
-type a :+: b = Either a b
-type a :*: b = (a, b)
+-- type a :+: b = Either a b
+-- type a :*: b = (a, b)
 
 -- Helper functions.
 
@@ -48,13 +48,28 @@ type Fix  f = FixA Id f
 type Fix1 f = f (FixA Id f)
 type Fix2 f = Id f (FixA Id f)
 
+-- Indexed functions.
+
+data (:->) a b ix = F { unF :: a ix -> b ix }
+
+(#) :: (a :-> b) ix -> a ix -> b ix
+(#) (F x) y = x y
+
 -- Constant functor.
 
 newtype K h a = K { unK :: h }
   deriving Monoid
 
-kcast :: K h a -> K h b
-kcast = K . unK
+castK :: K h a -> K h b
+castK = K . unK
+
+-- Indexed pair.
+
+infixl 6 :+:
+infixl 7 :*:
+
+data (f :+: g) ix = L { unL :: f ix } | R { unR :: g ix }
+data (f :*: g) ix = (:*:) { hfst :: f ix, hsnd :: g ix }
 
 -- Functor composition.
 
@@ -84,12 +99,12 @@ newtype HId (h  :: (* -> *) -> * -> *)
 
 -- Higher order annotated fixed point.
 
-newtype HFixA -- (a  :: ((* -> *) -> * -> *) -> ((* -> *) -> * -> *))
+newtype HFix -- (a  :: ((* -> *) -> * -> *) -> ((* -> *) -> * -> *))
               (h  :: (* -> *) -> * -> *)
               (ix :: *)
-            = HIn { hout :: h (HFixA h) ix }
+            = HIn { hout :: h (HFix h) ix }
 
--- type HFix h ix = HFixA HId h ix
+-- type HFix h ix = HFix HId h ix
 
 class HFunctor h where
   hfmap :: (a :~> b) -> h a :~> h b
@@ -109,15 +124,20 @@ class HApplicative h where
 
 type HAlg f g = f g :~> g
 
-hfold :: HFunctor f => HAlg f a -> HFixA f :~> a
+hfold :: HFunctor f => HAlg f a -> HFix f :~> a
 hfold f (HIn u) = f (hfmap (hfold f) u)
 
-foldm :: (HFoldable h, Monoid m) => (forall b. h b ::~> m) -> HFixA h c -> m
+foldm :: (HFoldable h, Monoid m) => (forall b. h b ::~> m) -> HFix h c -> m
 foldm f = hfoldMap (\x -> f (hout x) `mappend` foldm f x) . hout
+
+type HPara f g = f (HFix f :*: g) :~> g
+
+hpara :: HFunctor f => HPara f a -> HFix f :~> a
+hpara f (HIn u) = f (hfmap (\x -> x :*: hpara f x) u)
 
 newtype Ran g h a = Ran { unRan :: (a -> g) -> h }
 
--- gfold :: HAlg f g -> (HFixA f :.: g) :~> h
+-- gfold :: HAlg f g -> (HFix f :.: g) :~> h
 -- gfold = undefined
 
 -- gfoldk :: HFunctor h => (h (Ran g f) :~> Ran g f) -> (a -> g) -> FixA h a -> f
