@@ -18,18 +18,6 @@ import Data.Foldable hiding (toList, sum)
 import Data.Monoid
 import Generics.Types
 
--- Peano numbers.
-
-data Zero
-data S c
-
--- Continue counting.
-
-type One   = S Zero
-type Two   = S One
-type Three = S Two
-type Four  = S Three
-
 -- Nodes in a finger tree can represent a part of the spine or a part of the
 -- fingers. The top level of the fingers are the digits which can have a branch
 -- level of 1-4. The lower levels of the fingers are nodes which can have a 2-3
@@ -42,15 +30,15 @@ data Nd
 data Tree (a :: *) (f :: * -> *) :: * -> * where
   Empty  ::                                                     Tree a f (Sp, c)
   Single :: f (Dg, c)                                        -> Tree a f (Sp, c)
-  Deep   :: f (Dg, c) -> f (Sp, S c) -> f (Dg, c)            -> Tree a f (Sp, c)
+  Deep   :: f (Dg, c) -> f (Sp, Succ c) -> f (Dg, c)         -> Tree a f (Sp, c)
 
-  Digit1 :: f (Nd, c)                                        -> Tree a f (Dg, S c)
-  Digit2 :: f (Nd, c) -> f (Nd, c)                           -> Tree a f (Dg, S c)
-  Digit3 :: f (Nd, c) -> f (Nd, c) -> f (Nd, c)              -> Tree a f (Dg, S c)
-  Digit4 :: f (Nd, c) -> f (Nd, c) -> f (Nd, c) -> f (Nd, c) -> Tree a f (Dg, S c)
+  Digit1 :: f (Nd, c)                                        -> Tree a f (Dg, Succ c)
+  Digit2 :: f (Nd, c) -> f (Nd, c)                           -> Tree a f (Dg, Succ c)
+  Digit3 :: f (Nd, c) -> f (Nd, c) -> f (Nd, c)              -> Tree a f (Dg, Succ c)
+  Digit4 :: f (Nd, c) -> f (Nd, c) -> f (Nd, c) -> f (Nd, c) -> Tree a f (Dg, Succ c)
 
-  Node2  :: f (Nd, c) -> f (Nd, c)                           -> Tree a f (Nd, S c)
-  Node3  :: f (Nd, c) -> f (Nd, c) -> f (Nd, c)              -> Tree a f (Nd, S c)
+  Node2  :: f (Nd, c) -> f (Nd, c)                           -> Tree a f (Nd, Succ c)
+  Node3  :: f (Nd, c) -> f (Nd, c) -> f (Nd, c)              -> Tree a f (Nd, Succ c)
   Value  :: a                                                -> Tree a f (Nd, Zero)
 
 -- Pretty names for common structures.
@@ -69,25 +57,25 @@ empty_ = HIn Empty
 single :: Digit a c -> Spine a c
 single a = HIn (Single a)
 
-deep :: Digit a c -> Spine a (S c) -> Digit a c -> Spine a c
+deep :: Digit a c -> Spine a (Succ c) -> Digit a c -> Spine a c
 deep a c b = HIn (Deep a c b)
 
-digit1 :: Node a c -> Digit a (S c)
+digit1 :: Node a c -> Digit a (Succ c)
 digit1 a = HIn (Digit1 a)
 
-digit2 :: Node a c -> Node a c -> Digit a (S c)
+digit2 :: Node a c -> Node a c -> Digit a (Succ c)
 digit2 a b = HIn (Digit2 a b)
 
-digit3 :: Node a c -> Node a c -> Node a c -> Digit a (S c)
+digit3 :: Node a c -> Node a c -> Node a c -> Digit a (Succ c)
 digit3 a b c = HIn (Digit3 a b c)
 
-digit4 :: Node a c -> Node a c -> Node a c -> Node a c -> Digit a (S c)
+digit4 :: Node a c -> Node a c -> Node a c -> Node a c -> Digit a (Succ c)
 digit4 a b c d = HIn (Digit4 a b c d)
 
-node2 :: Node a c -> Node a c -> Node a (S c)
+node2 :: Node a c -> Node a c -> Node a (Succ c)
 node2 a b = HIn (Node2 a b)
 
-node3 :: Node a c -> Node a c -> Node a c -> Node a (S c)
+node3 :: Node a c -> Node a c -> Node a c -> Node a (Succ c)
 node3 a b c = HIn (Node3 a b c)
 
 value :: a -> Value a
@@ -135,7 +123,7 @@ instance HTraversable (Tree a) where
 
 infixr 5 <|
 
-(<|) :: Node a c -> Spine a (S c) -> Spine a (S c)
+(<|) :: Node a c -> Spine a (Succ c) -> Spine a (Succ c)
 a <| (HIn (Deep ( HIn (Digit1 b      ))   m sf)) = deep   (digit2 a b    ) m                  sf
 a <| (HIn (Deep ( HIn (Digit2 b c    ))   m sf)) = deep   (digit3 a b c  ) m                  sf
 a <| (HIn (Deep ( HIn (Digit3 b c d  ))   m sf)) = deep   (digit4 a b c d) m                  sf
@@ -145,7 +133,7 @@ a <| (HIn (Empty                              )) = single (digit1 a)
 
 infixr 5 |>
 
-(|>) :: Spine a (S c) -> Node a c -> Spine a (S c)
+(|>) :: Spine a (Succ c) -> Node a c -> Spine a (Succ c)
 (HIn (Deep pr m (HIn (Digit1       b  )))) |> a = deep   pr m                  (digit2     b a)
 (HIn (Deep pr m (HIn (Digit2     c b  )))) |> a = deep   pr m                  (digit3   c b a)
 (HIn (Deep pr m (HIn (Digit3   d c b  )))) |> a = deep   pr m                  (digit4 d c b a)
@@ -219,32 +207,25 @@ lookupAlg v (Value  (a, b) ) = K (if a == v then Just b else Nothing)
 lookup :: Eq a => a -> FingerTree (a, b) -> Maybe b
 lookup v = unK . hfold (lookupAlg v)
 
-t0 :: (:*:) f g ix -> f ix
-t0 = hfst
 
-t1 :: (:*:) f g ix -> g ix
-t1 = hsnd
+h1 :: (:*:) f g ix -> g ix
+h1 = hsnd
 
-data K0 a jx real = K0 (Maybe (HFix (Tree a) (Nd, jx)))
-data K1 a jx real = K1 (Maybe (HFix (Tree a) (Nd, jx)))
+h0 :: (Inc f :*: g) (tp, ix) -> f (tp, Succ ix)
+h0 = unInc . hfst
 
-insertAlg :: forall tree a ix jx.
-    
-        tree ~ HFix (Tree a)
+data N   f ix = N   { unN   :: Maybe (f (Nd, Snd ix)) }
+data Inc f ix = Inc { unInc :: f (Fmap Succ ix)       }
 
-     => Tree a (tree :*: (K0 a jx :-> (tree :*: K1 a (S jx)))) (ix, S jx)
-     ->                  (K0 a jx :-> (tree :*: K1 a (S jx)))  (ix, S jx)
-
-insertAlg (Empty         ) = F$ \(K0 a) -> maybe (empty_                             :*: K1 Nothing) (\z -> single (digit1 z)               :*: K1 Nothing) a
-insertAlg (Single b      ) = F$ \(K0 a) -> maybe (single (t0 b)                      :*: K1 Nothing) (\z -> deep   (t0 b) empty_ (digit1 z) :*: K1 Nothing) a
-insertAlg (Deep   b m sf ) = F$ \(K0 a) -> maybe (deep   (t0 b) (t0 m) (t0 sf)       :*: K1 Nothing) (\_ -> let l0 :*: K1 l1 = t1 b # K0 a 
-                                                                                                                _l1 = l1 :: Maybe (tree (Nd, S jx))
-                                                                                                                r0 :*: K1 r1 = t1 m # K0 undefined
-                                                                                                            in deep l0 r0 (t0 sf) :*: K1 r1) a
-insertAlg (Digit1 b      ) = F$ \(K0 a) -> maybe (digit1 (t0 b)                      :*: K1 Nothing) (\z -> digit2 z (t0 b)               :*: K1 Nothing) a
-insertAlg (Digit2 b c    ) = F$ \(K0 a) -> maybe (digit2 (t0 b) (t0 c)               :*: K1 Nothing) (\z -> digit3 z (t0 b) (t0 c)        :*: K1 Nothing) a
-insertAlg (Digit3 b c d  ) = F$ \(K0 a) -> maybe (digit3 (t0 b) (t0 c) (t0 d)        :*: K1 Nothing) (\z -> digit4 z (t0 b) (t0 c) (t0 d) :*: K1 Nothing) a
-insertAlg (Digit4 b c d e) = F$ \(K0 a) -> maybe (digit4 (t0 b) (t0 c) (t0 d) (t0 e) :*: K1 Nothing) (\z -> digit2 z (t0 b)               :*: K1 (Just (node3 (t0 c) (t0 d) (t0 e)))) a
-insertAlg (Node2  b c    ) = F$ \_      ->       (node2  (t0 b) (t0 c)               :*: K1 Nothing)
-insertAlg (Node3  b c d  ) = F$ \_      ->       (node3  (t0 b) (t0 c) (t0 d)        :*: K1 Nothing)
-
+insertAlg :: (t ~ HFix (Tree a), r ~ (N t :-> Inc (t :*: N t))) => Tree a (Inc t :*: r) (tp, (Succ c)) -> r (tp, (Succ c))
+insertAlg (Empty         ) = F$ \(N a) -> Inc $ maybe (empty_                             :*: N Nothing) (\z -> single (digit1 z)             :*: N Nothing                             ) a
+insertAlg (Single b      ) = F$ \(N a) -> Inc $ maybe (single (h0 b)                      :*: N Nothing) (\z -> deep (h0 b) empty_ (digit1 z) :*: N Nothing                             ) a
+insertAlg (Digit1 b      ) = F$ \(N a) -> Inc $ maybe (digit1 (h0 b)                      :*: N Nothing) (\z -> digit2 z (h0 b)               :*: N Nothing                             ) a
+insertAlg (Digit2 b c    ) = F$ \(N a) -> Inc $ maybe (digit2 (h0 b) (h0 c)               :*: N Nothing) (\z -> digit3 z (h0 b) (h0 c)        :*: N Nothing                             ) a
+insertAlg (Digit3 b c d  ) = F$ \(N a) -> Inc $ maybe (digit3 (h0 b) (h0 c) (h0 d)        :*: N Nothing) (\z -> digit4 z (h0 b) (h0 c) (h0 d) :*: N Nothing                             ) a
+insertAlg (Digit4 b c d e) = F$ \(N a) -> Inc $ maybe (digit4 (h0 b) (h0 c) (h0 d) (h0 e) :*: N Nothing) (\z -> digit2 z (h0 b)               :*: N (Just (node3 (h0 c) (h0 d) (h0 e))) ) a
+insertAlg (Node2  b c    ) = F$ \(N a) -> Inc $ maybe (node2  (h0 b) (h0 c)               :*: N Nothing) (\z -> node3  z (h0 b) (h0 c)        :*: N Nothing                             ) a
+insertAlg (Node3  b c d  ) = F$ \(N a) -> Inc $ maybe (node3  (h0 b) (h0 c) (h0 d)        :*: N Nothing) (\z -> node2  z (h0 b)               :*: N (Just (node2 (h0 c) (h0 d)))        ) a
+insertAlg (Deep   b m sf ) = F$ \(N a) -> Inc $ maybe (deep   (h0 b) (h0 m) (h0 sf)       :*: N Nothing) (\_ -> let _b = unInc (h1 b # N a)
+                                                                                                                    _m = unInc (h1 m # N (unN (h1 _b)))
+                                                                                                                in deep (hfst _b) (hfst _m) (h0 sf) :*: N Nothing                       ) a

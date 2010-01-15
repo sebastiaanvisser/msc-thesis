@@ -1,5 +1,6 @@
 {-# LANGUAGE
     DeriveFunctor
+  , EmptyDataDecls
   , GeneralizedNewtypeDeriving
   , TypeOperators
   , TypeFamilies
@@ -48,6 +49,26 @@ type Fix  f = FixA Id f
 type Fix1 f = f (FixA Id f)
 type Fix2 f = Id f (FixA Id f)
 
+-- Peano numbers.
+
+data Zero
+data Succ c
+
+type family Prev a
+type instance Prev (Succ c) = c
+
+type family   Fmap (f :: * -> *) a
+type instance Fmap f (a, b)       = (a, f b)
+type instance Fmap f (Maybe a)    = Maybe (f a)
+type instance Fmap f (Either a b) = Either a (f b)
+
+-- Continue counting.
+
+type One   = Succ Zero
+type Two   = Succ One
+type Three = Succ Two
+type Four  = Succ Three
+
 -- Indexed functions.
 
 data (:->) a b ix = F { unF :: a ix -> b ix }
@@ -70,6 +91,14 @@ infixl 7 :*:
 
 data (f :+: g) ix = L { unL :: f ix } | R { unR :: g ix }
 data (f :*: g) ix = (:*:) { hfst :: f ix, hsnd :: g ix }
+
+type family Fst a :: *
+type instance Fst (a, b) = a
+type instance Fst ((a :*: b) ix) = a ix
+
+type family Snd a :: *
+type instance Snd (a, b) = b
+type instance Snd ((a :*: b) ix) = b ix
 
 -- Functor composition.
 
