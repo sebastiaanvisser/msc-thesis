@@ -207,6 +207,21 @@ lookupAlg v (Value  (a, b) ) = K (if a == v then Just b else Nothing)
 lookup :: Eq a => a -> FingerTree (a, b) -> Maybe b
 lookup v = unK . hfold (lookupAlg v)
 
+data N   f ix = N   { unN   :: Maybe (f (Nd, Snd ix)) }
+data Inc f ix = Inc { unInc :: f (Fmap Succ ix)       }
+
+insertAlg :: (t ~ HFix (Tree a), r ~ (N t :-> Inc (t :*: N t))) => Tree a (Inc t :*: r) (tp, (Succ c)) -> r (tp, (Succ c))
+insertAlg (Empty         ) = F (Inc . maybe (empty_                             :*: N Nothing) (\z -> single (digit1 z)             :*: N Nothing                             ) . unN)
+insertAlg (Single b      ) = F (Inc . maybe (single (h0 b)                      :*: N Nothing) (\z -> deep (h0 b) empty_ (digit1 z) :*: N Nothing                             ) . unN)
+insertAlg (Digit1 b      ) = F (Inc . maybe (digit1 (h0 b)                      :*: N Nothing) (\z -> digit2 z (h0 b)               :*: N Nothing                             ) . unN)
+insertAlg (Digit2 b c    ) = F (Inc . maybe (digit2 (h0 b) (h0 c)               :*: N Nothing) (\z -> digit3 z (h0 b) (h0 c)        :*: N Nothing                             ) . unN)
+insertAlg (Digit3 b c d  ) = F (Inc . maybe (digit3 (h0 b) (h0 c) (h0 d)        :*: N Nothing) (\z -> digit4 z (h0 b) (h0 c) (h0 d) :*: N Nothing                             ) . unN)
+insertAlg (Digit4 b c d e) = F (Inc . maybe (digit4 (h0 b) (h0 c) (h0 d) (h0 e) :*: N Nothing) (\z -> digit2 z (h0 b)               :*: N (Just (node3 (h0 c) (h0 d) (h0 e))) ) . unN)
+insertAlg (Node2  b c    ) = F (Inc . maybe (node2  (h0 b) (h0 c)               :*: N Nothing) (\z -> node3  z (h0 b) (h0 c)        :*: N Nothing                             ) . unN)
+insertAlg (Node3  b c d  ) = F (Inc . maybe (node3  (h0 b) (h0 c) (h0 d)        :*: N Nothing) (\z -> node2  z (h0 b)               :*: N (Just (node2 (h0 c) (h0 d)))        ) . unN)
+insertAlg (Deep   b m sf ) = F (Inc . maybe (deep   (h0 b) (h0 m) (h0 sf)       :*: N Nothing) (\z -> let _b = unInc (h1 b # N (Just z))
+                                                                                                          _m = unInc (h1 m # N (unN (h1 _b)))
+                                                                                                      in deep (hfst _b) (hfst _m) (h0 sf) :*: N Nothing                       ) . unN)
 
 h1 :: (:*:) f g ix -> g ix
 h1 = hsnd
@@ -214,18 +229,3 @@ h1 = hsnd
 h0 :: (Inc f :*: g) (tp, ix) -> f (tp, Succ ix)
 h0 = unInc . hfst
 
-data N   f ix = N   { unN   :: Maybe (f (Nd, Snd ix)) }
-data Inc f ix = Inc { unInc :: f (Fmap Succ ix)       }
-
-insertAlg :: (t ~ HFix (Tree a), r ~ (N t :-> Inc (t :*: N t))) => Tree a (Inc t :*: r) (tp, (Succ c)) -> r (tp, (Succ c))
-insertAlg (Empty         ) = F$ \(N a) -> Inc $ maybe (empty_                             :*: N Nothing) (\z -> single (digit1 z)             :*: N Nothing                             ) a
-insertAlg (Single b      ) = F$ \(N a) -> Inc $ maybe (single (h0 b)                      :*: N Nothing) (\z -> deep (h0 b) empty_ (digit1 z) :*: N Nothing                             ) a
-insertAlg (Digit1 b      ) = F$ \(N a) -> Inc $ maybe (digit1 (h0 b)                      :*: N Nothing) (\z -> digit2 z (h0 b)               :*: N Nothing                             ) a
-insertAlg (Digit2 b c    ) = F$ \(N a) -> Inc $ maybe (digit2 (h0 b) (h0 c)               :*: N Nothing) (\z -> digit3 z (h0 b) (h0 c)        :*: N Nothing                             ) a
-insertAlg (Digit3 b c d  ) = F$ \(N a) -> Inc $ maybe (digit3 (h0 b) (h0 c) (h0 d)        :*: N Nothing) (\z -> digit4 z (h0 b) (h0 c) (h0 d) :*: N Nothing                             ) a
-insertAlg (Digit4 b c d e) = F$ \(N a) -> Inc $ maybe (digit4 (h0 b) (h0 c) (h0 d) (h0 e) :*: N Nothing) (\z -> digit2 z (h0 b)               :*: N (Just (node3 (h0 c) (h0 d) (h0 e))) ) a
-insertAlg (Node2  b c    ) = F$ \(N a) -> Inc $ maybe (node2  (h0 b) (h0 c)               :*: N Nothing) (\z -> node3  z (h0 b) (h0 c)        :*: N Nothing                             ) a
-insertAlg (Node3  b c d  ) = F$ \(N a) -> Inc $ maybe (node3  (h0 b) (h0 c) (h0 d)        :*: N Nothing) (\z -> node2  z (h0 b)               :*: N (Just (node2 (h0 c) (h0 d)))        ) a
-insertAlg (Deep   b m sf ) = F$ \(N a) -> Inc $ maybe (deep   (h0 b) (h0 m) (h0 sf)       :*: N Nothing) (\_ -> let _b = unInc (h1 b # N a)
-                                                                                                                    _m = unInc (h1 m # N (unN (h1 _b)))
-                                                                                                                in deep (hfst _b) (hfst _m) (h0 sf) :*: N Nothing                       ) a
