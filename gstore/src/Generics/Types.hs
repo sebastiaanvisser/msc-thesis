@@ -54,8 +54,11 @@ type Fix2 f = Id f (FixA Id f)
 data Zero
 data Succ c
 
-type family Prev a
-type instance Prev (Succ c) = c
+type Suc2 c = Succ (Succ c)
+type Suc3 c = Succ (Suc2 c)
+
+type family Pred a
+type instance Pred (Succ c) = c
 
 type family   Fmap (f :: * -> *) a
 type instance Fmap f (a, b)       = (a, f b)
