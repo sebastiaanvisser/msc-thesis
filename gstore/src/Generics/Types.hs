@@ -74,6 +74,7 @@ type Four  = Succ Three
 
 -- Indexed functions.
 
+infixr 1 :->
 data (:->) a b ix = F { unF :: a ix -> b ix }
 
 (#) :: (a :-> b) ix -> a ix -> b ix
