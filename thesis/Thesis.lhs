@@ -1,15 +1,24 @@
-\documentclass{article}
+%\documentclass{article}
+%\documentclass[12pt]{scrartcl}
+\documentclass[a4paper,12pt]{article}
 
 %include polycode.fmt
+
+\usepackage{fancyhdr}
 \usepackage{amsmath}
 \usepackage{pxfonts}
-% \usepackage[charter]{mathdesign}
 \usepackage[usenames]{color}
 \usepackage{draft}
 
-\title{notitle}
-\author{Sebastiaan Visser}
-\date{\today}
+
+\pagestyle{fancy}
+\rhead{\emph{MSc Thesis}}
+%\lhead{Generic persistence of Haskell data types}
+
+%\addtolength{\voffset}{0.4in}
+%\addtolength{\textwidth}{-0.8in}
+%\addtolength{\hoffset}{0.4in}
+
 
 %if False
 
@@ -19,6 +28,10 @@
 > import Storage ()
 
 %endif
+
+\title{A GENERIC APPROACH TO DATATYPE PERSISTENCY IN HASKELL}
+\author{Sebastiaan Visser}
+\date{\today}
 
 \begin{document}
 
