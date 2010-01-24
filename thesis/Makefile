@@ -4,12 +4,15 @@ all: ${DOC}.pdf
 	open *.pdf
 
 ${DOC}.pdf: \
-	abstract.tex \
+	Abstract.tex \
+	Motivation.tex \
 	Introduction.tex \
 	Fixpoints.tex \
 	Morphisms.tex \
 	Example.tex \
 	Storage.tex \
+	RelatedWork.tex \
+	FutureWork.tex \
 	${DOC}.tex
 
 %.tex: %.lhs

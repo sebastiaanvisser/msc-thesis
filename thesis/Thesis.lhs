@@ -21,15 +21,23 @@
 %endif
 
 \begin{document}
-  \tableofcontents
-%  \pagebreak
-%  \input{Introduction} 
+
+  \maketitle
+  \input{Abstract}
+
+  \pagebreak \tableofcontents
+  \pagebreak \input{Introduction} 
+  \pagebreak \input{Motivation} 
+  \pagebreak \input{Fixpoints} 
+  \pagebreak \input{Morphisms} 
+  \pagebreak \input{Example}
+             \input{Storage} 
+  \pagebreak \input{RelatedWork} 
+  \pagebreak \input{FutureWork} 
+
   \pagebreak
-  \input{Fixpoints} 
-  \pagebreak
-  \input{Morphisms} 
-%  \pagebreak
-%  \input{Example} 
-%  \input{Storage} 
+  \bibliographystyle{plain}
+  \bibliography{thesis}
+
 \end{document}
 

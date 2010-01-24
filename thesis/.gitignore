@@ -1,0 +1,10 @@
+*.tex
+*.hers
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.log
+*.pdf
+*.ptb
+*.toc

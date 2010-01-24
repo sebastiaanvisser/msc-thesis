@@ -664,15 +664,16 @@ existential and recursively applies the paramorphism.
 
 \begin{subsection}{Lazy IO and strict paramorphisms}
 
-As decribed in section TODO. 
-
-The |paraMA| function implemented earlier is as strict as the context it is
-executed in. The context is dependent on the annotation type, for example, the
-debug annotation works in |IO| which makes it strict. This strictness has the
-implication that the paramorphism will compute all the sub-results for all
-sub-structures independent of the evetual usage. This is the reason that the
-debug annotation in example TODO prints out from sub-trees than one would
-expect from a lazy in-memory paramorphic traversal.
+\review{
+The paramorphism function working on annotated structures is as strict as the
+context associated with the annotation. For example, the debug annotation works
+in the |IO| monad, which makes all computations strict. This strictness can
+have severe implications on the running time of the algorithms. In a strict
+context all the sub results of the recursive computation will be computed, even
+when the algebra discards them immediately. This is the reason that the debug
+annotation in example \todo{TODO} prints out far more sub-trees than one would
+expect from a lazy traversal.
+}
 
 One of the things this section shows how we can make paramorphisms more lazy on
 the inside, making sure only sub-structures are traversed when they are needed
