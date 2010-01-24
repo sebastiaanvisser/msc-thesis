@@ -1,4 +1,0 @@
-cellular_component
-PSII associated light-harvesting complex II, peripheral complex, LHCIIb subcomplex
-flagellin-based flagellum part
-nucleotide-excision repair complex
