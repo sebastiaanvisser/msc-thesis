@@ -11,8 +11,8 @@
 \usepackage{draft}
 
 
-\pagestyle{fancy}
-\rhead{\emph{MSc Thesis}}
+%\pagestyle{fancy}
+%\rhead{\emph{MSc Thesis}}
 %\lhead{Generic persistence of Haskell data types}
 
 %\addtolength{\voffset}{0.4in}

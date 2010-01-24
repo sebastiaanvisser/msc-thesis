@@ -1,7 +1,7 @@
 %include polycode.fmt
 %include thesis.fmt
 
-\begin{section}{Future Wrk}  
+\begin{section}{Future Work}  
 
 Because it is hard to predict how much time it will take to implement an
 initial basic framework and the additional possibilities are near infinite,
