@@ -675,43 +675,54 @@ annotation in example \todo{TODO} prints out far more sub-trees than one would
 expect from a lazy traversal.
 }
 
-One of the things this section shows how we can make paramorphisms more lazy on
-the inside, making sure only sub-structures are traversed when they are needed
-for the eventual output. Some monads are lazy by default like the |Identity|
-monad and the |Reader| monad. Using these as the annotation context would make
-the traversal naturally lazy. Some other monads are strict by default requiring
-all computations on the left hand side of the monadic bind to happen strictly
-before the right hand side can be executed. Example of these monads are the
-|IO| monad and the |State| monad. 
+\review{
+Some monads are lazy by default like the |Identity| monad and the |Reader|
+monad. Using these lazy monads as the annotation context would make the
+traversal naturally lazy. Some other monads are strict by default requiring all
+computations on the left hand side of the monadic bind to be evaluated strictly
+before the right hand side can be evaluated. Example of these monads are the
+|IO| monad and the |State| monad. The first thing this section will show is how
+we can make paramorphisms more lazy on the inside. Only sub-structures should
+be traversed when the algebra requires them for the computation of the result
+value. The goal is to make the running time of the paramorphic traversals in
+strict contexts equivalent to the running time of pure traversals without any
+context.
+}
 
-The decission about what sub-structures are needed for a certain computation is
-up to the algebra and to the paramorphism function itself. The algebra is a
+\review{
+The decision about what sub-structures are needed for a certain computation is
+up to the algebra and not to the paramorphism function itself. The algebra is a
 pure description that is unaware of the annotation or associated context.
-Because the paramorphism function does not know what information is used by
+Because the paramorphism function does not know what information will be used by
 the algebra it has to pass in all the recursive sub-results. To clarify this we
 can look at the |containsAlg| for binary trees. As input this algebra get a
 single structure with two booleans in the sub-structures, these booleans are
-the indication whether the value is included in one of the sub-structures.
+the indication whether the value is contained in one of the sub-structures.
 Because we are dealing with a lazy language these sub-results are ideally not
 computed yet, and will only be used when the algebras desires so. Running the
 paramorphic traversal inside a strict context, like |IO| for our debug
-annotation, will actually strictly precompute the recursive results. This
-changes the running time for the |containsMA| function from the expected |O(log
-n)| to an unacceptable |O(n)|.
+annotation, will actually strictly precompute the recursive results before
+passing them into the algebra. This changes the running time for the
+|containsMA| function from the expected |O(log n)| to an unacceptable |O(n)|.
+}
 
-To solve this problem we introduce a type class |Lazy| that should allow use to
-explicitly turn strict monads into lazy ones where possible. The only class
-method is the function |lazy| that gets a monadic computation and turns it into
-an lazy variant of this computation. Off course this will not be possible in
-the most general case for all monads.
+\review{
+To solve the problem described above we introduce a type class |Lazy| that will
+allow us to explicitly turn strict monads into lazy ones when this is possible.
+The only class method is the function |lazy| that gets a monadic computation
+and turns it into an lazy variant of this computation. Off course this will not
+be possible in the most general case for all monads.
+}
 
 > class AM m => Lazy m where
 >   lazy :: m a -> m a
 
-Both the |Identity| monad and the |Reader| monad are lazy and can trivially be
-made an instance of this type class. To be a bit more general we make the
-|ReaderT| monad transformer an instance of the |Lazy| class for all cases that
-it transforms another lazy monad.
+\review{
+Both the |Identity| monad and the |Reader| monad are lazy by default and can
+trivially be made an instance of this type class. To be a bit more general we
+make the |ReaderT| monad transformer an instance of the |Lazy| class for all
+cases that it transforms another lazy monad.
+}
 
 > instance Lazy Identity where
 >   lazy = id
@@ -719,32 +730,42 @@ it transforms another lazy monad.
 > instance Lazy m => Lazy (ReaderT r m) where
 >   lazy c = ask >>= lift . lazy . runReaderT c
 
-We can also make |IO| an instance of the |Lazy| class by using the
-|unsafeInterleaveIO| function. This function takes an |IO| computation and
-produces an |IO| computation that will only be performed when the result is
-needed. This breaks the strict semantics of the |IO| monad, but can become
-useful for our case.
+\review{
+Most interesting of all, we can also make |IO| an instance of the |Lazy| class
+by using the |unsafeInterleaveIO| function. This function takes an |IO|
+computation and produces an |IO| computation that will only be performed when
+the result value is needed. This breaks the strict semantics of the |IO| monad,
+which can become useful for our case.
+}
 
 > instance Lazy IO where
 >   lazy = unsafeInterleaveIO
 
+\review{
 Now we have a way to enforce lazy semantics for some of the contexts our
-traversals might run. By explicitly putting a call to |lazy| just before the
+traversals may run. By explicitly putting a call to |lazy| just before the
 recursive invocations in the paramorphism we can make the entire traversal
-lazy.
+lazy. The laziness of the computation is reflected in the function's class
+context.
+}
 
 > lazyParaMA :: (Lazy m, AnnQ a f m) => Psi1 a f r -> FixA a f -> m r
 > lazyParaMA psi = return . psi <=< mapM (group (lazy . lazyParaMA psi)) <=< query
 >   where group f c = fmap ((,) c) (f c)
 
+\review{
 When we now express the |containsMA| in terms of the more lazy paramorphism.
+}
 
 > containsMA2 :: (Lazy m, AnnQ a Tree_f m) => Int -> FixA a Tree_f -> m Bool
 > containsMA2 v = lazyParaMA (containsAlg v)
 
-Now running the |containsMA| on our example tree created by |fromList [1, 2]|
-shows that the debug trace only prints out the first element of the binary
-tree, because no other sub-results are needed to come up with the answer.
+\review{
+When we now run the |containsMA| functions on example tree created by |fromList
+[1, 2]| shows that the debug trace only prints out the first element of the
+binary tree, because no other sub-results are needed to come up with the
+answer.
+}
 
 \begin{verbatim}
 ghci> containsMA2 3 it
@@ -752,33 +773,37 @@ query: Branch 3 <D Leaf> <D Leaf>
 True
 \end{verbatim}
 
-% todo: ref something about evility of lazy IO.
-% todo: deepseq rerefence
-
-\noindent
-The GHCi debugger by default prints out the value the user request at the
-prompt, this is the only reason the expression |containsMA2 3 it| is evaluated
-at all. The traversal has become become lazy on the inside, no unneeded
-traversals will be performed, but also lazy on the outside, not a thing will
-happen until the answer is forced. This behaviour can be compared to the
-|hGetContents| function from the Haskell prelude which uses lazy |IO| (also
-using |unsafeInterleaveIO|) to give back the entire contents of a file or
-socket resource as a single lazu |String|. This means the actual |IO| actions
+\review{
+The GHCi debugger by default prints out the value the user requests at the
+prompt, this is the only reason the expression |containsMA2 3 it| is even
+evaluated at all. The traversal has become become lazy on the inside, no
+unneeded traversals will be performed, but also lazy on the outside, nothing
+at all will happen until the answer is forced. This behaviour can be compared
+to the |hGetContents| function from the Haskell prelude which uses lazy |IO|
+\footnote{The |hGetContents| function internally also uses the
+|unsafeInterleaveIO| function.} to give back the entire contents of a file or
+socket resource as a single lazy |String|. This means the actual |IO| actions
 to read the contents from file will only be performed when the individual
-characters of the string will be inspected. This can have a strange outcome in
-practice, evaluation of pure code can have real world side effects. The same is
-the case for our lazy traversals, the debug annotations only kicks in when the
-result is inspected. While this behaviour is probaly safe for the debug
-annotation this might not be the case in general.
-  
-To make sure all the potential side effect stay within the context they are
-restricted to we have to make sure our paramorphism remains strict from the
-outside. We do this by deep forcing the result of the evaluation before
-returning the answer. Using generic programming we have implemented a generic
-deep |seq| function that can be used to force an entire computation fully and
-recursively the moment it would normally only get forced WHNF. The
-implementation internally uses the |seq| function from the Haskell prelude that
-forces the first argument WHNF when the second argument gets forced.
+characters of the string are inspected. This behaviour can have a strange
+outcome in practice, evaluation of pure code can have real world side effects.
+The same is the case for our lazy traversals, the debug annotations only kicks
+in when the result is inspected. While this behaviour is probably safe for the
+debug annotation this might not be the case in general. There is a really good
+reason the |unsafeInterleaveIO| function starts with the word `unsafe', there
+are a lot of problems associated with lazy IO. \docite{someone no lazy IO}.
+}
+
+\review{
+To make sure all the potential side effect stay within the context they belong to
+we have to make sure our paramorphism remains strict on the outside. We do
+this by forcing the entire result of the evaluation before returning the
+answer. Using generic programming we have implemented a generic deep |seq|
+function that can be used to force an entire computation fully and recursively
+the moment it would normally only get forced \emph{weak head normal form}
+(WHNF). The implementation internally uses the |seq| function from the Haskell
+prelude that forces the first argument WHNF when the second argument gets
+forced. \todo{ref dseq}
+}
 
 > dseq1  :: a -> a
 > seq1   :: a -> b -> b
@@ -790,11 +815,12 @@ forces the first argument WHNF when the second argument gets forced.
 
 %endif
 
-\noindent
+\review{
 By creating a new paramorphism function that forces the result before returing
 we get a traversal that is lazy internally but is strict on the outside. As we
 will see later when dealing with data persistency this evaluation semantics is
 essential.
+}
 
 > paraMA' :: (Lazy m, AnnQ a f m) => Psi1 a f r -> FixA a f -> m r
 > paraMA' psi = dseq1 `liftM` lazyParaMA psi
