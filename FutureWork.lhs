@@ -31,10 +31,13 @@ the persistence of nested data types. It requires some research to figure out
 what adaptations, if at all, are needed to be able to store, for example, a
 binary tree of lists of records. In order to store nested data type we are at
 least in the need of a generic programming library that can handle this.
+See \cite{initial}.
 
 \end{subsection}
 
 \begin{subsection}{Incremental folds}
+
+\docite{sean on his work}
 
 Catamorphisms, or the more general paramorphisms, can be used to describe
 operations over recursive data structures.  Techniques exist to cache
