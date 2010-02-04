@@ -4,7 +4,14 @@
 %if False
 
 > {-# OPTIONS_GHC -F -pgmF she #-}
-> {-# LANGUAGE KindSignatures, UndecidableInstances #-}
+> {-# LANGUAGE
+>     KindSignatures
+>   , UndecidableInstances
+>   , TypeOperators
+>   , MultiParamTypeClasses
+>   , FlexibleInstances
+>   , FlexibleContexts
+>   #-}
 > module Fixpoints where
 
 > import Control.Applicative

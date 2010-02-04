@@ -1,6 +1,6 @@
 %\documentclass{article}
 %\documentclass[12pt]{scrartcl}
-\documentclass[12pt]{article}
+\documentclass[a4paper,12pt]{article}
 
 %include polycode.fmt
 
@@ -43,6 +43,7 @@
   \pagebreak \input{Motivation} 
   \pagebreak \input{Fixpoints} 
   \pagebreak \input{Morphisms} 
+  \pagebreak \input{Heap} 
   \pagebreak \input{Storage} 
   \pagebreak \input{RelatedWork} 
   \pagebreak \input{FutureWork} 

@@ -4,7 +4,13 @@
 %if False
 
 > {-# OPTIONS_GHC -F -pgmF she #-}
-> {-# LANGUAGE UndecidableInstances #-}
+> {-# LANGUAGE
+>     UndecidableInstances
+>   , TypeOperators
+>   , KindSignatures
+>   , GADTs
+>   , FlexibleContexts
+>   #-}
 > module Morphisms where
 
 > import Control.Applicative
@@ -16,7 +22,6 @@
 > import Data.Traversable
 > import Prelude hiding ((.), id, mapM, lookup)
 > import Fixpoints
-> import Generics.Regular.Seq
 
 %endif
 

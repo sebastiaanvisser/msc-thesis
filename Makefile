@@ -10,6 +10,7 @@ ${DOC}.pdf: \
 	Fixpoints.tex \
 	Morphisms.tex \
 	Example.tex \
+	Heap.tex \
 	Storage.tex \
 	RelatedWork.tex \
 	FutureWork.tex \
