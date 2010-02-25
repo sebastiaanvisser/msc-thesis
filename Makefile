@@ -6,13 +6,17 @@ all: ${DOC}.pdf
 ${DOC}.pdf: \
 	Abstract.tex \
 	Motivation.tex \
+	Overview.tex \
 	Introduction.tex \
 	Fixpoints.tex \
 	Morphisms.tex \
 	Example.tex \
 	Heap.tex \
 	Storage.tex \
+  HigherOrder.tex \
+  FingerTree.tex \
 	RelatedWork.tex \
+	Conclusion.tex \
 	FutureWork.tex \
 	${DOC}.tex
 

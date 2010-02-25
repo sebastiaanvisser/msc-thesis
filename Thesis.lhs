@@ -1,6 +1,6 @@
 %\documentclass{article}
 %\documentclass[12pt]{scrartcl}
-\documentclass[a4paper,12pt]{article}
+\documentclass[a4paper,11pt]{article}
 
 %include polycode.fmt
 
@@ -41,11 +41,16 @@
   \pagebreak \tableofcontents
   \pagebreak \input{Introduction} 
   \pagebreak \input{Motivation} 
+  \pagebreak \input{Overview} 
   \pagebreak \input{Fixpoints} 
   \pagebreak \input{Morphisms} 
   \pagebreak \input{Heap} 
   \pagebreak \input{Storage} 
+  \pagebreak \input{Example} 
+  \pagebreak \input{HigherOrder} 
+  \pagebreak \input{FingerTree} 
   \pagebreak \input{RelatedWork} 
+  \pagebreak \input{Conclusion}
   \pagebreak \input{FutureWork} 
 
   \pagebreak

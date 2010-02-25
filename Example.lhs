@@ -8,10 +8,13 @@
 
 \section{Binary tree example}
 
-\subsection{Size and lookup}
+\subsection{Some algebras}
 
-\subsection{Repmin}
+\subsubsection{contains?}
+\subsubsection{insert?}
+\subsubsection{repmin?}
+\subsubsection{delete?}
 
-\subsection{Insertion and deletion}
+\subsection{Persistent binary tree}
 
 
