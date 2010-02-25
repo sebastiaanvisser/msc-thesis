@@ -107,3 +107,5 @@
 %format seq1        = "seq"
 %format paraMA'     = "para^m_{\alpha}"
 
+%format P           = "Pointer_{\alpha}"
+
