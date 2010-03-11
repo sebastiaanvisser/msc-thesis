@@ -95,7 +95,7 @@ binary tree again, with real sub-trees at the recursive positions.
 \noindent
 \review{
 We will call datatypes that abstract away from recursion using an additional
-type parameter \emph{open datatypes}.
+type parameter \emph{open recursive datatypes}.
 }
 
 \review{
@@ -112,7 +112,7 @@ the sub-structures of the binary tree.
 \noindent
 \review{
 Besides |Functor| Haskell has two additional type classes that help with
-generic traversals over container data types. These are the |Foldable| and
+generic traversals over container datatypes. These are the |Foldable| and
 |Traversable| type classes\footnote{Note that these type class instances are
 very simple and mechanically derivable. The GHC Haskell compiler version 6.12.1
 and above is able to derive the instances for |Functor|, |Foldable| and
@@ -127,11 +127,11 @@ reduce an entire structure into a single value using some |Monoid| operation.
 \noindent
 \review{
 The |Traversable| type class, which requires |Foldable| as its super class,
-allows a generic traversal over a structure while performing an actions for
-each element. The actions performed are |Applicative| computations. The
-|Traversable| instance for our binary tree example is a straightforward
-preorder traversal. The actions are written down using idiom brackets.
-\docite{idiom brackets}
+allows a generic traversal over a structure while performing an action for each
+element. The actions performed are |Applicative| or sometimes |Monad|ic
+computations. The |Traversable| instance for our binary tree example is a
+straightforward preorder traversal. The actions are written down using idiom
+brackets.  \docite{idiom brackets}
 }
 
 > instance Traversable Tree_f where
@@ -171,23 +171,28 @@ In the previous section we worked out some basic building blocks that can be
 useful when working with container datatypes which are explicitly parametrized
 with the recursive structures.  But why would it be useful to abstract away
 from recursion in the first place? This section will show how we can store
-additional information at the recursive positions of open datatypes using an
-annotated fixed point combinator.
+additional information at the recursive positions of open recursive datatypes
+using an annotated fixed point combinator.
 }
 
 \review{
-First we introduce a new fixed point combinator that stores an annotation over
-a container data type instead of a datatype directly. This type level fixed
-point combinator is called |FixA|. \footnote{ The |FixA| |newtype| might feel
-redundant at first sight, because we could as well just parametrize the
-original |Fix| with an annotated structure |(a f)|, yielding the same result.
-From the usage of the |FixA| it has become clear that expressing the more
-specific fixed point |Fix| in terms of the more general |FixA| helps us to more
-easily reuse functionality later on.} Throughout this document the \emph{alpha}
-postfix will be used to indicate that a type or a function is annotation aware.
+First we introduce a new fixed point combinator that optionally stores an
+annotation over a container datatype instead of a datatype directly. This type
+level fixed point combinator is called |FixA|. \footnote{ The |FixA| |newtype|
+might feel redundant at first sight, because we could as well just parametrize
+the original |Fix| with an annotated structure |(a f)|, yielding the same
+result.  From the usage of the |FixA| it has become clear that expressing the
+more specific fixed point |Fix| in terms of the more general |FixA| helps us to
+more easily reuse functionality later on.} Throughout this document the
+\emph{alpha} postfix will be used to indicate that a type or a function is
+annotation aware. The |FixA| combinator has two constructors, one that stores
+an annotation over a structure |f| and one that stores a plain unannotated |f|,
+with possibly annotated sub-structures.
 }
 
-> newtype FixA a f = In { out :: (a f) (FixA a f) }
+> data FixA a f =
+>      InA  { outa  :: (a  f)  (FixA a f) }
+>   |  InF  { outf  ::     f   (FixA a f) }
 
 \noindent
 \review{
@@ -198,8 +203,8 @@ the variable |a| has kind |(* -> *) -> (* -> *)|.
 }
 
 \review{
-It is now we can very easy to describe a fully annotated binary tree by
-applying the annotated fixed point combinator to the tree functor.
+It is now very easy to define a fully annotated binary tree by applying the
+annotated fixed point combinator to the tree functor.
 }
 
 > type TreeA a = FixA a Tree_f
@@ -239,30 +244,10 @@ smart constructors: |leaf| and |branch|.
 > type Tree = Fix Tree_f
 >
 > leaf :: Tree
-> leaf = In (Id Leaf)
+> leaf = InA (Id Leaf)
 >
 > branch :: Int -> Tree -> Tree -> Tree
-> branch v l r = In (Id (Branch v l r))
-
-\review{
-Sometimes it is easier for functions to work directly with a structure which
-has fully annotated sub-structures. From now on we will call one single and
-unannotated level of a recursive datatype a \emph{node}, nodes might contain
-zero or more sub-structures. We create a type synonym |FixA1| that represents a
-single node with fully annotated sub-structures.
-}
-
-> type FixA1 a f = f (FixA a f)
-
-\noindent
-\review{
-We also introduce a type synonym |Fix1| similar to the |FixA1|, an alias for
-the usage of a single node containing unannotated sub-structures. Note that
-because the identity annotation does not store any additional information the
-|Fix1| is isomorphic to |Fix|, but might sometimes be more convenient to use.
-}
-
-> type Fix1 f = f (Fix f)
+> branch v l r = InA (Id (Branch v l r))
 
 \noindent
 \review{
@@ -289,14 +274,14 @@ In the previous section we have shown how to store arbitrary pieces of
 information at the recursive positions of a datatype. In this section we will
 show how to associate functionality with these annotations. For every
 annotation type we will describe how to obtain an annotation for a previously
-unannotated node and how to get a node out of a fully annotated structure. The
-process of creating new annotations we will call \emph{producing}, the process
-of obtaining a node from an annotation we will call \emph{querying}. The
-following two type signatures describe the produce and query actions.
+unannotated node and how to get a node out of a fully annotated structure.
+We create one type synomym for the process of putting a structure inside an
+annotation an one for getting a structure out of an annotation. We call an |InA|
+function a producer function and a |Out| function a query function.
 }
 
-> type Produce  a f m  =  f (  FixA   a f)  -> m (     FixA   a f)
-> type Query    a f m  =       FixA   a f   -> m (f (  FixA   a f))
+> type In   a f m  =  f (  FixA   a f)  -> m (     FixA   a f)
+> type Out  a f m  =       FixA   a f   -> m (f (  FixA   a f))
 
 \noindent
 \review{
@@ -312,18 +297,18 @@ context |m|.
 
 \review{
 Two type classes are used to associate specific functionality to annotations.
-For producers this class is called |AnnP|, for queries this class is called
-|AnnQ|. Both type classes contain a single function with the type signature as
+For producers this class is called |AnnI|, for queries this class is called
+|AnnO|. Both type classes contain a single function with the type signature as
 defined above. The first parameter of the type class, |a|, is the annotation
 type, the second parameter, |f|, is the structure to annotate, the third, |m|,
 is the context it may run in.
 }
 
-> class (Traversable f, AM m) => AnnQ a f m where
->   query :: Query a f m
+> class (Traversable f, AM m) => AnnI a f m where
+>   annI :: In a f m
 >
-> class (Traversable f, AM m) => AnnP a f m where
->   produce :: Produce a f m
+> class (Traversable f, AM m) => AnnO a f m where
+>   annO :: Out a f m
 
 \noindent
 \review{
@@ -335,27 +320,29 @@ context also assume the existence of an |Applicative| instance.  Although
 this assumption is not strictly the case in Haskell it is valid in theory and
 saves us some typing.} classes in the context are not strictly necessary super
 classes here. These constraints only help to prune the contexts when using the
-|AnnQ| and |AnnM| classes, because then |Traversable| and |Monad| are both
+|AnnO| and |AnnM| classes, because then |Traversable| and |Monad| are both
 implied.
 }
 
 \review{
-Now we can very easily make the identity annotation an instance of both the
-|AnnP| and |AnnQ| type classes. We just unpack or pack the annotation and strip
-off or introduce the |In| constructor.
+Now we can make the identity annotation an instance of both the |AnnI| and
+|AnnO| type classes. We just unpack or pack the annotation and strip off or
+introduce the |InA| constructor. For the |InF| case we do not need to do any
+work.
 }
 
-> instance (Traversable f, AM m) => AnnQ Id f m where
->   query = return . unId . out
->
-> instance (Traversable f, AM m) => AnnP Id f m where
->   produce = return . In . Id
+> instance (Traversable f, AM m) => AnnO Id f m where
+>  annO (InA (Id f)) = return f
+>  annO (InF     f ) = return f
+
+> instance (Traversable f, AM m) => AnnI Id f m where
+>   annI = return . InA . Id
 
 \noindent
 \review{
 Although redundant in the general case, for possible future optimizations we
 also introduce a type class for the modification of a sub-structure, called
-|AnnM|. The |modify| function is used to apply a function over a single node
+|AnnM|. The |annIO| function is used to apply a function over a single node
 within a fully annotated structure.  There is a default implementation
 available which is just the Kleisli composition (denoted by |<=<|) of the
 query, the function, and the producer.
@@ -363,9 +350,9 @@ query, the function, and the producer.
 
 > type Modify a f m = (f (FixA a f) -> m (f (FixA a f))) -> (FixA a f -> m (FixA a f))
 >
-> class (AnnQ a f m, AnnP a f m) => AnnM a f m where
->   modify :: Modify a f m
->   modify f = produce <=< f <=< query
+> class (AnnO a f m, AnnI a f m) => AnnM a f m where
+>   annIO :: Modify a f m
+>   annIO f = annI <=< f <=< annO
 
 \noindent
 \review{
@@ -381,11 +368,11 @@ associate functionality with annotations we can create two smart constructors
 to simplify creating annotated binary trees manually.
 }
 
-> leafA :: AnnP a Tree_f m => m (TreeA a)
-> leafA = produce Leaf
+> leafA :: AnnI a Tree_f m => m (TreeA a)
+> leafA = annI Leaf
 > 
-> branchA :: AnnP a Tree_f m => Int -> TreeA a -> TreeA a -> m (TreeA a)
-> branchA v l r = produce (Branch v l r)
+> branchA :: AnnI a Tree_f m => Int -> TreeA a -> TreeA a -> m (TreeA a)
+> branchA v l r = annI (Branch v l r)
 
 \end{subsection}
 
@@ -402,8 +389,9 @@ functionality. It will print out a trace of every node that gets |produced| or
 }
 
 \review{
-First we define the |Debug| data type that is just a |newtype| similar to the
-identity annotation.
+First we define the |Debug| datatype that is just a |newtype| similar to the
+identity annotation. No additional information is stored, the |newtype| is only
+used to associate specific actions to this annotation.
 }
 
 > newtype Debug f c = D { unD :: f c }
@@ -429,42 +417,43 @@ which there is a |MonadIO| instance, making it a bit more generally applicable.
 
 \noindent
 \review{
-The |AnnQ| instance for the |Debug| annotation justs unpacks the constructor
+The |AnnO| instance for the |Debug| annotation justs unpacks the constructors
 and prints out the node that is queried, including the fully annotated
 sub-structures.
 }
 
-> instance  (Traversable f, AMIO m, Show (FixA1 Debug f))
->       =>  AnnQ Debug f m
->    where  query = printer "query" . unD . out
+> instance  (Traversable f, AMIO m, Show (f (FixA Debug f)))
+>       =>  AnnO Debug f m
+>    where  annO (InA (D  f)  ) = printer "annO" f
+>           annO (InF     f   ) = printer "annO" f
 
 \noindent
 \review{
-The same trick can be done for the dual instance |AnnP|. This function adds the
-|In| and |D| constructors and also prints out the node that is being produced.
+The same trick can be done for the dual instance |AnnI|. This function adds the
+|InA| and |D| constructors and also prints out the node that is being produced.
 }
 
-> instance  (Traversable f, AMIO m, Show (FixA1 Debug f))
->       =>  AnnP Debug f m
->    where  produce = fmap (In . D) . printer "produce"
+> instance  (Traversable f, AMIO m, Show (f (FixA Debug f)))
+>       =>  AnnI Debug f m
+>    where  annI = fmap (InA . D) . printer "annI"
 
 \noindent
 \review{
 For the |AnnM| we use the default implementation.
 }
 
-> instance  (Traversable f, AMIO m, Show (FixA1 Debug f))
+> instance  (Traversable f, AMIO m, Show (f (FixA Debug f)))
 >       =>  AnnM Debug f m
 
 \noindent
 \review{
 In order to get the above class instances to work properly we additionally need
-a |Show| instance for our recursive structures. We represent the |In|
+a |Show| instance for our recursive structures. We represent the |InA|
 constructor by surrounding recursive structures with triangular brackets.
 }
 
 > instance Show ((a f) (FixA a f)) => Show (FixA a f) where
->   show f = "<" ++ show (out f) ++ ">"
+>   show f = "<" ++ show (outa f) ++ ">"
 
 \noindent
 \review{
