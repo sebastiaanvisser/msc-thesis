@@ -320,7 +320,7 @@ context also assume the existence of an |Applicative| instance.  Although
 this assumption is not strictly the case in Haskell it is valid in theory and
 saves us some typing.} classes in the context are not strictly necessary super
 classes here. These constraints only help to prune the contexts when using the
-|AnnO| and |AnnM| classes, because then |Traversable| and |Monad| are both
+|AnnO| and |AnnIO| classes, because then |Traversable| and |Monad| are both
 implied.
 }
 
@@ -342,7 +342,7 @@ work.
 \review{
 Although redundant in the general case, for possible future optimizations we
 also introduce a type class for the modification of a sub-structure, called
-|AnnM|. The |annIO| function is used to apply a function over a single node
+|AnnIO|. The |annIO| function is used to apply a function over a single node
 within a fully annotated structure.  There is a default implementation
 available which is just the Kleisli composition (denoted by |<=<|) of the
 query, the function, and the producer.
@@ -350,16 +350,16 @@ query, the function, and the producer.
 
 > type Modify a f m = (f (FixA a f) -> m (f (FixA a f))) -> (FixA a f -> m (FixA a f))
 >
-> class (AnnO a f m, AnnI a f m) => AnnM a f m where
+> class (AnnO a f m, AnnI a f m) => AnnIO a f m where
 >   annIO :: Modify a f m
 >   annIO f = annI <=< f <=< annO
 
 \noindent
 \review{
-For the identity annotation we just use the default implementation for |AnnM|.
+For the identity annotation we just use the default implementation for |AnnIO|.
 }
 
-> instance (Traversable f, AM m) => AnnM Id f m
+> instance (Traversable f, AM m) => AnnIO Id f m
 
 \noindent
 \review{
@@ -439,11 +439,11 @@ The same trick can be done for the dual instance |AnnI|. This function adds the
 
 \noindent
 \review{
-For the |AnnM| we use the default implementation.
+For the |AnnIO| we use the default implementation.
 }
 
 > instance  (Traversable f, AMIO m, Show (f (FixA Debug f)))
->       =>  AnnM Debug f m
+>       =>  AnnIO Debug f m
 
 \noindent
 \review{

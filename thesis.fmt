@@ -46,12 +46,12 @@
 %format outf  = "out_f"
 %format outa  = "out_a"
 
-%format AnnO  = "Ann_O"
-%format AnnI  = "Ann_I"
-%format AnnIO = "Ann_{IO}"
-%format annO  = "ann_O"
-%format annI  = "ann_I"
-%format annIO = "ann_{IO}"
+%format AnnOut   = "Ann_{Out}"
+%format AnnIn    = "Ann_{In}"
+%format AnnIO    = "Ann_{IO}"
+%format annOut   = "ann_{Out}"
+%format annIn    = "ann_{In}"
+%format annIO    = "ann_{IO}"
 
 %format TreeA   = "\Varid{Tree_{\alpha}}"
 %format leafA   = "\Varid{leaf_{\alpha}}"

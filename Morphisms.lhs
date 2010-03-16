@@ -78,11 +78,11 @@ The paramorphism function performs a bottom up traversal over some
 the algebra will be returned. The most generic version of this paramorphism
 within our framework is the |paraMA1|.  This function runs is some monadic
 context |m| and performs a traversal over some annotated structure |FixA a f|
-using the |AnnQ| type class to perform annotation specific queries.
+using the |AnnO| type class to perform annotation specific queries.
 }
 
-> paraMA1 :: AnnQ a f m => Psi1 a f r -> FixA a f -> m r
-> paraMA1 psi = return . psi <=< mapM (group (paraMA1 psi)) <=< query
+> paraMA1 :: AnnO a f m => Psi1 a f r -> FixA a f -> m r
+> paraMA1 psi = return . psi <=< mapM (group (paraMA1 psi)) <=< annO
 >   where group f c = fmap ((,) c) (f c)
 
 \review{
@@ -95,8 +95,8 @@ The implementation of this generic paramorphism might seem a bit cryptic at
 first sight, this is due to its very generic behaviour. Quickly summarized this
 function performs a bottom-up traversal over a recursive structure like our
 binary tree example.  As input it receives a fully annotated structure and it
-uses the |query| function to get a true node out of the annotation.  The
-|Traversable| instance, which is an implicit super class of the |AnnQ| class,
+uses the |annO| function to get a true node out of the annotation.  The
+|Traversable| instance, which is an implicit super class of the |AnnO| class,
 allows us to use the |mapM| function to recursively apply the |paraMA1|
 function to the sub-structures. This recursive invocation is used to come up
 with the sub-results.  The sub-results will be grouped together with the
@@ -112,7 +112,7 @@ To illustrate the usage of the |paraMA1| function we apply it to the
 check over a fully annotation binary tree.
 }
 
-> containsMA :: AnnQ a Tree_f m => Int -> FixA a Tree_f -> m Bool
+> containsMA :: AnnO a Tree_f m => Int -> FixA a Tree_f -> m Bool
 > containsMA v = paraMA1 (containsAlg v)
 
 \noindent
@@ -126,9 +126,9 @@ annotation prints out a trace of all nodes being produced.
 
 \begin{verbatim}
 ghci> join (branchA 3 <$> leafA <*> leafA) :: IO (TreeA Debug)
-produce: Leaf
-produce: Leaf
-produce: Branch 3 <D Leaf> <D Leaf>
+annI: Leaf
+annI: Leaf
+annI: Branch 3 <D Leaf> <D Leaf>
 <D Branch 3 <D Leaf> <D Leaf>>
 \end{verbatim}
 
@@ -142,9 +142,9 @@ queried.
 
 \begin{verbatim}
 ghci> containsMA 3 it
-query: Branch 3 <D Leaf> <D Leaf>
-query: Leaf
-query: Leaf
+annO: Branch 3 <D Leaf> <D Leaf>
+annO: Leaf
+annO: Leaf
 True
 \end{verbatim}
 
@@ -164,7 +164,7 @@ When an annotation does not have any requirements about the type of context to
 run in we can use the |Identity| monad to create a pure paramorphic traversal.
 }
 
-> paraA1 :: (AnnQ a f Identity, Traversable f) => Psi1 a f c -> FixA a f -> c
+> paraA1 :: (AnnO a f Identity, Traversable f) => Psi1 a f c -> FixA a f -> c
 > paraA1 psi = runIdentity . paraMA1 psi
 
 \noindent
@@ -235,23 +235,23 @@ an annotated structure in some, possibly monadic, context. We call this
 function |apoMA|. This apomorphism takes a coalgebra |Phi| and some initial
 seed value |s| and uses this to produce an annotated structure |FixA a f|.
 
-> apoMA :: AnnP a f m => Phi a f s -> s -> m (FixA a f)
-> apoMA phi = produce <=< mapM (apoMA phi `either` return) . phi
+> apoMA :: AnnI a f m => Phi a f s -> s -> m (FixA a f)
+> apoMA phi = annI <=< mapM (apoMA phi `either` return) . phi
 
 \noindent
 This apomorphism first applies the algebra |phi| to the initial seed value |s|
 and new structure |f| with either a new seed or an recursive sub-structure in
 the sub-positions. When a new seed has been supplied by the coalgebra the
 |apoMA| function will be call recursively to produce a new sub-structure. When
-the coalgebra supplied an existing sub-structure the |produce| function from
-the |AnnP| type class will be used to provide an annotation for it. The entire
+the coalgebra supplied an existing sub-structure the |annI| function from
+the |AnnI| type class will be used to provide an annotation for it. The entire
 structure itself will be supplied with an annotation as well using the
-|produce| function again.
+|annI| function again.
 
 Now we can apply this to our example coalgebra |fromListCoalg| and get back a
 true fromList function that can be used to produce annotation binary trees.
 
-> fromListMA :: AnnP a Tree_f m => [Int] -> m (FixA a Tree_f)
+> fromListMA :: AnnI a Tree_f m => [Int] -> m (FixA a Tree_f)
 > fromListMA = apoMA fromListCoalg
 
 Now we can illustrate the usage of the |fromListMA| function by construction a
@@ -262,11 +262,11 @@ returned.
 
 \begin{verbatim}
 ghci> fromListMA [1, 3] :: IO (FixA Debug (Tree_f Int))       
-produce: Leaf
-produce: Leaf
-produce: Leaf
-produce: Branch 3 <D Leaf> <D Leaf>
-produce: Branch 1 <D Leaf> <D (Branch 3 <D Leaf> <D Leaf>)>
+annI: Leaf
+annI: Leaf
+annI: Leaf
+annI: Branch 3 <D Leaf> <D Leaf>
+annI: Branch 1 <D Leaf> <D (Branch 3 <D Leaf> <D Leaf>)>
 <D (Branch 1 <D Leaf> <D (Branch 3 <D Leaf> <D Leaf>)>)>
 \end{verbatim}
 
@@ -275,7 +275,7 @@ Like for paramorphisms we can create a specialized version that works for
 annotation types that do not require a context to run in. We use the identity
 monad to get back a pure annotated apomorphism.
 
-> apoA :: AnnP a f Identity => Phi a f s -> s -> FixA a f
+> apoA :: AnnI a f Identity => Phi a f s -> s -> FixA a f
 > apoA phi = runIdentity . apoMA phi
 
 \noindent
@@ -297,7 +297,7 @@ trees without annotations.
 \begin{subsection}{Endomorphic paramorphism}
 
 Both the paramorphisms and the apomorphisms working on annotated structures had
-enough information to know when to use the |query| or |produce| function to
+enough information to know when to use the |annO| or |annI| function to
 read a structure from an annotation or to annotate a new structure. The
 paramorphism starts out with querying the value from the annotation before
 applying the algebra. The apomorphism produces an annotation returned by the
@@ -309,12 +309,12 @@ choose to produce a value that is equal to the input value. An example of such
 an algebra is the |replicate| algebra that replaces every value in a binary
 tree with one and the same value.
 
-> replicateAlg1 :: Int -> Psi1 a Tree_f (Fix1 Tree_f)
+> replicateAlg1 :: Int -> Psi1 a Tree_f (Tree_f (Fix Tree_f))
 > replicateAlg1 _    Leaf                     = Leaf
-> replicateAlg1 v (  Branch _ (_, l) (_, r))  = Branch v (In (Id l)) (In (Id r))
+> replicateAlg1 v (  Branch _ (_, l) (_, r))  = Branch v (InA (Id l)) (InA (Id r))
 
 \noindent
-The value that gets into the |replicateAlg| is of |FixA1 a (Tree_f v)|
+The value that gets into the |replicateAlg| is of |Tree_f v (FixA a (Tree_f v))|
 for some arbitrary annotation. The algebra does not run in any context, and
 should not run in any context, and cannot come up with new annotations. The
 only thing it can do is fix the annotation type to |Id| and return a plain
@@ -325,20 +325,20 @@ with annotations in the output we have to create a new type of albera for
 \emph{endomorphic paramorphisms}, paramorphisms for which the result type
 equals the output type.
 
-> type Endo a f = f (FixA a f :*: FixA a f) -> (FixA a f :+: FixA1 a f)
+> type Endo a f = f (FixA a f :*: FixA a f) -> (FixA a f :+: a f (FixA a f))
 
 \noindent
 The |Endo| type is an specialized version of the |Psi| type and describes an
 algbera that returns either an existing fully annotated structure or produces a
 new structure with existing fully annotated sub-structures. 
 
-> endoMA :: AnnM a f m => Endo a f -> FixA a f -> m (FixA a f)
-> endoMA psi = (return `either` produce) . psi <=< mapM (group (endoMA psi)) <=< query
+> endoMA :: AnnIO a f m => Endo a f -> FixA a f -> m (FixA a f)
+> endoMA psi = (return `either` annI) . psi <=< mapM (group (endoMA psi)) <=< annO
 >   where group f c = fmap ((,) c) (f c)
 
 \noindent
 The only real difference between the |paraMA| and the |endoMA| function is that
-the latter knows it might need to use the |produce| function on the result of
+the latter knows it might need to use the |annI| function on the result of
 the algbera |psi|. The |paraMA| function can be used to compute any results
 value from an input structure, even unannotated forms of the input structure.
 The |endoMA| function can be used to compute a fully annotated structure with
@@ -354,12 +354,12 @@ We can now rewrite the |replicateAlg| algbera to produce annotated structures.
 Because the |replicateAlg| produces a new structure and does not directly
 resuses pre-annotated sub-structure it uses the |Right| constructor from the
 sum-type. The |endoMA| morphism now know to provide annotations for these new
-structures using the |produce| function.
+structures using the |annI| function.
 
 Combinging the endomorphic paramorphism with the algbera for replication gives
 us back a true replicate function for annotated structures.
 
-> replicateMA :: AnnM a Tree_f m => Int -> FixA a Tree_f -> m (FixA a Tree_f)
+> replicateMA :: AnnIO a Tree_f m => Int -> FixA a Tree_f -> m (FixA a Tree_f)
 > replicateMA v = endoMA (replicateAlg v)
 
 \noindent
@@ -370,16 +370,16 @@ the replicated value.
 
 \begin{verbatim}
 ghci> replicateMA 4 it
-query: Branch 1 <D Leaf> <D (Branch 3 <D Leaf> <D Leaf>)>
-query: Leaf
-produce: Leaf
-query: Branch 3 <D Leaf> <D Leaf>
-query: Leaf
-produce: Leaf
-query: Leaf
-produce: Leaf
-produce: Branch 4 <D Leaf> <D Leaf>
-produce: Branch 4 <D Leaf> <D (Branch 4 <D Leaf> <D Leaf>)>
+annO: Branch 1 <D Leaf> <D (Branch 3 <D Leaf> <D Leaf>)>
+annO: Leaf
+annI: Leaf
+annO: Branch 3 <D Leaf> <D Leaf>
+annO: Leaf
+annI: Leaf
+annO: Leaf
+annI: Leaf
+annI: Branch 4 <D Leaf> <D Leaf>
+annI: Branch 4 <D Leaf> <D (Branch 4 <D Leaf> <D Leaf>)>
 <D (Branch 4 <D Leaf> <D (Branch 4 <D Leaf> <D Leaf>)>)>
 \end{verbatim}
 
@@ -388,7 +388,7 @@ Like for regular paramorphisms we can create a specialized version that works fo
 annotation types that do not require a context to run in. We use the identity
 monad to get back a pure annotated endomorphic paramorphism.
 
-> endoA :: AnnM a f Identity => Endo a f -> FixA a f -> FixA a f
+> endoA :: AnnIO a f Identity => Endo a f -> FixA a f -> FixA a f
 > endoA psi = runIdentity . endoMA psi
 
 \noindent
@@ -412,15 +412,15 @@ illustrated with the coalgebra for insertion into a binary tree.
 
 \todo{this example might be a bit to undefined}
 
-> insertCoalg1 :: Int -> Phi a Tree_f (Fix1 Tree_f)
+> insertCoalg1 :: Int -> Phi a Tree_f (Tree_f (Fix Tree_f))
 > insertCoalg1 v s =
 >  case s of
 >    Branch w l r ->
 >      case v `compare` w of
->        LT  -> Branch w  (Left (unId (out l)))  (Right undefined)
->        EQ  -> Branch v  (Right undefined)      (Left (unId (out r)))
->        GT  -> Branch w  (Right undefined)      (Right undefined)
->    Leaf    -> Branch v  (Right undefined)      (Right undefined)
+>        LT  -> Branch w  (Left  undefined) (Right undefined)
+>        EQ  -> Branch v  (Right undefined) (Left  undefined)
+>        GT  -> Branch w  (Right undefined) (Right undefined)
+>    Leaf    -> Branch v  (Right undefined) (Right undefined)
 
 Remeber that the coalgebra for apomorphisms could decide whether to produce a
 new seed or a new sub-structure directly using the |Left| and |Right|
@@ -462,16 +462,16 @@ input structure to an output structure of the same type. Where the endomorphic
 paramorphisms takes in input algberas and the endomorphic apomorphisms take
 coalgberas.
 
-> coendoMA :: (Traversable f, AnnM a f m) => CoEndo a f -> FixA a f -> m (FixA a f)
-> coendoMA phi = modify (mapM c . phi)
+> coendoMA :: (Traversable f, AnnIO a f m) => CoEndo a f -> FixA a f -> m (FixA a f)
+> coendoMA phi = annIO (mapM c . phi)
 >   where
 >   c (Left x)           = coendoMA phi x
 >   c (Right (Left  x))  = return x
->   c (Right (Right x))  = produce x
+>   c (Right (Right x))  = annI x
 
 The |coendoMA| morphism applies the coalgbera |phi| to the annotated input
-structure throught the use of the |modify| function from the |AnnM| type class.
-The |modify| function makes sure the input structure is queried from the root
+structure throught the use of the |annIO| function from the |AnnIO| type class.
+The |annIO| function makes sure the input structure is queried from the root
 annotation and will be supplied a new annotation after applying the specified
 function. After applying the coalgbera |phi| a case analysis will be done on
 the result. The three possible cases of the nested sum type will be: going into
@@ -482,7 +482,7 @@ sub-structures.
 Combining the endomorphic apomorphism with the endomorphic coalgbera for binary
 tree insertion gives us back a true insert function on annotated binary trees.
 
-> insert :: AnnM a Tree_f m => Int -> FixA a Tree_f -> m (FixA a Tree_f)
+> insert :: AnnIO a Tree_f m => Int -> FixA a Tree_f -> m (FixA a Tree_f)
 > insert v = coendoMA (insertCoalg v)
 
 We can test this by inserting the value |0| into the example tree binary tree
@@ -491,13 +491,13 @@ that is being performed.
 
 \begin{verbatim}
 ghci> insert 0 it
-query: Branch 1 <D Leaf> <D (Branch 3 <D Leaf> <D Leaf>)>
-query: Leaf
-produce: Leaf
-produce: Leaf
-produce: Branch 0 <D Leaf> <D Leaf>
-produce: Branch 1 <D (Branch 0 <D Leaf> <D Leaf>)>
-                  <D (Branch 3 <D Leaf> <D Leaf>)>
+annO: Branch 1 <D Leaf> <D (Branch 3 <D Leaf> <D Leaf>)>
+annO: Leaf
+annI: Leaf
+annI: Leaf
+annI: Branch 0 <D Leaf> <D Leaf>
+annI: Branch 1 <D (Branch 0 <D Leaf> <D Leaf>)>
+               <D (Branch 3 <D Leaf> <D Leaf>)>
 <D (Branch 1 <D (Branch 0 <D Leaf> <D Leaf>)>
              <D (Branch 3 <D Leaf> <D Leaf>)>)>
 \end{verbatim}
@@ -508,7 +508,7 @@ specializations of this endomorphic apomorphism. The |coendoA| works for
 annotations not requiring any context, the |coendo| working on pure structures
 not requiring any context or annotation.
 
-> coendoA :: AnnM a f Identity => CoEndo a f -> FixA a f -> FixA a f 
+> coendoA :: AnnIO a f Identity => CoEndo a f -> FixA a f -> FixA a f 
 > coendoA phi = runIdentity . coendoMA phi
 
 > coendo :: Traversable f => CoEndo Id f -> Fix f -> Fix f
@@ -655,9 +655,9 @@ be adapted to be able to produce both |Alg| and |Prj| constructors.
 
 %endif
 
-> paraMA :: (Lazy m, AnnQ a f m) =>  Psi a f r -> FixA a f -> m r
+> paraMA :: (Lazy m, AnnO a f m) =>  Psi a f r -> FixA a f -> m r
 > paraMA (Prj  psi) = fmap trd3 . paraMA psi
-> paraMA (Alg  psi) = return . psi <=< mapM (g (lazy . paraMA (Alg psi))) <=< query
+> paraMA (Alg  psi) = return . psi <=< mapM (g (lazy . paraMA (Alg psi))) <=< annO
 >   where g f c = fmap ((,) c) (f c)
 
 The implementation of the projection aware |paraMA| is not very exciting and
@@ -754,15 +754,15 @@ lazy. The laziness of the computation is reflected in the function's class
 context.
 }
 
-> lazyParaMA :: (Lazy m, AnnQ a f m) => Psi1 a f r -> FixA a f -> m r
-> lazyParaMA psi = return . psi <=< mapM (group (lazy . lazyParaMA psi)) <=< query
+> lazyParaMA :: (Lazy m, AnnO a f m) => Psi1 a f r -> FixA a f -> m r
+> lazyParaMA psi = return . psi <=< mapM (group (lazy . lazyParaMA psi)) <=< annO
 >   where group f c = fmap ((,) c) (f c)
 
 \review{
 When we now express the |containsMA| in terms of the more lazy paramorphism.
 }
 
-> containsMA2 :: (Lazy m, AnnQ a Tree_f m) => Int -> FixA a Tree_f -> m Bool
+> containsMA2 :: (Lazy m, AnnO a Tree_f m) => Int -> FixA a Tree_f -> m Bool
 > containsMA2 v = lazyParaMA (containsAlg v)
 
 \review{
@@ -774,7 +774,7 @@ answer.
 
 \begin{verbatim}
 ghci> containsMA2 3 it
-query: Branch 3 <D Leaf> <D Leaf>
+annO: Branch 3 <D Leaf> <D Leaf>
 True
 \end{verbatim}
 
@@ -827,7 +827,7 @@ will see later when dealing with data persistency this evaluation semantics is
 essential.
 }
 
-> paraMA' :: (Lazy m, AnnQ a f m) => Psi1 a f r -> FixA a f -> m r
+> paraMA' :: (Lazy m, AnnO a f m) => Psi1 a f r -> FixA a f -> m r
 > paraMA' psi = dseq1 `liftM` lazyParaMA psi
 
 \end{subsection}
