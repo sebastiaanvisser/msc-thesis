@@ -35,27 +35,27 @@
 
 \begin{document}
 
-\maketitle
-\input{Abstract}
+% \maketitle
+% \input{Abstract}
 
-\pagebreak \tableofcontents
-\pagebreak \input{Introduction} 
-\pagebreak \input{Motivation} 
-\pagebreak \input{Overview} 
-\pagebreak \input{Fixpoints} 
-\pagebreak \input{Morphisms} 
-\pagebreak \input{Heap} 
-\pagebreak \input{Storage} 
-\pagebreak \input{Example} 
+% \pagebreak \tableofcontents
+% \pagebreak \input{Introduction} 
+% \pagebreak \input{Motivation} 
+% \pagebreak \input{Overview} 
+% \pagebreak \input{Fixpoints} 
+% \pagebreak \input{Morphisms} 
+% \pagebreak \input{Heap} 
+% \pagebreak \input{Storage} 
+% \pagebreak \input{Example} 
 \pagebreak \input{HigherOrder} 
-\pagebreak \input{FingerTree} 
-\pagebreak \input{RelatedWork} 
-\pagebreak \input{Conclusion}
-\pagebreak \input{FutureWork} 
+% \pagebreak \input{FingerTree} 
+% \pagebreak \input{RelatedWork} 
+% \pagebreak \input{Conclusion}
+% \pagebreak \input{FutureWork} 
 
-\pagebreak
-\bibliographystyle{plain}
-\bibliography{thesis}
+% \pagebreak
+% \bibliographystyle{plain}
+% \bibliography{thesis}
 
 \end{document}
 

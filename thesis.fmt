@@ -145,3 +145,15 @@
 %format (NdI (b)) = "Nd_{" b "}"
 
 %format FingerTreeA = "FingerTree_a"
+
+
+%format NatPrf  = "Nat_{\phi}"
+%format ZeroP   = "\phi_0"
+%format SuccP i = "\phi_{i+1}"
+
+%format TreePhi = "Tree_{\phi}"
+%format SpPrf   = "Sp_{\phi}"
+%format DgPrf   = "Dg_{\phi}"
+%format NdPrf   = "Nd_{\phi}"
+%format NdZPrf  = "Nd_{0\phi}"
+

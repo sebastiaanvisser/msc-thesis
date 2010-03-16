@@ -1,9 +1,16 @@
 %include polycode.fmt
 %include thesis.fmt
+%include forall.fmt
 
 %if False
 
-> {-# LANGUAGE EmptyDataDecls, GADTs, KindSignatures #-}
+> {-# LANGUAGE
+>     EmptyDataDecls
+>   , GADTs
+>   , KindSignatures
+>   , RankNTypes
+>   , MultiParamTypeClasses
+>   #-}
 > module HigherOrder where
 
 %endif
@@ -276,9 +283,74 @@ our finger trees.
 > type Spine  a b i  = HFixA a (Tree b)  (SpI (Succ i))
                      
 \section{Higher order traversals}
-  \subsection{HFunctor}
-  \subsection{HFoldable}
-  \subsection{HTraversable}
+
+In the section about fixed point combinators for regular datatypes we have
+derived |Functor|, |Foldable| and |Traversable| instances for our binary tree
+example datatype. These traversal functions allowed us to perform a simple form
+of generic programming over our datatypes which is an essential part of our
+generic persistence framework. Unfortunately, these type classes cannot be used
+for our higher order datatypes like our finger tree GADT. In order to perform
+generic traversal over indexed datatypes we have to introduce higher order
+variant of these three type classes.
+
+\subsection{Higher order Functor}
+
+In their paper \emph{Initial Algebra Semantics is Enough!}\cite{initial} Ghani
+and Johann describe how to create a type class for higher order functors. These
+functors work on indexed datatypes and define a natural transformation that
+must work for all type indices.
+
+> class HFunctor h where
+>   hfmap :: (forall ix. a ix -> b ix) -> forall ix. h a ix -> h b ix
+
+We define a derived higher order functor type class |PFunctor| that gets an
+additional proof object |phi|, that proves the index is an inhabitant of a
+specific \emph{family}. This allows us to write functors instances that work
+not for all type indices but for an explicitly limited set. \todo{explain}
+
+> class PFunctor phi h where
+>   pfmap :: (forall ix. phi ix -> a ix -> b ix) -> forall ix. phi ix -> h a ix -> h b ix
+
+
+\subsubsection{Finger tree instance for PFunctor}
+
+First we construct a GADT that server as a proof object that proves that a certain index is actually a valid index for 
+
+> data TreePhi :: * -> * where
+>   SpPrf   :: NatPrf c ->  TreePhi (SpI (Succ c))
+>   DgPrf   :: NatPrf c ->  TreePhi (DgI (Succ c))
+>   NdPrf   :: NatPrf c ->  TreePhi (NdI (Succ c))
+>   NdZPrf  ::              TreePhi (NdI Zero)
+
+> data NatPrf :: * -> * where
+>   ZeroP  ::              NatPrf Zero
+>   SuccP  :: NatPrf n ->  NatPrf (Succ n)
+
+\begin{spec}
+instance PFunctor TreePhi (Tree a) where
+  pfmap _ (SpPrf _)         (Empty         ) = Empty
+  pfmap f (SpPrf p)         (Single a      ) = Single (f (DgPrf p) a)
+  pfmap f (SpPrf p)         (Deep   a c b  ) = Deep   (f (DgPrf p) a) (f (SpPrf (SuccP p)) c) (f (DgPrf p) b)
+  pfmap f (DgPrf (SuccP p)) (Digit1 a      ) = Digit1 (f (NdPrf p) a)
+  pfmap f (DgPrf (SuccP p)) (Digit2 a b    ) = Digit2 (f (NdPrf p) a) (f (NdPrf p) b)
+  pfmap f (DgPrf (SuccP p)) (Digit3 a b c  ) = Digit3 (f (NdPrf p) a) (f (NdPrf p) b) (f (NdPrf p) c)
+  pfmap f (DgPrf (SuccP p)) (Digit4 a b c d) = Digit4 (f (NdPrf p) a) (f (NdPrf p) b) (f (NdPrf p) c) (f (NdPrf p) d)
+  pfmap f (NdPrf (SuccP p)) (Node2  a b    ) = Node2  (f (NdPrf p) a) (f (NdPrf p) b)
+  pfmap f (NdPrf (SuccP p)) (Node3  a b c  ) = Node3  (f (NdPrf p) a) (f (NdPrf p) b) (f (NdPrf p) c)
+  pfmap f (DgPrf ZeroP)     (Digit1 a      ) = Digit1 (f NdZPrf a)
+  pfmap f (DgPrf ZeroP)     (Digit2 a b    ) = Digit2 (f NdZPrf a) (f NdZPrf b)
+  pfmap f (DgPrf ZeroP)     (Digit3 a b c  ) = Digit3 (f NdZPrf a) (f NdZPrf b) (f NdZPrf c)
+  pfmap f (DgPrf ZeroP)     (Digit4 a b c d) = Digit4 (f NdZPrf a) (f NdZPrf b) (f NdZPrf c) (f NdZPrf d)
+  pfmap _ NdZPrf            (Value  a      ) = Value a
+  pfmap _ _ _ = error "PFunctor TreePhi (Tree a): suppress warnings. "
+\end{spec}
+
+
+
+
+\subsection{Higher order Foldable}
+
+\subsection{Higher order Traversable}
 
 \section{Higher order annotated paramorpism}
 
