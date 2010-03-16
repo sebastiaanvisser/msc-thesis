@@ -1,6 +1,6 @@
 %\documentclass{article}
 %\documentclass[12pt]{scrartcl}
-\documentclass[a4paper,11pt]{article}
+\documentclass[a4wide,11pt]{article}
 
 %include polycode.fmt
 
@@ -8,7 +8,7 @@
 \usepackage[usenames]{color}
 \usepackage{amsmath}
 \usepackage{draft}
-\usepackage{fancyhdr}
+%\usepackage{fancyhdr}
 \usepackage{pxfonts}
 
 %\pagestyle{fancy}
@@ -35,27 +35,27 @@
 
 \begin{document}
 
-%  \maketitle
-%  \input{Abstract}
+\maketitle
+\input{Abstract}
 
-%  \pagebreak \tableofcontents
-%  \pagebreak \input{Introduction} 
-%  \pagebreak \input{Motivation} 
-%  \pagebreak \input{Overview} 
-%  \pagebreak \input{Fixpoints} 
-%  \pagebreak \input{Morphisms} 
-%  \pagebreak \input{Heap} 
-  \pagebreak \input{Storage} 
-%  \pagebreak \input{Example} 
-%  \pagebreak \input{HigherOrder} 
-%  \pagebreak \input{FingerTree} 
-%  \pagebreak \input{RelatedWork} 
-%  \pagebreak \input{Conclusion}
-%  \pagebreak \input{FutureWork} 
-%
-%  \pagebreak
-%  \bibliographystyle{plain}
-%  \bibliography{thesis}
+\pagebreak \tableofcontents
+\pagebreak \input{Introduction} 
+\pagebreak \input{Motivation} 
+\pagebreak \input{Overview} 
+\pagebreak \input{Fixpoints} 
+\pagebreak \input{Morphisms} 
+\pagebreak \input{Heap} 
+\pagebreak \input{Storage} 
+\pagebreak \input{Example} 
+\pagebreak \input{HigherOrder} 
+\pagebreak \input{FingerTree} 
+\pagebreak \input{RelatedWork} 
+\pagebreak \input{Conclusion}
+\pagebreak \input{FutureWork} 
+
+\pagebreak
+\bibliographystyle{plain}
+\bibliography{thesis}
 
 \end{document}
 
