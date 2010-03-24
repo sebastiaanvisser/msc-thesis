@@ -38,6 +38,7 @@
 
 \maketitle
 \input{Abstract}
+<<<<<<< HEAD
 \pagebreak
 
 \tableofcontents
@@ -55,6 +56,23 @@
 \input{RelatedWork} 
 \input{Conclusion}
 \input{FutureWork} 
+=======
+
+\pagebreak \tableofcontents
+\pagebreak \input{Introduction} 
+\pagebreak \input{Motivation} 
+\pagebreak \input{Overview} 
+\pagebreak \input{Fixpoints} 
+\pagebreak \input{Morphisms} 
+\pagebreak \input{Heap} 
+\pagebreak \input{Storage} 
+\pagebreak \input{Example} 
+\pagebreak \input{HigherOrder} 
+\pagebreak \input{FingerTree} 
+\pagebreak \input{RelatedWork} 
+\pagebreak \input{Conclusion}
+\pagebreak \input{FutureWork} 
+>>>>>>> ec9ec14dd49126cbe0c9860b5ea005d1e1fe3194
 
 \pagebreak
 \bibliographystyle{plain}
