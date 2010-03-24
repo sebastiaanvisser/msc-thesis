@@ -157,3 +157,6 @@
 %format NdPrf   = "Nd_{\phi}"
 %format NdZPrf  = "Nd_{0\phi}"
 
+%format hparaMA = "hpara^m_{\alpha}"
+%format psi     = "h\psi"
+%format HPsiA   = "\Psi_{h\alpha}"
