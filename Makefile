@@ -43,5 +43,6 @@ clean: .
 	*.pdf \
 	*.ptb \
 	*.tex \
+	*.out \
 	*.toc
 
