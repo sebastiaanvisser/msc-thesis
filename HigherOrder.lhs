@@ -11,13 +11,17 @@
 >   , KindSignatures
 >   , RankNTypes
 >   , FlexibleInstances
+>   , FlexibleContexts
 >   , TypeOperators
+>   , TypeFamilies
 >   , MultiParamTypeClasses
+>   , GeneralizedNewtypeDeriving
 >   #-}
 > module HigherOrder where
 
 > import Control.Applicative
 > import Control.Monad
+> import Data.Monoid
 
 %endif
 
@@ -406,21 +410,22 @@ match on- and recursively supply the proof objects, just like the |PFunctor|
 instance. 
 
 > instance PTraversable TreePhi (Tree a) where
->   ptraverse _ (SpPrf _)         (Empty         ) = (| Empty |)
->   ptraverse f (SpPrf p)         (Single a      ) = (| Single (f (DgPrf p) a) |)
->   ptraverse f (SpPrf p)         (Deep   a c b  ) = (| Deep   (f (DgPrf p) a) (f (SpPrf (SuccP p)) c) (f (DgPrf p) b) |)
->   ptraverse f (DgPrf (SuccP p)) (Digit1 a      ) = (| Digit1 (f (NdPrf p) a) |)
->   ptraverse f (DgPrf (SuccP p)) (Digit2 a b    ) = (| Digit2 (f (NdPrf p) a) (f (NdPrf p) b) |)
->   ptraverse f (DgPrf (SuccP p)) (Digit3 a b c  ) = (| Digit3 (f (NdPrf p) a) (f (NdPrf p) b) (f (NdPrf p) c) |)
->   ptraverse f (DgPrf (SuccP p)) (Digit4 a b c d) = (| Digit4 (f (NdPrf p) a) (f (NdPrf p) b) (f (NdPrf p) c) (f (NdPrf p) d) |)
->   ptraverse f (NdPrf (SuccP p)) (Node2  a b    ) = (| Node2  (f (NdPrf p) a) (f (NdPrf p) b) |)
->   ptraverse f (NdPrf (SuccP p)) (Node3  a b c  ) = (| Node3  (f (NdPrf p) a) (f (NdPrf p) b) (f (NdPrf p) c) |)
->   ptraverse f (DgPrf ZeroP)     (Digit1 a      ) = (| Digit1 (f NdZPrf    a) |)
->   ptraverse f (DgPrf ZeroP)     (Digit2 a b    ) = (| Digit2 (f NdZPrf    a) (f NdZPrf    b) |)
->   ptraverse f (DgPrf ZeroP)     (Digit3 a b c  ) = (| Digit3 (f NdZPrf    a) (f NdZPrf    b) (f NdZPrf c) |)
->   ptraverse f (DgPrf ZeroP)     (Digit4 a b c d) = (| Digit4 (f NdZPrf    a) (f NdZPrf    b) (f NdZPrf c) (f NdZPrf d) |)
->   ptraverse _ NdZPrf            (Value  a      ) = pure (Value a)
->   ptraverse _ _ _ = error "PFunctor Phi (Tree a): suppress warnings. "
+>   ptraverse f phi h =
+>     case (phi, h) of
+>       (SpPrf _,          Empty)           -> (| Empty                                                                      |)
+>       (SpPrf p,          Single a)        -> (| Single (f (DgPrf p)  a)                                                    |)
+>       (SpPrf p,          Deep   a c b)    -> (| Deep   (f (DgPrf p)  a) (f (SpPrf (SuccP p)) c)           (f (DgPrf p) b)  |)
+>       (DgPrf (SuccP p),  Digit1 a)        -> (| Digit1 (f (NdPrf p)  a)                                                    |)
+>       (DgPrf (SuccP p),  Digit2 a b)      -> (| Digit2 (f (NdPrf p)  a) (f (NdPrf p) b)                                    |)
+>       (DgPrf (SuccP p),  Digit3 a b c)    -> (| Digit3 (f (NdPrf p)  a) (f (NdPrf p) b)  (f (NdPrf p) c)                   |)
+>       (DgPrf (SuccP p),  Digit4 a b c d)  -> (| Digit4 (f (NdPrf p)  a) (f (NdPrf p) b)  (f (NdPrf p) c)  (f (NdPrf p) d)  |)
+>       (NdPrf (SuccP p),  Node2  a b)      -> (| Node2  (f (NdPrf p)  a) (f (NdPrf p) b)                                    |)
+>       (NdPrf (SuccP p),  Node3  a b c)    -> (| Node3  (f (NdPrf p)  a) (f (NdPrf p) b)  (f (NdPrf p) c)                   |)
+>       (DgPrf ZeroP,      Digit1 a)        -> (| Digit1 (f NdZPrf     a)                                                    |)
+>       (DgPrf ZeroP,      Digit2 a b)      -> (| Digit2 (f NdZPrf     a) (f NdZPrf    b)                                    |)
+>       (DgPrf ZeroP,      Digit3 a b c)    -> (| Digit3 (f NdZPrf     a) (f NdZPrf    b)  (f NdZPrf c)                      |)
+>       (DgPrf ZeroP,      Digit4 a b c d)  -> (| Digit4 (f NdZPrf     a) (f NdZPrf    b)  (f NdZPrf c)     (f NdZPrf d)     |)
+>       (NdZPrf,           Value  a)        -> (| (Value a)                                                                  |)
 
 The instance uses idiom brackets for the effectful computations. With the both
 the higher order functor and traversable instances for our finger tree GADT, we
@@ -497,7 +502,7 @@ Although the types have changed the annotation framework is very similar to the
 one for regular recursive data structures. We can now use these type classes to
 implement a paramorphism for indexed datatypes.
 
-\section{Higher order annotated paramorpism}
+\section{Higher order annotated paramorphism}
 
 In this section we introduce paramorphic traversals for higher order datatypes.
 In order to express the algebras we define the higher order sum and product
@@ -513,11 +518,24 @@ additional type index.
 
 > data (f :+: g) ix = L (f ix) | R (g ix)
 
-> data (f :*: g) ix = f ix :*: g ix
+> data (f :*: g) ix = (:*:) { hfst :: f ix, hsnd :: g ix }
 
-Using the product type we can 
+Using the product type we can construct the higher order paramorphic algebra.
+Like the algebra for regular datatypes, this algebra should be able to
+destruct one node with the recursive results in the recursive positions to a
+some result value. The algebra can use the proof object as a restriction on the
+index family. Both the input structure |f| and the output structure |g| are
+indexed with the same index type |ix|. Because this is a paramorphic algebra,
+the |f| structure contains both the recursive results and the fully annotated
+sub structures as well.
 
 > type HPsiA a phi f g = forall ix. phi ix -> f (HFixA a f :*: g) ix -> g ix
+
+Now we define the higher order paramorphic traversal that uses an algebra to
+recursively destruct the structure |HFixA a f ix| into a value of type |g ix|.
+Because this is an annotated paramorphism the traversal uses the |annO|
+method from the |AnnO| type class to unwrap the annotation, possibly in an
+effecful context |m|.
 
 > hparaMA
 >   :: (AnnO a f phi m, PTraversable phi f)
@@ -526,7 +544,209 @@ Using the product type we can
 
 \todo{not laziness, not applicative, future work}
 
-\section{Contains, Sum, Insert}
+\subsection{Contains, Sum and Product}
+
+To illustrate the usage of the higher order paramorphism we will define four
+example algebras for finger tree datatype. All four algebras will be defined in
+terms of one generic algebra that converts all value in a finger tree into some
+monoid value and appends these together using the |`mappend`| operator.
+
+The monoid type we use as the result type will be a plain type without any
+indices. Because the algebra forces the result type to have an index as well,
+we have to explicitly ignore the index when dealing with simple Haskell types.
+We do this by introducing the constant functor, that accepts a value type and
+an index type, but only uses the value type and ignore the index type.
+
+> newtype K h a = K { unK :: h }
+
+We can now create a generic fold algebra that returns some monoid |m| in the
+constant functor.
+
+> foldmAlg :: Monoid m => (b -> m) -> HPsiA a phi (Tree b) (K m)
+> foldmAlg f _ h =
+>   case h of
+>     Empty            -> K mempty
+>     Single a         -> K (g a)
+>     Deep   a b c     -> K (g a `mappend` g b `mappend` g c)
+>     Digit1 a         -> K (g a)
+>     Digit2 a b       -> K (g a `mappend` g b)
+>     Digit3 a b c     -> K (g a `mappend` g b `mappend` g c)
+>     Digit4 a b c d   -> K (g a `mappend` g b `mappend` g c `mappend` g d)
+>     Node2  a b       -> K (g a `mappend` g b)
+>     Node3  a b c     -> K (g a `mappend` g b `mappend` g c)
+>     Value  a         -> K (f a)
+>  where g = unK . hsnd
+
+The first parameter of this algebra is a function that converts the values
+stored in the finger tree into some type |m| for which there is a |Monoid|
+instance available. Because this algebra is a paramorphic algebra the function
+can use both the recursive results and the original sub structures. This
+algebra only uses the recrusive results, this actually makes it a
+\emph{catamorphism}. The paramorphism also allows us to add an index type to
+the result value, because we do not use this we ignore the index using the |K|
+constructor. Unpacking the recursive result from the tuple and from the |K|
+type is done with the helper function |g|.
+  
+The |Monoid| type class allows us to be generic in the type we want to fold. By
+specializing the value type to |Int| and the output type to |Sum Int| or
+|Product Int| \footnote{The |Sum| and |Product| newtypes can be found in
+Haskell's |Data.Moinoid| package. They are used to specialize the way the
+|`mappend`| operators combines two numeric values, either with |+| or with
+|*|.} we can create two algebras that compute the sum and the product of a
+finger tree containing integers.
+
+> sumAlg :: HPsiA a phi (Tree Int) (K (Sum Int))
+> sumAlg = foldmAlg Sum
+>
+> productAlg :: HPsiA a phi (Tree Int) (K (Product Int))
+> productAlg = foldmAlg Product
+
+Creating a fold algebra that concatenates all strings we can simply exploit the
+default monoid instances for lists and parametrize |foldmAlg| with the identity
+function.
+
+> concatAlg :: HPsiA a phi (Tree String) (K (String))
+> concatAlg = foldmAlg id
+
+The last example is a containment check that uses an equality check in
+combination with the |Any| monoid wrapper to check whether is certain value
+exists in the finger tree sequence.
+
+> containsAlg :: Eq b => b -> HPsiA a phi (Tree b) (K Any)
+> containsAlg v = foldmAlg (Any . (==v))
+
+These four algebras can now be lifted to true annotated traversals using the
+|hparaMA| function. Note that in all four cases we supply an index proof to
+paramorphism, the proof object contains the same index as the root of our
+finger tree, which is |SpPrf ZeroP|. After computing the result we unpack it
+from the constant functor |K| and from the monoid wrapper when needed.
+
+> sum :: AnnO a (Tree Int) TreePhi m => FingerTreeA a Int -> m Int
+> sum h = (| (getSum . unK) (hparaMA sumAlg (SpPrf ZeroP) h) |)
+
+> product :: AnnO a (Tree Int) TreePhi m => FingerTreeA a Int -> m Int
+> product h = (| (getProduct . unK) (hparaMA productAlg (SpPrf ZeroP) h) |)
+
+> concat :: AnnO a (Tree String) TreePhi m => FingerTreeA a String -> m String
+> concat h = (| unK (hparaMA concatAlg (SpPrf ZeroP) h) |)
+
+> contains :: Eq b => AnnO a (Tree b) TreePhi m => b -> FingerTreeA a b -> m Bool
+> contains v h = (| (getAny . unK) (hparaMA (containsAlg v) (SpPrf ZeroP) h) |)
+
+These four algebras show that it does take that much to implement simple
+catamorphisms that compute values of simple Haskell types over indexed data
+structures. In the next section we show a more complex example, the |cons|
+function that append one item to the beginning of the finger tree sequence.
+
+\section{Cons}
+
+Two of the basic operations on finger trees as described in the paper by Hinze
+and Paterson are the |cons| and the |snoc| functions. These functions append or
+prepend one item to the sequence. Two seemingly simple functions, thought they
+are both a bit involved because they have to preserve the nested structure of
+the finger tree. In this section we briefly show what is needed to write a
+paramorphic algebra for the cons function on our finger tree GADT. We will only
+give the type signature and not the actual implementation.
+
+Writing down the correct type signature and using the final algebra to build an
+actual |cons| function on annotated finger trees is a bit involved. We need to
+construct a paramorphism that takes as input the original annotated finger tree
+and computes a function that takes the node to append and results in the new
+finger tree. We do need a lot of type level helpers to ensure the paramorphism
+resulting in an append function conforms all the type level invariant encoded
+in the GADT.
+
+First we define two type families two compute the first and second type level
+component from our indexed product type. Both type level families simply
+project the left or right component and apply the original index to the result.
+
+> type family Fst a :: *
+> type instance Fst ((a :*: b) ix) = a ix
+  
+> type family Snd a :: *
+> type instance Snd ((a :*: b) ix) = b ix
+
+The append function that is computed by the paramorphic algebra needs itself to
+reason about the index types, therefore we need a higher order function type
+that distributes an index to both the co- and contra variant positions.
+
+> infixr 1 :->
+> data (:->) a b ix = F { unF :: a ix -> b ix }
+
+The inductive structure of the GADT forces us to reason about the numeric index
+relation of two connected nodes. Computing the successor of a type level
+natural number can be done using the successor (written down as |Succ n|)
+datatype. We now introduce a predecessor type family (written down as |Pred n|)
+that decrements any non-zero type level natural with one.
+
+> type family Pred a
+> type instance Pred (Succ c) = c
+
+Now we introduce two type level functions -- encoded as datatypes -- that allow
+us to change the GADT index. The |N| datatype takes a container datatype and an
+index and returns the same type but forces it to be a node type by using the
+|Nd| phantom type as the first component of index tuple. A |Maybe| type is to
+indicate a possible empty result. The |N| data function keeps the depth index
+intact. The |D| type level function encodes a similar pattern but decrements
+the depth index by one using the predecessor type family defined above.
+
+> newtype N  f ix = N  { unN    :: Maybe (f (Nd, Snd ix))     }
+> newtype D  f ix = D  { unDec  :: f (Fst ix, Pred (Snd ix))  }
+
+We now have all the components to write down the paramorphic algebra for the
+cons function. The type is rather complicated because it encodes all invariants
+involved when appending an item to the head of the sequence.
+
+> consAlg :: tree ~ HFixA a (Tree b) => HPsiA a TreePhi (Tree b) (N (D tree) :-> tree :*: N tree)
+
+Let try to explain what this type means. 
+
+To simplify the type signature a type variable |tree| is defined as a shortcut
+for a fully annotated finger tree structure with value of type |b|.
+
+We have a paramorphic algebra that takes an annotated finger tree as input
+and computes a function from a finger tree \emph{node} to a product of some
+finger tree and some finger tree \emph{node}. 
+
+The result is a product type because it returns both the new finger tree
+and possibly a overflow node that needs to be inserted one level deeper. So, if
+we push a node to the head of sequence it gets inserted in the left 2-3 tree of
+the first spine node, when this 2-3 tree is already full one node or sub-tree
+is selected to be cons'ed to a spine node one deeper. 
+
+The input node always has a depth index one less than depth index of the
+sub-tree being traversed by the algebra, indicated by the |D| type.
+
+The result tree index is unaffected, this makes sense: cons'ing a node to a
+finger tree should return a finger tree with the same index.
+
+Both the input and overflow part of the output of the computed functions are
+nodes, because only value can be inserted inserted into a finger tree and only
+2-3 trees can overflow to a deeper level. The |N| type also encodes the
+optionality using the |Maybe| type, this allows the algebra to stop the
+insertion when no node overflows. Hinze and Paterson proof that overflowing
+happens rarely and the amortized time for cons'ing a node is still $O(1)$.
+
+One of the constraints of the cons algebra is that we can only insert nodes
+with a depth index one less than the tree it gets appended to. At the top level
+a finger tree is always a spine node with depth index one, as can be seen in the
+|FingerTree| type synonym. This means we can only insert nodes with depth index
+zero into a top level finger tree, as expected only |Value| nodes have index
+zero. The |D| type family can only be applied to non-zero indices, to proof to
+the compiler our input finger tree always has a non-zero index we parametrize
+the algebra with our |TreePhi| proof object.
+
+This example shows it is still possible to abstract away from recursion when
+writing operations over indexed datatypes. Higher order algebras can be written
+that preserve all invariants encoded in a GATD. However, we cannot help to
+conclude that \emph{it is very hard to do so}. \todo{cry a bit about the
+complexity}
+
+%if False
+
+> consAlg (SpPrf _) = undefined
+
+%endif
 
 \section{HPersistent}
 

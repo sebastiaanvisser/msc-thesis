@@ -132,6 +132,7 @@
 %format Two    = "2"
 %format Succ a = a "+ 1"
 %format Suc2 a = a "+ 2"
+%format Pred a = a "- 1"
 
 %format Digit1 = "Digit_1"
 %format Digit2 = "Digit_2"
@@ -149,7 +150,7 @@
 
 %format NatPrf  = "Nat_{\phi}"
 %format ZeroP   = "\phi_0"
-%format SuccP i = "\phi_{i+1}"
+%format (SuccP i) = "\phi_{i+1}"
 
 %format TreePhi = "Tree_{\phi}"
 %format SpPrf   = "Sp_{\phi}"
@@ -160,3 +161,7 @@
 %format hparaMA = "hpara^m_{\alpha}"
 %format psi     = "h\psi"
 %format HPsiA   = "\Psi_{h\alpha}"
+
+%format :-> = " \twoheadrightarrow "
+%format ~   = " \sim "
+
