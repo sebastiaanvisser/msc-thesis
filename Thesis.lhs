@@ -46,29 +46,29 @@
 
 \begin{document}
 
-% \maketitle
-% \input{Abstract}
-% \pagebreak
-% 
-% \tableofcontents
-% \pagebreak
-% 
-% \input{Introduction} 
-% \input{Motivation} 
-% \input{Overview} 
-% \input{Fixpoints} 
-% \input{Morphisms} 
-% \input{Heap} 
-% \input{Storage} 
-% \input{Example} 
+\maketitle
+\input{Abstract}
+\pagebreak
+
+\tableofcontents
+\pagebreak
+
+\input{Introduction} 
+\input{Motivation} 
+\input{Overview} 
+\input{Fixpoints} 
+\input{Morphisms} 
+\input{Heap} 
+\input{Storage} 
+\input{Example} 
 \input{HigherOrder} 
-% \input{RelatedWork} 
-% \input{Conclusion}
-% \input{FutureWork} 
-% 
-% \pagebreak
-% \bibliographystyle{plain}
-% \bibliography{thesis}
+\input{RelatedWork} 
+\input{Conclusion}
+\input{FutureWork} 
+
+\pagebreak
+\bibliographystyle{plain}
+\bibliography{thesis}
 
 \end{document}
 
