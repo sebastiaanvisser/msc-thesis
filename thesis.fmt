@@ -164,4 +164,5 @@
 
 %format :-> = " \twoheadrightarrow "
 %format ~   = " \sim "
+%format family = "\textbf{family}"
 

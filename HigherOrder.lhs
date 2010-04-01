@@ -16,9 +16,14 @@
 >   , TypeFamilies
 >   , MultiParamTypeClasses
 >   , GeneralizedNewtypeDeriving
+>   , UndecidableInstances
 >   #-}
 > module HigherOrder where
 
+> -- import Data.ByteString.Lazy
+> import Data.Binary
+> -- import Data.Binary.Get
+> -- import Data.Binary.Put
 > import Control.Applicative
 > import Control.Monad
 > import Data.Monoid
@@ -498,6 +503,17 @@ the constructor.
 > 
 > instance (Applicative m, Monad m) => AnnIO HId h phi m
 
+And the two function to full annotate or fully strip all annotations from the
+top of a tree.
+
+> fullyOut :: (AnnO a h phi m, PTraversable phi h) => phi ix -> HFixA a h ix -> m (HFixA a h ix)
+> fullyOut phi (HInA f) = annO phi (HInA f) >>= fmap HInF . ptraverse fullyOut phi
+> fullyOut _   a        = return a
+>
+> fullyIn :: (AnnI a h phi m, PTraversable phi h) => phi ix -> HFixA a h ix -> m (HFixA a h ix)
+> fullyIn phi (HInF f) = ptraverse fullyIn phi f >>= annI phi
+> fullyIn _   a        = return a
+
 Although the types have changed the annotation framework is very similar to the
 one for regular recursive data structures. We can now use these type classes to
 implement a paramorphism for indexed datatypes.
@@ -623,13 +639,13 @@ from the constant functor |K| and from the monoid wrapper when needed.
 
 > sum :: AnnO a (Tree Int) TreePhi m => FingerTreeA a Int -> m Int
 > sum h = (| (getSum . unK) (hparaMA sumAlg (SpPrf ZeroP) h) |)
-
+>
 > product :: AnnO a (Tree Int) TreePhi m => FingerTreeA a Int -> m Int
 > product h = (| (getProduct . unK) (hparaMA productAlg (SpPrf ZeroP) h) |)
-
+>
 > concat :: AnnO a (Tree String) TreePhi m => FingerTreeA a String -> m String
 > concat h = (| unK (hparaMA concatAlg (SpPrf ZeroP) h) |)
-
+>
 > contains :: Eq b => AnnO a (Tree b) TreePhi m => b -> FingerTreeA a b -> m Bool
 > contains v h = (| (getAny . unK) (hparaMA (containsAlg v) (SpPrf ZeroP) h) |)
 
@@ -673,6 +689,11 @@ that distributes an index to both the co- and contra variant positions.
 > infixr 1 :->
 > data (:->) a b ix = F { unF :: a ix -> b ix }
 
+And a custom apply function.
+
+> (#) :: (a :-> b) ix -> a ix -> b ix
+> (#) (F x) y = x y
+
 The inductive structure of the GADT forces us to reason about the numeric index
 relation of two connected nodes. Computing the successor of a type level
 natural number can be done using the successor (written down as |Succ n|)
@@ -699,26 +720,27 @@ involved when appending an item to the head of the sequence.
 
 > consAlg :: tree ~ HFixA a (Tree b) => HPsiA a TreePhi (Tree b) (N (D tree) :-> tree :*: N tree)
 
+%if False
+
+> consAlg (SpPrf _) = undefined
+
+%endif
+
 Let try to explain what this type means. 
 
 To simplify the type signature a type variable |tree| is defined as a shortcut
-for a fully annotated finger tree structure with value of type |b|.
-
-We have a paramorphic algebra that takes an annotated finger tree as input
-and computes a function from a finger tree \emph{node} to a product of some
-finger tree and some finger tree \emph{node}. 
-
-The result is a product type because it returns both the new finger tree
-and possibly a overflow node that needs to be inserted one level deeper. So, if
-we push a node to the head of sequence it gets inserted in the left 2-3 tree of
-the first spine node, when this 2-3 tree is already full one node or sub-tree
-is selected to be cons'ed to a spine node one deeper. 
-
-The input node always has a depth index one less than depth index of the
-sub-tree being traversed by the algebra, indicated by the |D| type.
-
-The result tree index is unaffected, this makes sense: cons'ing a node to a
-finger tree should return a finger tree with the same index.
+for a fully annotated finger tree structure with value of type |b|.  We have a
+paramorphic algebra that takes an annotated finger tree as input and computes a
+function from a finger tree \emph{node} to a product of some finger tree and
+some finger tree \emph{node}.  The result is a product type because it returns
+both the new finger tree and possibly a overflow node that needs to be inserted
+one level deeper. So, if we push a node to the head of sequence it gets
+inserted in the left 2-3 tree of the first spine node, when this 2-3 tree is
+already full one node or sub-tree is selected to be cons'ed to a spine node one
+deeper.  The input node always has a depth index one less than depth index of
+the sub-tree being traversed by the algebra, indicated by the |D| type.  The
+result tree index is unaffected, this makes sense: cons'ing a node to a finger
+tree should return a finger tree with the same index.
 
 Both the input and overflow part of the output of the computed functions are
 nodes, because only value can be inserted inserted into a finger tree and only
@@ -736,19 +758,105 @@ zero. The |D| type family can only be applied to non-zero indices, to proof to
 the compiler our input finger tree always has a non-zero index we parametrize
 the algebra with our |TreePhi| proof object.
 
+\todo{show insert}
+
+\begin{spec}
+insert :: AnnIO a (Tree b) TreePhi m => b -> FingerTreeA a b -> m (FingerTreeA a b)
+insert inp h =
+  do f <- hparaMA consAlg (SpPrf ZeroP) h
+     let a = hfst (f # (N . Just . D) (HInF (Value inp)))
+     undefined {-fullyIn-} (SpPrf ZeroP) a
+\end{spec}
+
 This example shows it is still possible to abstract away from recursion when
 writing operations over indexed datatypes. Higher order algebras can be written
 that preserve all invariants encoded in a GATD. However, we cannot help to
 conclude that \emph{it is very hard to do so}. \todo{cry a bit about the
 complexity}
 
+\section{Persistent Annotation}
+
 %if False
 
-> consAlg (SpPrf _) = undefined
+> data HeapR a
+> data HeapW a
+> newtype Pointer a = Ptr { unPtr :: Integer }
+> hread = undefined
+> hwrite = undefined
+> instance Binary (Pointer (f b ix)) where { put = undefined; get = undefined }
+> liftR :: HeapR a -> HeapW a
+> liftR = undefined
+> instance Functor HeapR
+> instance Applicative HeapR
+> instance Monad HeapR
+> instance Functor HeapW
+> instance Applicative HeapW
+> instance Monad HeapW
 
 %endif
 
-\section{HPersistent}
+In order to serialize indexed datatypes to disk we need to make the |Pointer|
+type an instance of our higher order annotation type classes. All the types and
+type classes involved need to be lifted to the indexed level, meaning we can
+not reuse any code of our previous framework.
+
+We cannot use the regular |Binary| type class, because we will soon figure out
+the types will not fit. So we create a higher order |HBinary| class useful for
+serializing and deserializing index datatypes.
+
+> class HBinary phi h where
+>   hput :: phi ix -> h ix -> Put
+>   hget :: phi ix -> Get (h ix)
+
+Now we need to create an |HBinary| instance for our finger tree, we skip the
+implementation which is rather straightforward. Note that for the element type
+|b| we still require a regular |Binary| instance.
+
+> instance (Binary b, HBinary TreePhi f) => HBinary TreePhi (Tree b f) where
+
+We cannot reuse the |read| and |write| functions working on our storage heap,
+we have to lift them to |hread| and |hwrite| accordingly.
+
+> hread   :: HBinary phi h => phi ix -> Pointer (h ix) -> HeapR (h ix)
+> hwrite  :: HBinary phi h => phi ix -> h ix -> HeapW (Pointer (h ix))
+
+Now we lift the pointer annotation to a higher order level by extending the
+kinds. Because Haskell has no \emph{kind polymorphism} and we need the
+additional type parameter |ix| we cannot reuse the existing |P| type.
+
+> newtype  HP  (f  :: (* -> *) -> * -> *)
+>              (b  :: * -> *)
+>              (ix :: *)
+>       =  HP  { unP :: Pointer (f b ix) }
+
+And now we can give the instance for the |AnnO|, |AnnI| and |AnnIO| classes for
+both the read and read-write heap contexts. The implementations are rather
+straightforward and are shown below.
+
+> instance HBinary phi (a f (HFixA a f)) => HBinary phi (HFixA a f) where
+>   hput phi  (HInA f)  = hput phi f
+>   hget phi            = (| HInA (hget phi) |)
+
+> instance HBinary phi (h (HFixA HP h)) => AnnO HP h phi HeapR where
+>   annO phi  (HInA (HP  h)  ) = hread phi h
+>   annO _    (HInF      h   ) = return h
+
+> instance HBinary phi (h (HFixA HP h)) => AnnO HP h phi HeapW where
+>   annO phi  (HInA (HP h)  ) = liftR (hread phi h)
+>   annO _    (HInF     h   ) = return h
+
+> instance HBinary phi (h (HFixA HP h)) => AnnI HP h phi HeapW where
+>   annI phi = fmap (HInA . HP) . hwrite phi
+
+> instance HBinary phi (h (HFixA HP h)) => AnnIO HP h phi HeapW where
+
+This section makes clear what the implication are of moving away from regular
+datatypes to indexed datatypes. From the high level annotation instances to the
+lower level read and write actions to the type class for binary serialization,
+everything has to be lifted to the indexed level.
 
 \section{Running example!}
+
+Now we have all the ingredient to run ....
+
 
