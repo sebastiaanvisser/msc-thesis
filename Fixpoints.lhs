@@ -46,11 +46,11 @@
 
 %endif
 
-\begin{section}{Annotated fixed points}
+\begin{chapter}{Annotated fixed points}
 
 % -----------------------------------------------------------------------------
 
-\begin{subsection}{Fixed points}
+\begin{section}{Fixed points}
 
 \review{
 Most container datatypes in Haskell are written down with explicit recursion.
@@ -160,11 +160,11 @@ programming.
 
 %endif
 
-\end{subsection}
+\end{section}
 
 % -----------------------------------------------------------------------------
 
-\begin{subsection}{Annotations}
+\begin{section}{Annotations}
 
 \review{
 In the previous section we worked out some basic building blocks that can be
@@ -263,11 +263,11 @@ modified.
 > data TimeAnn f a = TA LocalTime (f a)
 > type TimedTree = FixA TimeAnn Tree_f
 
-\end{subsection}
+\end{section}
 
 % -----------------------------------------------------------------------------
 
-\begin{subsection}{Annotation associated functionality}
+\begin{section}{Annotation associated functionality}
 
 \review{
 In the previous section we have shown how to store arbitrary pieces of
@@ -374,11 +374,11 @@ to simplify creating annotated binary trees manually.
 > branchA :: AnnI a Tree_f m => Int -> TreeA a -> TreeA a -> m (TreeA a)
 > branchA v l r = annI (Branch v l r)
 
-\end{subsection}
+\end{section}
 
 % -----------------------------------------------------------------------------
 
-\begin{subsection}{Debug annotation}
+\begin{section}{Debug annotation}
 
 \review{
 To more clearly demonstrate the usage of generic traversals over annotated
@@ -465,7 +465,7 @@ annotation type classes to store and retrieve annotated structures to and from
 disk.
 }
 
-\end{subsection}
-
 \end{section}
+
+\end{chapter}
 

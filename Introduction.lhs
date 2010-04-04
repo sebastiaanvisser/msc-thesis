@@ -6,7 +6,7 @@
 
 %endif
 
-\section{Introduction}
+\chapter{Introduction}
 
 In the chapter TODO we will explore recursive data types with explicitly
 annotated fixed points. We will show how to create different annotation types

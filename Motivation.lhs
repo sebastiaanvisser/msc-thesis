@@ -1,7 +1,7 @@
 %include polycode.fmt
 %include thesis.fmt
 
-\begin{section}{Motivation}
+\begin{chapter}{Motivation}
 
 Management of long-lived information is an essential ingredient of a large
 amount of modern applications.  There are currently several ways of making data
@@ -28,7 +28,7 @@ We will now describe the two most common techniques for data persistence
 currently used in Haskell and subsequently sketch an example application that
 motivates the need for the proposed framework.
 
-\begin{subsection}{Relational Database Management Systems}
+\begin{section}{Relational Database Management Systems}
 
 There are several packages available for Haskell that use connections to
 existing relational database management systems (RDMSes) to store values
@@ -49,9 +49,9 @@ on third party tool can also be a reason why a program can benefit from a
 lightweight and pure Haskell framework that can be included into the program
 like any other library.
 
-\end{subsection}
+\end{section}
 
-\begin{subsection}{Binary serialization}
+\begin{section}{Binary serialization}
 
 Another possibility to store values of arbitrary data types outside the
 application memory is to serialize the entire value to a textual or binary
@@ -74,9 +74,9 @@ pieces that can be freely navigated without touching the entire structure. Such
 a framework can still use these serialisation libraries internally for the
 individual non recursive pieces.
 
-\end{subsection}
+\end{section}
 
-\begin{subsection}{Example domain: spatial indexing}
+\begin{section}{Example domain: spatial indexing}
 
 The advantage of relational databases is the generality when it comes to
 storing data. Using (or misusing) the generic table based layout of an RDMS
@@ -120,6 +120,6 @@ developers of container libraries to focus on the internal structure and allows
 for writing efficient algorithms without worrying about the internals of the
 storage layer.
 
-\end{subsection}
-
 \end{section}
+
+\end{chapter}

@@ -22,7 +22,7 @@
 
 %endif
 
-\begin{section}{Generic storage}
+\begin{chapter}{Generic storage}
 
 In this section we will describe how to use the generic annotation framework
 for recursive datatypes together with the file based storage heap to build a
@@ -32,7 +32,7 @@ Operations working on the recursive datatypes will be lifted to one of the heap
 contexts. These lifted operation will now no longer operate in-memory but read
 there input, and write back their output, to an on-disk representation.
 
-\begin{subsection}{Pointer annotation}
+\begin{section}{Pointer annotation}
 
 In the previous section about the heap we have seen the |Pointer| type
 that stores an integer offset into the storage heap. When we want to represent
@@ -55,9 +55,9 @@ with the following type.
 
 > type PTree = FixA P Tree_f
 
-\end{subsection}
+\end{section}
 
-\begin{subsection}{Annotation Instances}
+\begin{section}{Annotation Instances}
 
 In the section dealing with generic traversals over recursive datatypes we
 have, among other morphisms, implemented annotation aware paramorphism and
@@ -130,7 +130,7 @@ function.
 >   put = put . outa
 >   get = liftM InA get
 
-\end{subsection}
-
 \end{section}
+
+\end{chapter}
 

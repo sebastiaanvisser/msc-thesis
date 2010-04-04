@@ -30,7 +30,7 @@
 
 %endif
 
-\section{Moving away from regular datatypes}
+\chapter{Moving away from regular datatypes}
 
 In the previous chapter we have shown how to build a generic storage framework
 for recursive data structures. This framework only works for regular datatypes
@@ -332,7 +332,7 @@ not for all type indices but for an explicitly limited set. \todo{explain}
 >   pfmap :: (forall ix. phi ix -> a ix -> b ix) -> forall ix. phi ix -> h a ix -> h b ix
 
 
-\subsubsection{Finger tree instance for PFunctor}
+\subsection{Finger tree instance for PFunctor}
 
 Before we can create a |PFunctor| instance for the finger tree datatype the
 typeclass forces us to make explicit the index family we want to reason about.
@@ -654,7 +654,7 @@ catamorphisms that compute values of simple Haskell types over indexed data
 structures. In the next section we show a more complex example, the |cons|
 function that append one item to the beginning of the finger tree sequence.
 
-\section{Cons}
+\subsection{Cons}
 
 Two of the basic operations on finger trees as described in the paper by Hinze
 and Paterson are the |cons| and the |snoc| functions. These functions append or

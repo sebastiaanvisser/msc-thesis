@@ -1,13 +1,13 @@
 %include polycode.fmt
 %include thesis.fmt
 
-\begin{section}{Future Work}  
+\begin{chapter}{Future Work}  
 
 Because it is hard to predict how much time it will take to implement an
 initial basic framework and the additional possibilities are near infinite,
 here is a list of additional work that can be done.
 
-\begin{subsection}{Encoding type hashes into serialized data}
+\begin{section}{Encoding type hashes into serialized data}
 
 This framework takes type values from the pure and type safe Haskell world and
 saves an binary representation to a flat file, this way loosing all type
@@ -22,9 +22,9 @@ be used to verify whether the data is what is to be expected. A similar
 technique for the programming language Clean has been described in
 \cite{clean}.
 
-\end{subsection}
+\end{section}
 
-\begin{subsection}{Nested data structures}
+\begin{section}{Nested data structures}
 
 It is hard to predict whether it is very easy to extend the framework to allow
 the persistence of nested data types. It requires some research to figure out
@@ -33,9 +33,9 @@ binary tree of lists of records. In order to store nested data type we are at
 least in the need of a generic programming library that can handle this.
 See \cite{initial}.
 
-\end{subsection}
+\end{section}
 
-\begin{subsection}{Incremental folds}
+\begin{section}{Incremental folds}
 
 \docite{sean on his work}
 
@@ -51,9 +51,9 @@ projected to the persistent data structures and saved together with
 non-recursive nodes. This would allow users to have very efficient queries over
 long-lived and incrementally changing data structures.
 
-\end{subsection}
+\end{section}
 
-\begin{subsection}{Using attribute grammars to write queries}
+\begin{section}{Using attribute grammars to write queries}
 
 The attribute grammar system for Haskell\cite{ag} can be used as a DSL to
 describe algebras for catamorphisms. The current system produces an entire
@@ -66,9 +66,9 @@ Recent work has shown that it also possible to create a first-class attribute
 grammar system for Haskell. It might possibly be easier to use this system to
 write the algebras.
 
-\end{subsection}
+\end{section}
 
-\begin{subsection}{Parallel access to independent sub structures}
+\begin{section}{Parallel access to independent sub structures}
 
 The transactional cache described above will be used to guarantee that no two
 concurrent threads can alter the same tree at the same moment. Some recursive
@@ -77,18 +77,18 @@ concurrent access can be safe. It might be interesting to research if we can
 use the information about the recursive structure of our data types to allow
 safe concurrent access to independent sub structures.
 
-\end{subsection}
+\end{section}
 
-\begin{subsection}{Aspect oriented storage framework}
+\begin{section}{Aspect oriented storage framework}
 
 Make the storage heap extendible in a nice way to allow custom variations on
 how data is saved. This should allow users to encrypt or compress individual
 data blocks. This extensions should also be able to incorporate the type hashes
 as described above.
 
-\end{subsection}
+\end{section}
 
-\begin{subsection}{Fixed point based optimizations}
+\begin{section}{Fixed point based optimizations}
 
 One single IO operation can generally be performed more efficiently than a
 large collection of smaller IO operations. When executing operations over large
@@ -101,7 +101,7 @@ same IO block. Operation which rely on the compositional structure of the data,
 like algebraically defined catamorphisms, might significantly benefit from such
 an optimization.
 
-\end{subsection}
-
 \end{section}
+
+\end{chapter}
 

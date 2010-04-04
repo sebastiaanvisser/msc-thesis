@@ -1,9 +1,9 @@
 %include polycode.fmt
 %include thesis.fmt
 
-\begin{section}{Conclusion}
+\begin{chapter}{Conclusion}
 
-\end{section}
+\end{chapter}
 
 
 

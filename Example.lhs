@@ -6,15 +6,15 @@
 
 %endif
 
-\section{Binary tree example}
+\chapter{Binary tree example}
 
-\subsection{Some algebras}
+\section{Some algebras}
 
-\subsubsection{contains?}
-\subsubsection{insert?}
-\subsubsection{repmin?}
-\subsubsection{delete?}
+\subsection{contains?}
+\subsection{insert?}
+\subsection{repmin?}
+\subsection{delete?}
 
-\subsection{Persistent binary tree}
+\section{Persistent binary tree}
 
 

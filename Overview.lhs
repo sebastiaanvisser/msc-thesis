@@ -6,5 +6,5 @@
 
 %endif
 
-\section{Overview}
+\chapter{Overview}
 

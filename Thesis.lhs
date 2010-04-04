@@ -1,11 +1,10 @@
 %\documentclass{article}
 %\documentclass[12pt]{scrartcl}
 %\documentclass[a4wide,10pt]{article}
-\documentclass[twoside, a4paper, openright]{report}
+\documentclass[12pt, a4paper]{report}
 
 %include polycode.fmt
 
-\usepackage{a4wide}
 \usepackage[pdftex]{graphicx}
 \usepackage[usenames]{color}
 \usepackage{amsmath}
@@ -48,10 +47,8 @@
 
 \maketitle
 \input{Abstract}
-\pagebreak
 
 \tableofcontents
-\pagebreak
 
 \input{Introduction} 
 \input{Motivation} 

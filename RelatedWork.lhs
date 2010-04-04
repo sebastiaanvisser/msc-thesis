@@ -1,9 +1,9 @@
 %include polycode.fmt
 %include thesis.fmt
 
-\begin{section}{Related work}
+\begin{chapter}{Related work}
 
-\begin{subsection}{Clean}
+\begin{section}{Clean}
 
 In their paper \emph{Efficient and Type-Safe Generic Data Storage} Smetsers,
 Van Weelden and Plasmeijer\cite{clean} describe a library for generic storage
@@ -34,9 +34,9 @@ hash inside their chunks. When reading data back in this type will be checked
 for validity. This is a very interesting technique that might also be used for
 improving the type safety of our Haskell framework.
 
-\end{subsection}
+\end{section}
 
-\begin{subsection}{Relational Database Management Systems}
+\begin{section}{Relational Database Management Systems}
 
 There are several connectors available for Haskell to existing relational
 database management systems. These connectors allow developers to directly
@@ -52,9 +52,9 @@ allow mapping values of arbitrary Haskell types to database rows and vice
 versa. These system really add some power, because developers do not have to
 write the marshalling code manually.
 
-\end{subsection}
+\end{section}
 
-\begin{subsection}{Binary serialization}
+\begin{section}{Binary serialization}
 
 \emph{Data.Binary}\cite{databinary}, developed by Don Stewart, is a Haskell
 library that enables generic serialization of values of arbitrary data types to
@@ -82,9 +82,9 @@ Binary serialization will be an essential part of our persistence framework
 should ideally be done generically for all possible data types. The libraries
 explained above can be used to take care of this.
 
-\end{subsection}
+\end{section}
 
-\begin{subsection}{Algebras}
+\begin{section}{Algebras}
 
 In their paper \emph{Functional Programming with Bananas, Lenses, Envelopes and
 Barbed Wire} Meijer, Fokkinga and Paterson\cite{bananas} show how certain
@@ -103,9 +103,9 @@ This is a very well explored and common trick in functional programming that
 will also be extensively used in this project. By writing algebras for data
 type specific folds, the container data remain open for annotation.
 
-\end{subsection}
+\end{section}
 
-\begin{subsection}{Attribute Grammars}
+\begin{section}{Attribute Grammars}
 
 Attribute grammars can be seen as a way of writing algebras for catamorphisms.
 The attribute grammar system for Haskell\cite{ag} allows users to write
@@ -116,9 +116,9 @@ The different aspects written down using this attribute grammar system can
 potentially be used as a recipe for query and modifier functions over our
 persistent data structures.
 
-\end{subsection}
+\end{section}
 
-\begin{subsection}{Iteratee based IO}
+\begin{section}{Iteratee based IO}
 
 In Haskell, being a lazy language, the use of lazy IO has been quite common.
 Reading and processing the entire contents of a file lazily means there is no
@@ -137,18 +137,18 @@ The ideas from his work can be used to avoid the same pitfall in this project.
 We should make sure that processing values originating from our storage heap in
 pure functions does not cause any effects.
 
-\end{subsection}
+\end{section}
 
-\begin{subsection}{Sharing / Garbage Collection}
+\begin{section}{Sharing / Garbage Collection}
 
 Lots of research and work \cite{gengc,pargc} has been done in the field of
 garbage collection for pure and lazy functional programming languages like
 Haskell.  Lots of these techniques should be applicable to storage heaps
 outside the conventional computer memory, but located on disk.
 
-\end{subsection}
+\end{section}
 
-\begin{subsection}{Software Transactional Memory}
+\begin{section}{Software Transactional Memory}
 
 Software Transactional Memory, STM, is a technique that is used to allow
 transactional access to shared memory. In their paper \emph{Composable Memory
@@ -170,7 +170,7 @@ These ideas, or maybe existing implementations, can be used to allow
 transactional access to our persistent data structures when working with
 concurrent programs.
 
-\end{subsection}
-
 \end{section}
+
+\end{chapter}
 

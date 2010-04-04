@@ -25,9 +25,9 @@
 
 %endif
 
-\begin{section}{Generic traversals with annotations}
+\begin{chapter}{Generic traversals with annotations}
 
-\begin{subsection}{Paramorphisms}
+\begin{section}{Paramorphisms}
 
 \review{
 Now that we have a way to associate functionality with annotations we should be
@@ -185,9 +185,9 @@ and get back a pure |contains| function.
 > contains :: Int -> Tree -> Bool
 > contains v = para1 (containsAlg v)
 
-\end{subsection}
+\end{section}
 
-\begin{subsection}{Apomorphisms}
+\begin{section}{Apomorphisms}
 
 \review{
 Dual to the paramorphism is the \emph{apomorphism}. Where the paramorphism
@@ -292,9 +292,9 @@ trees without annotations.
 > fromList :: [Int] -> Tree
 > fromList = apo fromListCoalg
 
-\end{subsection}
+\end{section}
 
-\begin{subsection}{Endomorphic paramorphism}
+\begin{section}{Endomorphic paramorphism}
 
 Both the paramorphisms and the apomorphisms working on annotated structures had
 enough information to know when to use the |annO| or |annI| function to
@@ -398,9 +398,9 @@ paramorphism working over structure without annotations.
 > endo :: Traversable f => Endo Id f -> Fix f -> Fix f
 > endo psi = endoA psi
 
-\end{subsection}
+\end{section}
 
-\begin{subsection}{Endomorphic apomorphisms}
+\begin{section}{Endomorphic apomorphisms}
 
 Similar to the concept of endomorphic paramorphism are the endomorphic
 apomorphisms. Endomorphic paramorphisms are specific apomorphisms in the sense
@@ -514,9 +514,9 @@ not requiring any context or annotation.
 > coendo :: Traversable f => CoEndo Id f -> Fix f -> Fix f
 > coendo phi = coendoA phi
 
-\end{subsection}
+\end{section}
 
-\begin{subsection}{Applicative paramorphisms}
+\begin{section}{Applicative paramorphisms}
 
 When writing modification functions over datatypes using morphisms like the
 ones defined above it is not always easy to compose small functions into bigger
@@ -665,9 +665,9 @@ quite similar to the |paraMA| defined previously. The only conceptual
 difference is that for the |Prj| constructor the function unpacks the
 existential and recursively applies the paramorphism. 
 
-\end{subsection}
+\end{section}
 
-\begin{subsection}{Lazy IO and strict paramorphisms}
+\begin{section}{Lazy IO and strict paramorphisms}
 
 \review{
 The paramorphism function working on annotated structures is as strict as the
@@ -830,7 +830,7 @@ essential.
 > paraMA' :: (Lazy m, AnnO a f m) => Psi1 a f r -> FixA a f -> m r
 > paraMA' psi = dseq1 `liftM` lazyParaMA psi
 
-\end{subsection}
-
 \end{section}
+
+\end{chapter}
 
