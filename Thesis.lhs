@@ -8,8 +8,10 @@
 \usepackage[pdftex]{graphicx}
 \usepackage[usenames]{color}
 \usepackage{amsmath}
+%\usepackage[disable]{todonotes}
+\usepackage{url}
 \usepackage{draft}
-%\usepackage{fancyhdr}
+\usepackage{fancyhdr}
 \usepackage{pxfonts}
 % \usepackage{mathpazo} % For the fancy font, idea from Martijn/Wouter
 \definecolor{linkblue}{RGB}{6,55,206}
@@ -18,8 +20,10 @@
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{0.1in} % \baselineskip}
 
-%\pagestyle{fancy}
-%\rhead{\emph{MSc Thesis}}
+
+\pagestyle{fancy}
+\renewcommand{\sectionmark}[1]{\markright{\thesection.\ #1}}
+\renewcommand{\chaptermark}[1]{\markboth{\ #1}{}}   % \thechapter
 %\lhead{Generic persistence of Haskell data types}
 
 \bibliographystyle{alpha}
@@ -40,7 +44,10 @@
 %endif
 
 \title{A GENERIC APPROACH TO DATATYPE PERSISTENCY IN HASKELL}
-\author{Sebastiaan Visser}
+\author{Sebastiaan Visser\\
+\small{Utrecht University}\\
+\small{\texttt{s@@fvisser.nl}}
+}
 \date{\today}
 
 \begin{document}
