@@ -55,7 +55,7 @@
 % \maketitle
 % \input{Abstract}
 % 
-% \tableofcontents
+\tableofcontents
 % 
 % \input{Introduction} 
 % \input{Motivation} 
@@ -70,9 +70,9 @@
 % \input{Conclusion}
 % \input{FutureWork} 
 % 
-% \pagebreak
-% \bibliographystyle{plain}
-% \bibliography{thesis}
+\newpage
+\bibliographystyle{plain}
+\bibliography{thesis}
 
 \end{document}
 

@@ -4,6 +4,7 @@
 %format <*>       = "\circledast "
 %format <=<       = "\diamond "
 %format >>=       = "\rightarrowtail "
+%format =<<       = "\leftarrowtail "
 %format fixp      = "fix"
 %format Left      = "L"
 %format Right     = "R"

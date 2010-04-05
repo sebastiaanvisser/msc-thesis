@@ -1,8 +1,8 @@
 %include polycode.fmt
 %include thesis.fmt
-%include forall.fmt
 %include higherorder.fmt
 %include haskell.fmt
+%include forall.fmt
 
 %if False
 
@@ -28,11 +28,15 @@
 > -- import Data.Binary.Put
 > import Control.Applicative
 > import Control.Monad
+> import Heap
+> import Storage
 > import Data.Monoid
+> import Prelude hiding (sum)
 
 %endif
 
-\chapter{Moving away from regular datatypes}
+\chapter{Indexed Datatypes}
+\label{chap:indexed}
 
 In the previous chapter we have shown how to build a generic storage framework
 for recursive data structures. This framework only works for regular datatypes
@@ -152,7 +156,7 @@ parametrizing the annotated fixed point with the identity annotation.
 
 > type HFix f ix = HFixA HId f ix
 
-\section{Finger Tree}
+\section{Finger trees as GADT}
 
 To illustrate the usage of the higher order fixed point combinator we will in
 this chapter model a finger tree data type as a indexed GADT. The finger tree
@@ -315,7 +319,7 @@ for our higher order datatypes like our finger tree GADT. In order to perform
 generic traversal over indexed datatypes we have to introduce higher order
 variant of these three type classes.
 
-\subsection{Higher order Functor}
+\subsection{Functor type class}
 
 In their paper \emph{Initial Algebra Semantics is Enough!}\cite{initial} Ghani
 and Johann describe how to create a type class for higher order functors. These
@@ -333,8 +337,7 @@ not for all type indices but for an explicitly limited set. \todo{explain}
 > class PFunctor phi h where
 >   pfmap :: (forall ix. phi ix -> a ix -> b ix) -> forall ix. phi ix -> h a ix -> h b ix
 
-
-\subsection{Finger tree instance for PFunctor}
+\subsection{Finger tree functor instance}
 
 Before we can create a |PFunctor| instance for the finger tree datatype the
 typeclass forces us to make explicit the index family we want to reason about.
@@ -390,13 +393,9 @@ This |PFunctor| instance allows us to map a function over one level of
 recursive positions of the finger tree GADT. The we can use the proof object to
 distinguish between different positions in the structure. The |PFunctor|
 instances will form the basis of generic traversals over higher order
-datatypes with restricted families of indices.
+datatypes with restricted families of iltimorendices.
 
-\subsection{Higher order Foldable}
-
-\todo{Skip this one? We do not really use |Foldable| anyway.}
-
-\subsection{Higher order Traversable}
+\subsection{Traversable type class}
 
 Besides the higher order |Functor| instance we can also make a higher order
 |Traversable| instance, allowing us to perform effectful traversals. First we
@@ -411,7 +410,11 @@ the same proof object $\phi$ to restrict the family of indices.
 So if we are provided an effecful computation for the element type |a ix| in
 some |Applicative| -- or possibly monadic -- context |f|, the |ptraverse|
 function should be able to apply this to all elements of the structure
-|h a ix|. The |PTraversable| instance for the finger tree GADT is follows the
+|h a ix|.
+  
+\subsection{Finger tree traversable instance}
+
+The |PTraversable| instance for the finger tree GADT is follows the
 same pattern as the regular |Traversable| instance, although we have to pattern
 match on- and recursively supply the proof objects, just like the |PFunctor|
 instance. 
@@ -438,7 +441,7 @@ The instance uses idiom brackets for the effectful computations. With the both
 the higher order functor and traversable instances for our finger tree GADT, we
 can now start writing generic recursive traversals.
 
-\section{In and Out type classes}
+\section{Higher order annotation classes}
 
 In the our generic annotation framework for regular datatypes we have created
 three type classes to associate custom functionality with wrapping and
@@ -520,7 +523,7 @@ Although the types have changed the annotation framework is very similar to the
 one for regular recursive data structures. We can now use these type classes to
 implement a paramorphism for indexed datatypes.
 
-\section{Higher order annotated paramorphism}
+\section{Higher order paramorphism}
 
 In this section we introduce paramorphic traversals for higher order datatypes.
 In order to express the algebras we define the higher order sum and product
@@ -562,7 +565,9 @@ effecful context |m|.
 
 \todo{not laziness, not applicative, future work}
 
-\subsection{Contains, Sum and Product}
+\section{Finger tree algebras}
+
+\subsection{Sum, Product, Concat and Contains}
 
 To illustrate the usage of the higher order paramorphism we will define four
 example algebras for finger tree datatype. All four algebras will be defined in
@@ -672,7 +677,7 @@ catamorphisms that compute values of simple Haskell types over indexed data
 structures. In the next section we show a more complex example, the |cons|
 function that append one item to the beginning of the finger tree sequence.
 
-\subsection{Cons}
+\subsection{Left biased insert}
 
 Two of the basic operations on finger trees as described in the paper by Hinze
 and Paterson are the |cons| and the |snoc| functions. These functions append or
@@ -778,8 +783,10 @@ the algebra with our |TreePhi| proof object.
 
 \todo{show insert}
 
+> cons :: AnnIO a (Tree b) TreePhi m => b -> FingerTreeA a b -> m (FingerTreeA a b)
+> cons = undefined
+
 \begin{spec}
-insert :: AnnIO a (Tree b) TreePhi m => b -> FingerTreeA a b -> m (FingerTreeA a b)
 insert inp h =
   do f <- hparaMA consAlg (SpPrf ZeroP) h
      let a = hfst (f # (N . Just . D) (HInF (Value0 inp)))
@@ -796,20 +803,10 @@ complexity}
 
 %if False
 
-> data HeapR a
-> data HeapW a
-> newtype Pointer a = Ptr { unPtr :: Integer }
 > hread = undefined
 > hwrite = undefined
 > instance Binary (Pointer (f b ix)) where { put = undefined; get = undefined }
-> liftR :: HeapR a -> HeapW a
-> liftR = undefined
-> instance Functor HeapR
-> instance Applicative HeapR
-> instance Monad HeapR
-> instance Functor HeapW
-> instance Applicative HeapW
-> instance Monad HeapW
+> instance (HBinary TreePhi (HP (Tree Int) (HFixA HP (Tree Int))))
 
 %endif
 
@@ -873,8 +870,75 @@ datatypes to indexed datatypes. From the high level annotation instances to the
 lower level read and write actions to the type class for binary serialization,
 everything has to be lifted to the indexed level.
 
-\section{Running example!}
+\section{Putting it all together}
 
-Now we have all the ingredient to run ....
+In the previous section have in parallel both extended the persistence
+framework to index datatypes and developed an indexed finger tree type as an
+example. Now we have all the ingredients to show that this higher order
+framework actually works. In this concluding section of this chapter we will
+show how to build op a finger tree of integers on disk and compute the sum of
+all values.
+
+First we introduce a type synonym for our finger tree of integers. We define an
+|IntStore| to be a persistent finger tree of integers by using the |HP|
+annotation at the recursive positions.
+
+> type IntStore = HFixA HP (Tree Int) (SpI One)
+
+The |empty| function will be used to produce an empty persistent finger tree.
+
+> pempty :: HeapW IntStore
+> pempty = annI (SpPrf ZeroP) Empty
+
+By only specializing the type we lift the |cons| function from section
+\todo{TODO} to work on persistent finger trees. We see that the type signatures
+of our generic function become simpler the more we specialize them.
+
+> pcons :: Int -> IntStore -> HeapW IntStore
+> pcons = cons
+
+We now have all the ingredient to write a function that creates and stores a
+finger tree on disk. We use the |run| function from our heap context to open a
+database file and run a heap computation.
+  
+> createStore :: FilePath -> IO ()
+> createStore file = run file $
+>   do  p <- pcons 6 =<< pcons 3 =<< pcons 4 =<< pempty
+>       storeRoot p
+
+Both the |pcons| and the |pempty| function result in an persistent finger
+tree, which means a |Pointer| to a finger tree. Because the |pcons| function
+also takes a persistent finger tree as input we can compose these actions
+together. Because the actions are monadic we composes these with the
+right-to-left monadic bind operator (|=<<|). After producing the tree we store
+the pointer in the root node of the heap.
+
+We will create a second function that reads a finger tree from disk and
+computes the total sum over all values. First we lift the |sum| function to
+work on persistent finger trees, also by only changing the type.
+
+> psum :: IntStore -> HeapR Int
+> psum = sum
+
+Now we can write a function that reads our previously stored finger tree from
+the root node and computes the sum using our lifted |psum| function.
+
+> computeSum :: FilePath -> IO ()
+> computeSum file = run file $
+>   do  o <- getRoot
+>       s <- psum o
+>       liftIO (print s)
+
+These two functions both work on the persistent store and can now be run in two
+different sessions. A consecutive run of first the |createStore| and then the
+|computeSum| results in the expected total 13:
+
+\begin{verbatim}
+ghci> createStore "test.db"
+ghci> computeSum "test.db"
+13
+\end{verbatim}
+
+\todo{so, it works}
 
 

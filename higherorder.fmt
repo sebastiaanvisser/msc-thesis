@@ -71,8 +71,8 @@
 %format N                       = "\TConId{N} "
 %format D                       = "\TConId{D} "
 
-%format HeapW                   = "\TConId{HeapW}"
-%format HeapR                   = "\TConId{HeapR}"
+%format HeapW                   = "\TConId{Heap_W}"
+%format HeapR                   = "\TConId{Heap_R}"
 %format Pointer                 = "\TConId{Pointer}"
 %format HP                      = "\TConId{HPointer_{\alpha}}"
 
@@ -80,6 +80,8 @@
 %format Monad                  = "\TClassId{Monad}"
 %format Monoid                 = "\TClassId{Monoid}"
 %format Applicative            = "\TClassId{Applicative}"
+%format Foldable               = "\TClassId{Foldable}"
+%format Traversable            = "\TClassId{Traversable}"
 %format Eq                     = "\TClassId{Eq}"
 %format Binary                 = "\TClassId{Binary}"
 %format HBinary                = "\TClassId{HBinary}"
@@ -92,4 +94,9 @@
 %format AnnI                   = "\TClassId{$Ann_{I}$}"
 %format AnnO                   = "\TClassId{$Ann_{O}$}"
 %format AnnIO                  = "\TClassId{$Ann_{IO}$}"
+
+%format annI                   = "ann_{I}"
+%format annO                   = "ann_{O}"
+%format annIO                  = "ann_{IO}"
+
 

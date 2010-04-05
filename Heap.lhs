@@ -248,6 +248,8 @@ will contain one additional block containing the second string.
 >       liftA (free p0)
 >       return ()
 
+\todo{storeRoot, getRoot, withRoot...}
+
 In this section we have described a very basic file based heap structure with a
 simple interface that allows us to allocate and write new blocks of
 information, to read from existing blocks of information and to free blocks
