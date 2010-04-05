@@ -6,7 +6,7 @@
 %include polycode.fmt
 
 \usepackage[pdftex]{graphicx}
-\usepackage[usenames]{color}
+\usepackage{xcolor}
 \usepackage{amsmath}
 %\usepackage[disable]{todonotes}
 \usepackage{url}
@@ -52,27 +52,27 @@
 
 \begin{document}
 
-\maketitle
-\input{Abstract}
-
-\tableofcontents
-
-\input{Introduction} 
-\input{Motivation} 
-\input{Overview} 
-\input{Fixpoints} 
-\input{Morphisms} 
-\input{Heap} 
-\input{Storage} 
-\input{Example} 
+% \maketitle
+% \input{Abstract}
+% 
+% \tableofcontents
+% 
+% \input{Introduction} 
+% \input{Motivation} 
+% \input{Overview} 
+% \input{Fixpoints} 
+% \input{Morphisms} 
+% \input{Heap} 
+% \input{Storage} 
+% \input{Example} 
 \input{HigherOrder} 
-\input{RelatedWork} 
-\input{Conclusion}
-\input{FutureWork} 
-
-\pagebreak
-\bibliographystyle{plain}
-\bibliography{thesis}
+% \input{RelatedWork} 
+% \input{Conclusion}
+% \input{FutureWork} 
+% 
+% \pagebreak
+% \bibliographystyle{plain}
+% \bibliography{thesis}
 
 \end{document}
 

@@ -13,6 +13,7 @@
 >   #-}
 > module Storage where
 
+> import Control.Monad
 > import Data.Traversable
 > import Data.Binary
 > import Fixpoints
@@ -68,32 +69,32 @@ of the traversal. In order to be able to apply these algebras to our persistent
 binary tree we have to make the |P| type an instance of the annotation type
 classes.
 
-We first make |P| an instance of the |AnnOut| type class. We can simply
+We first make |P| an instance of the |AnnO| type class. We can simply
 use the |read| function from our read-only storage heap for the implementation.
 This read-only annotation can be associated with the |HeapR| context. We first
 unpack the fixed point and the |P| wrapper and than read one non-recursive node
 from disk. Because the storage heap only stores plain strings of bits a
-|Binary| instance is needed to deserialize the Haskell value. The |annOut|
+|Binary| instance is needed to deserialize the Haskell value. The |annO|
 function takes a pointer to one non-recursive node, possibly containg pointers
 to other nodes again, and return this node, with type |f (FixA P f)|. When the
 fixed point does not contains an annotation at all we just unpack the node like
 we did with the other annotations instances,
 
 > instance  (Traversable f, Binary (f (FixA P f)))
->       =>  AnnOut P f HeapR where
+>       =>  AnnO P f HeapR where
 >
->   annOut (InA (P  f)  ) = read f
->   annOut (InF     f   ) = return f
+>   annO (InA (P  f)  ) = read f
+>   annO (InF     f   ) = return f
 
-The |AnnIn| instance for the |Pointer| type is just a matter of writing a
+The |AnnI| instance for the |Pointer| type is just a matter of writing a
 single non-recursive node to disk and storing the pointer inside the |P|
 wrapper type. This action can only be done inside the read-write |HeapW|
 context.
 
 > instance  (Traversable f, Binary (f (FixA P f)))
->       =>  AnnIn P f HeapW where
+>       =>  AnnI P f HeapW where
 >
->   annIn = fmap (In . P) . write
+>   annI = fmap (InA . P) . write
 
 Sometimes, when working inside the read-write heap context |HeapW|, we also
 want to be able to perform read-only actions, so we also give an |AnnO|
@@ -104,10 +105,10 @@ teh |read| operation to the read-write context.
 \todo{what about laziness? |liftLazy| instead of |liftR|?}
 
 > instance  (Traversable f, Binary (f (FixA P f)))
->       =>  AnnOut P f HeapW where
+>       =>  AnnO P f HeapW where
 >
->   annOut (InA (P  f)  ) = liftR (read f)
->   annOut (InF     f   ) = return f
+>   annO (InA (P  f)  ) = liftR (read f)
+>   annO (InF     f   ) = return f
 
 Because we now both have an |AnnO| and an |AnnI| instance for the |Pointer|
 type inside the |HeapW| context we can create an instance for the |AnnIO| typeclass.

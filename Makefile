@@ -1,6 +1,6 @@
 DOC=Thesis
 
-all: ${DOC}.pdf
+all: ${DOC}.pdf thesis.fmt haskell.fmt higherorder.fmt
 	open *.pdf
 
 ${DOC}.pdf: \
@@ -45,4 +45,6 @@ clean: .
 	*.tex \
 	*.out \
 	*.toc
+
+new: clean all
 

@@ -1,0 +1,95 @@
+%format Houtf  = "hout_f"
+%format Houta  = "hout_a"
+
+
+
+%format ZeroP   = "\phi_0"
+%format (SuccP i) = "\phi_{i+1}"
+
+%format SpPrf   = "Sp_{\phi}"
+%format DgPrf   = "Dg_{\phi}"
+%format NdPrf   = "Nd_{\phi}"
+%format NdZPrf  = "Nd_{0\phi}"
+
+%format hparaMA = "hpara^m_{\alpha}"
+%format psi     = "h\psi"
+
+%format ~   = " \sim "
+
+
+
+
+
+
+%format HFixA                   = "\TConId{\gamma_{\alpha}}"
+%format HFix                    = "\TConId{\gamma}"
+%format Expr                    = "\TConId{Expr}"
+%format Decl                    = "\TConId{Decl}"
+%format PerfectTree             = "\TConId{PerfectTree}"
+%format Vector                  = "\TConId{Vector}"
+%format HInA                    = "\TConId{HIn_{\alpha}}"
+%format HInF                    = "\TConId{HIn_{f}}"
+%format HId                     = "\TConId{HId}"
+
+
+%format Zero                    = "0"
+%format One                     = "1"
+%format Two                     = "2"
+%format Succ a                  = a "+ 1"
+%format Suc2 a                  = a "+ 2"
+%format Pred a                  = a "- 1"
+
+%format Node                    = "\TConId{Node}"
+%format Digit                   = "\TConId{Digit}"
+%format FingerTree              = "\TConId{FingerTree}"
+%format Tree                    = "\TConId{Tree}"
+%format Value                   = "\TConId{Value}"
+%format Spine                   = "\TConId{Spine}"
+%format FingerTreeA             = "\TConId{FingerTree_{\alpha}}"
+
+%format Sp                      = "\TConId{Sp}"
+%format Dg                      = "\TConId{Dg}"
+%format Nd                      = "\TConId{Nd}"
+
+%format (SpI (b))               = "\TConId{Sp_{" b "}}"
+%format (DgI (b))               = "\TConId{Dg_{" b "}}"
+%format (NdI (b))               = "\TConId{Nd_{" b "}}"
+
+%format NatPrf                  = "\TConId{Nat_{\phi}}"
+%format TreePhi                 = "\TConId{Tree_{\phi}}"
+
+%format Digit1                  = "Digit_1"
+%format Digit2                  = "Digit_2"
+%format Digit3                  = "Digit_3"
+%format Digit4                  = "Digit_4"
+%format Node2                   = "Node_2"
+%format Node3                   = "Node_3"
+%format Value0                  = "Value"
+
+%format HPsiA                   = "\TConId{\Psi_{h\alpha}}"
+%format :->                     = " \TConId{\twoheadrightarrow} "
+%format N                       = "\TConId{N} "
+%format D                       = "\TConId{D} "
+
+%format HeapW                   = "\TConId{HeapW}"
+%format HeapR                   = "\TConId{HeapR}"
+%format Pointer                 = "\TConId{Pointer}"
+%format HP                      = "\TConId{HPointer_{\alpha}}"
+
+
+%format Monad                  = "\TClassId{Monad}"
+%format Monoid                 = "\TClassId{Monoid}"
+%format Applicative            = "\TClassId{Applicative}"
+%format Eq                     = "\TClassId{Eq}"
+%format Binary                 = "\TClassId{Binary}"
+%format HBinary                = "\TClassId{HBinary}"
+%format HFunctor               = "\TClassId{HFunctor}"
+%format HTraversable           = "\TClassId{HTraversable}"
+%format HFoldable              = "\TClassId{HFoldable}"
+%format PFunctor               = "\TClassId{PFunctor}"
+%format PTraversable           = "\TClassId{PTraversable}"
+%format PFoldable              = "\TClassId{PFoldable}"
+%format AnnI                   = "\TClassId{$Ann_{I}$}"
+%format AnnO                   = "\TClassId{$Ann_{O}$}"
+%format AnnIO                  = "\TClassId{$Ann_{IO}$}"
+

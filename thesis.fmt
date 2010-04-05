@@ -46,12 +46,12 @@
 %format outf  = "out_f"
 %format outa  = "out_a"
 
-%format AnnOut   = "Ann_{Out}"
-%format AnnIn    = "Ann_{In}"
-%format AnnIO    = "Ann_{IO}"
-%format annOut   = "ann_{Out}"
-%format annIn    = "ann_{In}"
-%format annIO    = "ann_{IO}"
+% %format AnnOut   = "Ann_{Out}"
+% %format AnnIn    = "Ann_{In}"
+% %format AnnIO    = "Ann_{IO}"
+% %format annOut   = "ann_{Out}"
+% %format annIn    = "ann_{In}"
+% %format annIO    = "ann_{IO}"
 
 %format TreeA   = "\Varid{Tree_{\alpha}}"
 %format leafA   = "\Varid{leaf_{\alpha}}"
@@ -118,51 +118,4 @@
 
 
 
-
-%format HFixA  = "\gamma_{\alpha}"
-%format HFix   = "\gamma"
-%format HInA   = "HIn_{\alpha}"
-%format HInF   = "HIn_{f}"
-%format Houtf  = "hout_f"
-%format Houta  = "hout_a"
-
-
-%format Zero   = "0"
-%format One    = "1"
-%format Two    = "2"
-%format Succ a = a "+ 1"
-%format Suc2 a = a "+ 2"
-%format Pred a = a "- 1"
-
-%format Digit1 = "Digit_1"
-%format Digit2 = "Digit_2"
-%format Digit3 = "Digit_3"
-%format Digit4 = "Digit_4"
-%format Node2  = "Node_2"
-%format Node3  = "Node_3"
-
-%format (SpI (b)) = "Sp_{" b "}"
-%format (DgI (b)) = "Dg_{" b "}"
-%format (NdI (b)) = "Nd_{" b "}"
-
-%format FingerTreeA = "FingerTree_a"
-
-
-%format NatPrf  = "Nat_{\phi}"
-%format ZeroP   = "\phi_0"
-%format (SuccP i) = "\phi_{i+1}"
-
-%format TreePhi = "Tree_{\phi}"
-%format SpPrf   = "Sp_{\phi}"
-%format DgPrf   = "Dg_{\phi}"
-%format NdPrf   = "Nd_{\phi}"
-%format NdZPrf  = "Nd_{0\phi}"
-
-%format hparaMA = "hpara^m_{\alpha}"
-%format psi     = "h\psi"
-%format HPsiA   = "\Psi_{h\alpha}"
-
-%format :-> = " \twoheadrightarrow "
-%format ~   = " \sim "
-%format family = "\textbf{family}"
 

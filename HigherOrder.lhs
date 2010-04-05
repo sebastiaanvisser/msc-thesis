@@ -1,6 +1,8 @@
 %include polycode.fmt
 %include thesis.fmt
 %include forall.fmt
+%include higherorder.fmt
+%include haskell.fmt
 
 %if False
 
@@ -253,7 +255,7 @@ specification.
 >
 >   Node2   :: f (NdI i) -> f (NdI i)                                    ->  Tree a f (NdI (Succ i))
 >   Node3   :: f (NdI i) -> f (NdI i) -> f (NdI i)                       ->  Tree a f (NdI (Succ i))
->   Value   :: a                                                         ->  Tree a f (NdI Zero)
+>   Value0  :: a                                                         ->  Tree a f (NdI Zero)
 
 The finger tree has an explicit type parameter |f| for the recursive positions,
 just like the binary tree example for the regular recursive datatypes. Both the
@@ -376,7 +378,7 @@ that there are only a limited set of proof/constructor combinations possible.
 >   pfmap f (DgPrf  ZeroP)      (Digit2 a b    )  = Digit2 (f NdZPrf a) (f NdZPrf b)
 >   pfmap f (DgPrf  ZeroP)      (Digit3 a b c  )  = Digit3 (f NdZPrf a) (f NdZPrf b) (f NdZPrf c)
 >   pfmap f (DgPrf  ZeroP)      (Digit4 a b c d)  = Digit4 (f NdZPrf a) (f NdZPrf b) (f NdZPrf c) (f NdZPrf d)
->   pfmap _ NdZPrf              (Value  a      )  = Value a
+>   pfmap _ NdZPrf              (Value0 a      )  = Value0 a
 
 To allow the |pfmap| function for this instance to apply the map function |f|
 to the sub trees we need to construct an appropriate proof again. We can do
@@ -430,7 +432,7 @@ instance.
 >       (DgPrf ZeroP,      Digit2 a b)      -> (| Digit2 (f NdZPrf     a) (f NdZPrf    b)                                    |)
 >       (DgPrf ZeroP,      Digit3 a b c)    -> (| Digit3 (f NdZPrf     a) (f NdZPrf    b)  (f NdZPrf c)                      |)
 >       (DgPrf ZeroP,      Digit4 a b c d)  -> (| Digit4 (f NdZPrf     a) (f NdZPrf    b)  (f NdZPrf c)     (f NdZPrf d)     |)
->       (NdZPrf,           Value  a)        -> (| (Value a)                                                                  |)
+>       (NdZPrf,           Value0 a)        -> (| (Value0 a)                                                                 |)
 
 The instance uses idiom brackets for the effectful computations. With the both
 the higher order functor and traversable instances for our finger tree GADT, we
@@ -590,7 +592,7 @@ constant functor.
 >     Digit4 a b c d   -> K (g a `mappend` g b `mappend` g c `mappend` g d)
 >     Node2  a b       -> K (g a `mappend` g b)
 >     Node3  a b c     -> K (g a `mappend` g b `mappend` g c)
->     Value  a         -> K (f a)
+>     Value0 a         -> K (f a)
 >  where g = unK . hsnd
 
 The first parameter of this algebra is a function that converts the values
@@ -637,16 +639,32 @@ paramorphism, the proof object contains the same index as the root of our
 finger tree, which is |SpPrf ZeroP|. After computing the result we unpack it
 from the constant functor |K| and from the monoid wrapper when needed.
 
-> sum :: AnnO a (Tree Int) TreePhi m => FingerTreeA a Int -> m Int
+The |sum| function on finger trees:
+
+> sum  ::  AnnO a (Tree Int) TreePhi m
+>      =>  FingerTreeA a Int -> m Int
+>
 > sum h = (| (getSum . unK) (hparaMA sumAlg (SpPrf ZeroP) h) |)
+
+The |product| function on finger trees:
+
+> product  ::  AnnO a (Tree Int) TreePhi m
+>          =>  FingerTreeA a Int -> m Int
 >
-> product :: AnnO a (Tree Int) TreePhi m => FingerTreeA a Int -> m Int
 > product h = (| (getProduct . unK) (hparaMA productAlg (SpPrf ZeroP) h) |)
+
+The |concat| function on finger trees:
+
+> concat  ::  AnnO a (Tree String) TreePhi m
+>         =>  FingerTreeA a String -> m String
 >
-> concat :: AnnO a (Tree String) TreePhi m => FingerTreeA a String -> m String
 > concat h = (| unK (hparaMA concatAlg (SpPrf ZeroP) h) |)
+
+The |contains| function on finger trees:
+
+> contains  ::  (Eq b, AnnO a (Tree b) TreePhi m)
+>           =>  b -> FingerTreeA a b -> m Bool
 >
-> contains :: Eq b => AnnO a (Tree b) TreePhi m => b -> FingerTreeA a b -> m Bool
 > contains v h = (| (getAny . unK) (hparaMA (containsAlg v) (SpPrf ZeroP) h) |)
 
 These four algebras show that it does take that much to implement simple
@@ -753,7 +771,7 @@ One of the constraints of the cons algebra is that we can only insert nodes
 with a depth index one less than the tree it gets appended to. At the top level
 a finger tree is always a spine node with depth index one, as can be seen in the
 |FingerTree| type synonym. This means we can only insert nodes with depth index
-zero into a top level finger tree, as expected only |Value| nodes have index
+zero into a top level finger tree, as expected only |Value0| nodes have index
 zero. The |D| type family can only be applied to non-zero indices, to proof to
 the compiler our input finger tree always has a non-zero index we parametrize
 the algebra with our |TreePhi| proof object.
@@ -764,7 +782,7 @@ the algebra with our |TreePhi| proof object.
 insert :: AnnIO a (Tree b) TreePhi m => b -> FingerTreeA a b -> m (FingerTreeA a b)
 insert inp h =
   do f <- hparaMA consAlg (SpPrf ZeroP) h
-     let a = hfst (f # (N . Just . D) (HInF (Value inp)))
+     let a = hfst (f # (N . Just . D) (HInF (Value0 inp)))
      undefined {-fullyIn-} (SpPrf ZeroP) a
 \end{spec}
 
