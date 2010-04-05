@@ -48,6 +48,8 @@
 
 \begin{chapter}{Annotated fixed points}
 
+\todo{intro}
+
 % -----------------------------------------------------------------------------
 
 \begin{section}{Fixed points}
@@ -131,7 +133,8 @@ allows a generic traversal over a structure while performing an action for each
 element. The actions performed are |Applicative| or sometimes |Monad|ic
 computations. The |Traversable| instance for our binary tree example is a
 straightforward preorder traversal. The actions are written down using idiom
-brackets.  \docite{idiom brackets}
+brackets. \cite{idioms} show how idiom brackets can be used for effecful
+applicative programming.
 }
 
 > instance Traversable Tree_f where
