@@ -31,7 +31,7 @@
 \colorlet{ConSym}{ConId}
 
 % Type variable identifier
-\colorlet{TVarId}{blue!35!black}
+\colorlet{TVarId}{blue!45!black}
 
 % Type constructor identifier
 \colorlet{TConId}{TVarId}

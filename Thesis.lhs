@@ -13,6 +13,7 @@
 \usepackage{draft}
 \usepackage{fancyhdr}
 \usepackage{pxfonts}
+\usepackage[authoryear,sort,square]{natbib}
 % \usepackage{mathpazo} % For the fancy font, idea from Martijn/Wouter
 \definecolor{linkblue}{RGB}{6,55,206}
 \usepackage[colorlinks=true,linkcolor=linkblue]{hyperref} %m must be last \usepackage

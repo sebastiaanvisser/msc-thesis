@@ -14,8 +14,6 @@
 %format hparaMA = "hpara^m_{\alpha}"
 %format psi     = "h\psi"
 
-%format ~   = " \sim "
-
 
 
 
@@ -27,9 +25,9 @@
 %format Decl                    = "\TConId{Decl}"
 %format PerfectTree             = "\TConId{PerfectTree}"
 %format Vector                  = "\TConId{Vector}"
-%format HInA                    = "\TConId{HIn_{\alpha}}"
-%format HInF                    = "\TConId{HIn_{f}}"
-%format HId                     = "\TConId{HId}"
+%format HInA                    = "\TConId{_HIn_{\alpha}}"
+%format HInF                    = "\TConId{_HIn_{f}}"
+%format HId                     = "\TConId{_HId}"
 
 
 %format Zero                    = "0"
@@ -76,7 +74,7 @@
 %format Pointer                 = "\TConId{Pointer}"
 %format HP                      = "\TConId{HPointer_{\alpha}}"
 
-
+%format ~                      = " \sim "
 %format Monad                  = "\TClassId{Monad}"
 %format Monoid                 = "\TClassId{Monoid}"
 %format Applicative            = "\TClassId{Applicative}"
