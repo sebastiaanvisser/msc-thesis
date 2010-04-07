@@ -22,7 +22,7 @@
 \setlength{\parskip}{0.1in} % \baselineskip}
 
 
-\pagestyle{fancy}
+% \pagestyle{fancy}
 \renewcommand{\sectionmark}[1]{\markright{\thesection.\ #1}}
 \renewcommand{\chaptermark}[1]{\markboth{\ #1}{}}   % \thechapter
 %\lhead{Generic persistence of Haskell data types}
