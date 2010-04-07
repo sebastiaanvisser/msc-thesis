@@ -38,7 +38,6 @@
 \chapter{Indexed Datatypes}
 \label{chap:indexed}
 
-\review{
 In the previous chapters we have shown how to build a generic storage framework
 for recursive data structures. This framework only works for regular datatypes,
 types in which the recursive positions can only refer to the exact same type
@@ -48,18 +47,15 @@ indexed datatypes like generalized algebraic datatypes or
 GADTs\cite{foundationsfor}. In this section we will show how to extend our
 current system to work with non-regular datatypes. First we will explore some
 examples of non-regular datatypes.
-}
 
 \begin{itemize}
 
 \item
-\review{
 \emph{Mutually recursive datatypes}, or \emph{indirect recursive datatypes},
 are types in which the recursive positions refer to other datatypes that
 directly or indirectly refer back to the original. In \citet{multirec}
 Rodriguez et al. show an interesting example of a mutual recursive datatype.
 They present a syntax tree containing both expressions and declarations.
-}
 
 > data Expr =
 >      Const  Int
@@ -72,30 +68,25 @@ They present a syntax tree containing both expressions and declarations.
 >      String := Expr
 >   |  Seq Decl Decl
 
-\review{
 In this example the |Expr| datatype uses the |Decl| datatype and vice versa.
-}
 
 \item
-\review{
+
 \emph{Nested datatypes} are parametrized recursive datatypes that have one or
 more recursive positions in which the type parameter changes. An example of a
 nested datatype is the \emph{perfect tree}\cite{perfect}, a tree that grows in
 size exponentially at every recursive position.
-}
 
 > data PerfectTree a =
 >     PerfLeaf a
 >  |  PerfNode (PerfectTree (a, a))
 
-\review{
 Because the |PerfectTree| uses a pair in the type index in the recursive
 position, every deeper level contains twice as many elements as their previous
 level.
-}
 
 \item
-\review{
+
 \emph{Generalized algebraic datatypes}, or \emph{GADTs}, have the possibility
 to add extra indices to the datatype that can be specialized on a
 per-constructor basis.  These indices can be used to encode type invariants can
@@ -105,17 +96,14 @@ type, a sequence that encodes its length in the type. The |Vector| datatype
 uses Peano style natural numbers at the type level, which is either a zero or a
 successor of another natural number. For conciseness, natural number at the
 type level are typeset as true numbers.
-}
 
 > data Zero
 > data Succ a
 
-\review{
 Just like Haskell lists, the |Vector| type has two constructors: |Nil| and
 |Cons|. The |Nil| can be used to construct an empty |Vector| with index 0, the
 |Cons| can be used to append one value to a |Vector| increasing its length
 with one.
-}
 
 > data Vector i a where
 >   Nil   ::                     Vector Zero      a
@@ -131,7 +119,6 @@ with one.
 
 \end{itemize}
 
-\review{
 These three examples show that regular datatypes are not the only commonly used
 container data types.  Unfortunately, the generic programming techniques
 introduced in the previous chapters do not allow mutually recursive datatypes,
@@ -141,36 +128,28 @@ datatypes, including indexed GADTs, as the persistent container datatypes.
 The global architecture of the system remains the same, but, as we will
 see, we have to rewrite almost all individual components to allow the use
 of indexed datatypes.
-}
 
-\review{
 In this chapter we will only focus on explicitly indexed datatypes using GADTs.
 We will not discuss mutually recursive datatypes and nested datatypes.
 However, we will as an example show how to rewrite a nested finger
 tree\cite{fingertree} datatype to a single indexed GADT. The GADT will have the
 same invariants as the original nested finger tree type as presented by Hinze
-et al. 
-}
+et al.
 
-\review{
 Because generalized algebraic datatypes are a generalization of the algebraic
 datatypes in Haskell, all nested datatypes can be written down as a GADT. By
 making the nested behaviour of nested datatypes explicit using a type variable
 in a GADT our framework should also be applicable to other nested datatypes.
-}
 
-\review{
 In the paper \citet{multirec} Rodriguez et al. show how to encode a family of
 mutually recursive datatypes as an indexed GADT in order to perform generic
 programming over this family. This observation indicates that the persistence
 framework for indexed datatypes we are about to introduce will also work for
 families of mutually recursive datatypes. However, the families of datatypes
 have to be written down in a slightly different encoding.
-}
 
 \section{Higher order fixed points}
 
-\review{
 We start at the same place as we did for the framework for regular recursive
 datatypes: we introduce an annotated fixed point combinator. The higher order
 fixed point combinator is very similar to the regular fixed combinator although
@@ -179,61 +158,51 @@ as an additional type variable to the container structure |f|, either directly
 or indirectly through the annotation type |a|. The higher order annotated fixed
 point combinator will be called |HFixA|.  In this chapter we will commonly
 prefix types and function names with an additional |H| or |h| to make clear we
-are dealing with the higher order variant of the type or function. 
-}
+are dealing with the higher order variant of the type or function.
 
 > data HFixA a f ix
+>
 >   =  HInA  { houta  :: a  f (HFixA a f) ix }
+>
 >   |  HInF  { houtf  ::    f (HFixA a f) ix }
 
-\review{
 At first sight, this higher order version looks very similar to the regular
 fixed combinator, the only obvious addition is the index parameter |ix|. But
 because of to this index the kinds of the other type variables become more
 complicated. Assuming a kind |*| for |ix|, the type kind of variable |f|
 changes so that every |*| is replace with an |* -> *|.
-}
 
 \begin{spec}
 from  :    *        -> *
 to    : (  * -> *)  -> * -> *
 \end{spec}
 
-\review{
 Because the kind of |f| grows, the kind of the type variable |a| grows with it.
 Again, every |*| is replaced by a |* -> *|.
-}
 
 \begin{spec}
 from  : (     *        -> *       )  ->    *        -> *
 to    : (  (  * -> *)  -> * -> *  )  -> (  * -> *)  -> * -> *
 \end{spec}
 
-\review{
 This change in kinds has a lot of impact on the rest of our framework.
 Introducing one additional type index forces us to changes almost all the
 types in our system. We start by defining the indexed identity annotation.
-}
 
-> newtype HId f a ix = HId { unHId :: f a ix }
+> newtype HId f a ix = HId { unHId :: f a ix } 
 
-\review{
 As the type shows, the identity annotation also takes the additional type index
 |ix| and uses this to parametrize the indexed functor |f|. Although this
 annotation is very similar to the regular identity annotation defined in
-section \todo{ref}, it is very clear why we cannot reuse the original type.
-}
+section \todo{ref}, it is very clear why we cannot reuse the original type.  
 
-\review{
 Now we can create a annotation free fixed point combinator again by
 parametrizing the annotated fixed point with the identity annotation.
-}
 
 > type HFix f ix = HFixA HId f ix
 
-\section{Finger tree as GADT}
+\section{Finger tree as GADT} 
 
-\review{
 To illustrate the usage of the higher order fixed point combinator we will now
 model a finger tree data type as a indexed GADT. The finger tree is a purely
 functional data structure that can be used to model an abstract sequence with
@@ -245,7 +214,6 @@ use a slightly less constraint type in which they encode the digit as a Haskell
 list datatype, with the implicit invariant this list has length greater than or
 equal to 1 and less than or equal to 4. We use the |Digit| datatype with four
 constructors to be a bit more explicit.} like the following:
-}
 
 \begin{spec}
 data Node  a = Node2 a a  | Node3 a a a
@@ -260,7 +228,6 @@ data FingerTree a
            (Digit a)
 \end{spec}
 
-\review{
 The |FingerTree| datatype can be seen as a spine structure containing zero, one
 or two 2-3 trees per spine node. In this example 2-3 trees are trees that
 branch with a factor of 2 or a factor of 3 in their recursive positions. To
@@ -277,76 +244,64 @@ node -- and take one extra spine node for the rest of the tree. At every
 recursive position the value type changes by surrounding it with one |Node|
 level. The usage of the |Node| type for the recursion implicitly encodes the
 depth of the 2-3 trees at every level of the spine grows with one.
-}
 
-\review{
 The paragraph above shows that the nested finger tree datatypes encodes some
 important invariants about the structure in its type. Before we will try to
 encode the same structure as an indexed GADT we will extract an explicit
 specification from the nested datatype definition above.
-}
 
 \todo{make a picture to illustrate the structure of a finger tree}
 
-\review{
 We identify five important structural properties of finger trees:
-}
 
 \begin{enumerate}
 
-\item \review{
-A finger tree contains spine nodes, digit nodes, 2-3 nodes and values. }
+\item A finger tree contains spine nodes, digit nodes, 2-3 nodes and values.
 
-\item \review{
+\item 
 A spine node is either an |Empty| node, a |Single| node containing one
 2-3 tree or a |Deep| node containing two 2-3 trees and a tail finger tree. The spine
-nodes form a linearly linked list. }
+nodes form a linearly linked list.
 
-\item \review{
+\item 
 The first spine node in a non-singleton finger tree only contains two
 \emph{single-level} 2-3 trees. The second spine node only contains two
 \emph{two-level} 2-3 trees, the third level stores two \emph{three-level} 2-3
 trees and so on.  A quick calculation shows that every spine node in a finger
 tree, except for the last terminating node, contains a maximum of $2 * 4 * 3^n$
-values, where |n| is the depth index of the node. }
+values, where |n| is the depth index of the node.
 
-\item \review{
+\item 
 A 2-3 tree is either a single value of type |a|, a branch node with 2 or
-3 sub trees or a root node which is called a digit. }
+3 sub trees or a root node which is called a digit.
 
-\item \review{
+\item 
 Digits have a branching factor of 1, 2, 3 or 4. Digits are the root nodes
-of 2-3 tree and can only contain nodes or values. }
+of 2-3 tree and can only contain nodes or values.
 
-\end{enumerate}
+\end{enumerate} 
 
-\review{
 We can now try to capture the specification, including the invariants between
 the different nodes, in an indexed GADT. Our finger tree GADT will contain a
 single product type as the index. The product contains two components, one for
 the kind of finger tree node and one for the encoding of the three depths. We
 first define three phantom types for indices to indicate a spine node, a digit
-node and a 2-3 tree node.  
-}
+node and a 2-3 tree node.
 
 > data Sp
 > data Dg
-> data Nd
+> data Nd 
 
-\review{
 The depth encoding will be written down as a subscript type level natural
 number, similar to the index of the |Vector| datatype above. The depth index
 forms the second component of the index tuple.
-}
 
 > type SpI i  = (Sp,  i)
 > type DgI i  = (Dg,  i)
-> type NdI i  = (Nd,  i)
+> type NdI i  = (Nd,  i) 
 
-\review{
 Now we can define the finger tree GADT that encodes all the invariants from the
-specification. 
-}
+specification.
 
 > data Tree (b :: *) (f :: * -> *) :: * -> * where
 >   Empty   ::                                                               Tree b f (SpI (Succ i))
@@ -360,19 +315,16 @@ specification.
 >
 >   Node2   :: f (NdI i) -> f (NdI i)                                    ->  Tree b f (NdI (Succ i))
 >   Node3   :: f (NdI i) -> f (NdI i) -> f (NdI i)                       ->  Tree b f (NdI (Succ i))
->   Value0  :: b                                                         ->  Tree b f (NdI Zero)
+>   Value0  :: b                                                         ->  Tree b f (NdI Zero) 
 
-\review{
 The type parameter |b| is used for the value type that is stored in the
 sequence.  The finger tree has an explicit type parameter |f| for the recursive
 positions, just like the binary tree example for the regular recursive
 datatypes. Both the finger tree datatype itself and the type variable for the
 recursive positions have kind |* -> *| and expect a type index. Every
 constructor produces a finger tree with its own specific index and can enforce
-a constraint between this index and the index of the recursive positions.
-}
+a constraint between this index and the index of the recursive positions.  
 
-\review{
 The definition shows that the |Empty|, |Single| and |Deep| constructors all
 create spine nodes with a non-zero depth index. A |Single| spine node contains
 one |Digit| root node of a 2-3 tree with exactly the same non-zero depth as the
@@ -382,79 +334,73 @@ trees, also with the same depth index. The tail finger tree stored in the |Deep|
 constructor's second argument must also be a spine node with a depth index
 one larger than the current spine node. This enforces the tail to store more
 values than the head of a finger tree as specified in point 3 of the
-specification.
-}
+specification.  
 
-\review{
 There are four different constructors for creating digit nodes, one for each
 arity. The digit constructors all take sub trees with the |Nd| index at the
 recursive positions, which can mean both 2-3 branching nodes or plain values.
-The digit nodes all have a depth index one larger than their sub trees.
-}
+The digit nodes all have a depth index one larger than their sub trees.  
 
-\review{
 Like digit nodes, the 2-3 node constructors |Node2| and |Node3| take sub trees
 with the |Nd| index at the recursive positions. This means a 2-3 branching node
 again or plain values. Also, the depth index is one larger than the index of
 their sub trees.  A value is special kind of node that always has index zero.
 It contains a value of type |b| which is the value type parameter of the finger
-tree datatype.
-}
+tree datatype.  
 
-\review{
 This indexed GADT encodes all the properties from our specification into a
 single structure. We can now use the higher order fixed point combinator to tie
 the knot and create a recursive data structure again by filling in the |f| type
 parameter.
-}
 
-> type FingerTreeA a b   = HFixA a (Tree b) (SpI One)
+> type FingerTreeA a b   = HFixA a (Tree b) (SpI One) 
 
-\review{
 So, an annotated finger tree with annotation type |a| that stores values of type
 |b|. A finger tree root node always is a spine node with depth index one. Now
 we can also define a bunch of additional type synonyms to simplify working with
 our finger trees.
-}
 
 > type Node   a b i  = HFixA a (Tree b)  (NdI i)
 > type Value  a b    = HFixA a (Tree b)  Zero
 > type Digit  a b i  = HFixA a (Tree b)  (DgI (Succ i))
 > type Spine  a b i  = HFixA a (Tree b)  (SpI (Succ i))
                      
-\section{Higher order traversals}
+\section{Higher order traversals} 
 
 In the section about fixed point combinators for regular datatypes we have
-derived |Functor|, |Foldable| and |Traversable| instances for our binary tree
-example datatype. These traversal functions allowed us to perform a simple form
-of generic programming over our datatypes which is an essential part of our
-generic persistence framework. Unfortunately, these type classes cannot be used
-for our higher order datatypes like our finger tree GADT. In order to perform
-generic traversal over indexed datatypes we have to introduce higher order
-variant of these three type classes.
+derived |Functor| and |Traversable| instances for our binary tree
+example datatype. These traversal functions allow us to perform a restricted form
+of generic programming over our datatypes. Generic traversals form an essential
+part of our generic persistence framework. Unfortunately, these type classes
+cannot be used for our higher order datatypes like our finger tree GADT. In
+order to perform generic traversal over indexed datatypes we have to introduce
+higher order variant of these three type classes.
 
-\subsection{Functor type class}
+\subsection{Functor type class} 
 
 In their paper \emph{Initial Algebra Semantics is Enough!}\cite{initial} Ghani
 and Johann describe how to create a type class for higher order functors. These
-functors work on indexed datatypes and define a natural transformation that
-must work for all type indices.
+functors work on indexed datatypes and define a natural transformation on the
+type variable that must work for all type indices.
 
 > class HFunctor h where
->   hfmap :: (forall ix. a ix -> b ix) -> forall ix. h a ix -> h b ix
+>   hfmap :: (forall ix. a ix -> b ix) -> forall ix. h a ix -> h b ix 
 
 We define a derived higher order functor type class |PFunctor| that gets an
-additional proof object |phi|, that proves the index is an inhabitant of a
-specific \emph{family}. This allows us to write functors instances that work
-not for all type indices but for an explicitly limited set. \todo{explain}
+additional proof object |phi|. This object proves the index is an inhabitant of
+a specific \emph{family}. This allows us to write functor instances that work
+not for all type indices, but for an explicitly limited set.
 
 > class PFunctor phi h where
->   pfmap :: (forall ix. phi ix -> a ix -> b ix) -> forall ix. phi ix -> h a ix -> h b ix
+>   pfmap  :: (  forall ix. phi ix ->    a ix ->    b ix)
+>          ->    forall ix. phi ix -> h  a ix -> h  b ix
 
-\subsection{Finger tree functor instance}
+\docite{cite someone who has shown this technique before. e.g. \cite{multirec}}
 
-Before we can create a |PFunctor| instance for the finger tree datatype the
-typeclass forces us to make explicit the index family we want to reason about.
+\subsection{Finger tree functor instance} 
+
+The |PFoldable| type class forces us to make explicit the index family we want to reason about,
+before we can create an instance for the finger tree datatype.
 We construct a GADT that serves as a proof object that proves that a certain
 index is actually a possible index for our |Tree| GADT. We will indicate proof
 types and proof values with a postfix $\phi$.
@@ -463,79 +409,89 @@ types and proof values with a postfix $\phi$.
 >   SpPrf   :: NatPrf c ->  TreePhi (SpI (Succ c))
 >   DgPrf   :: NatPrf c ->  TreePhi (DgI (Succ c))
 >   NdPrf   :: NatPrf c ->  TreePhi (NdI (Succ c))
->   NdZPrf  ::              TreePhi (NdI Zero)
+>   NdZPrf  ::              TreePhi (NdI Zero) 
 
 This proof type can be used to show that for every natural number there is a
 \emph{spine}, \emph{digit} and \emph{node} index for the successor of that
-natural number. For this proof object we also need a natural number proof.
+natural number.  Note that the structure of the |TreePhi| proof indices is very
+similar to the structure of the finger tree indices.  For this proof object we
+also need a natural number proof.
 
 > data NatPrf :: * -> * where
 >   ZeroP  ::              NatPrf Zero
->   SuccP  :: NatPrf n ->  NatPrf (Succ n)
+>   SuccP  :: NatPrf n ->  NatPrf (Succ n) 
 
-This datatype can be used to constructor value for every natural number index.
-Note that the structure of the proof indices is very similar to the structure
-of the finger tree indices. No we can create a |PFunctor| instance in which we
+This datatype can be used to construct a value for every natural number index.
+Again, the structure of the proof type follows the structure of the natural
+numbers.  
+
+No we can create a |PFunctor| instance in which we
 can pattern match on both the proof object and the finger tree constructor.
-Because the type signature of |pfmap| parametrizes the proof ($\phi$) and the
-constructor ($a$) with the same index, the compiler should be able to see
-that there are only a limited set of proof/constructor combinations possible.
+Because the type signature of |pfmap| parametrizes the proof |TreePhi| and the
+constructor |Tree b| with the same index, the compiler should be able to see
+that there are only a limited set of proof/constructor combinations possible.  
+
+The |PFunctor| instance for finger trees becomes:
 
 \begin{small}
 
-> instance PFunctor TreePhi (Tree a) where
->   pfmap _ (SpPrf  _)          (Empty         )  = Empty
->   pfmap f (SpPrf  p)          (Single a      )  = Single (f (DgPrf p) a)
->   pfmap f (SpPrf  p)          (Deep   a c b  )  = Deep   (f (DgPrf p) a) (f (SpPrf (SuccP p)) c) (f (DgPrf p) b)
->   pfmap f (DgPrf  (SuccP p))  (Digit1 a      )  = Digit1 (f (NdPrf p) a)
->   pfmap f (DgPrf  (SuccP p))  (Digit2 a b    )  = Digit2 (f (NdPrf p) a) (f (NdPrf p) b)
->   pfmap f (DgPrf  (SuccP p))  (Digit3 a b c  )  = Digit3 (f (NdPrf p) a) (f (NdPrf p) b) (f (NdPrf p) c)
->   pfmap f (DgPrf  (SuccP p))  (Digit4 a b c d)  = Digit4 (f (NdPrf p) a) (f (NdPrf p) b) (f (NdPrf p) c) (f (NdPrf p) d)
->   pfmap f (NdPrf  (SuccP p))  (Node2  a b    )  = Node2  (f (NdPrf p) a) (f (NdPrf p) b)
->   pfmap f (NdPrf  (SuccP p))  (Node3  a b c  )  = Node3  (f (NdPrf p) a) (f (NdPrf p) b) (f (NdPrf p) c)
->   pfmap f (DgPrf  ZeroP)      (Digit1 a      )  = Digit1 (f NdZPrf a)
->   pfmap f (DgPrf  ZeroP)      (Digit2 a b    )  = Digit2 (f NdZPrf a) (f NdZPrf b)
->   pfmap f (DgPrf  ZeroP)      (Digit3 a b c  )  = Digit3 (f NdZPrf a) (f NdZPrf b) (f NdZPrf c)
->   pfmap f (DgPrf  ZeroP)      (Digit4 a b c d)  = Digit4 (f NdZPrf a) (f NdZPrf b) (f NdZPrf c) (f NdZPrf d)
->   pfmap _ NdZPrf              (Value0 a      )  = Value0 a
+> instance PFunctor TreePhi (Tree b) where
+>   pfmap f phi h =
+>     case (phi, h) of
+>       (SpPrf  _,          Empty)           -> Empty
+>       (SpPrf  p,          Single a)        -> Single (f (DgPrf p) a)
+>       (SpPrf  p,          Deep a c b)      -> Deep   (f (DgPrf p) a) (f (SpPrf (SuccP p)) c) (f (DgPrf p) b)
+>       (DgPrf  (SuccP p),  Digit1 a)        -> Digit1 (f (NdPrf p) a)
+>       (DgPrf  (SuccP p),  Digit2 a b)      -> Digit2 (f (NdPrf p) a) (f (NdPrf p) b)
+>       (DgPrf  (SuccP p),  Digit3 a b c)    -> Digit3 (f (NdPrf p) a) (f (NdPrf p) b) (f (NdPrf p) c)
+>       (DgPrf  (SuccP p),  Digit4 a b c d)  -> Digit4 (f (NdPrf p) a) (f (NdPrf p) b) (f (NdPrf p) c) (f (NdPrf p) d)
+>       (NdPrf  (SuccP p),  Node2 a b)       -> Node2  (f (NdPrf p) a) (f (NdPrf p) b)
+>       (NdPrf  (SuccP p),  Node3 a b c)     -> Node3  (f (NdPrf p) a) (f (NdPrf p) b) (f (NdPrf p) c)
+>       (DgPrf  ZeroP,      Digit1 a)        -> Digit1 (f NdZPrf a)
+>       (DgPrf  ZeroP,      Digit2 a b)      -> Digit2 (f NdZPrf a) (f NdZPrf b)
+>       (DgPrf  ZeroP,      Digit3 a b c)    -> Digit3 (f NdZPrf a) (f NdZPrf b) (f NdZPrf c)
+>       (DgPrf  ZeroP,      Digit4 a b c d)  -> Digit4 (f NdZPrf a) (f NdZPrf b) (f NdZPrf c) (f NdZPrf d)
+>       (NdZPrf,            Value0 a)        -> Value0 a
 
-\end{small}
+\end{small} 
 
 To allow the |pfmap| function for this instance to apply the map function |f|
-to the sub trees we need to construct an appropriate proof again. We can do
-this by unpacking and repack the proof as input using the right constructor
-and pass it to the function |f|. This works out exactly right because the proof
-type follows the same index structure as our finger tree.
+to all the sub trees, we need to construct an appropriate proof again. We can do
+this by unpacking the input proof, repacking this with the right constructor
+and passsing it to the function |f|. This works out exactly right because the proof
+type follows the same index structure as our finger tree.  
 
 This |PFunctor| instance allows us to map a function over one level of
-recursive positions of the finger tree GADT. The we can use the proof object to
+recursive positions of the finger tree GADT. We can use the proof object to
 distinguish between different positions in the structure. The |PFunctor|
 instances will form the basis of generic traversals over higher order
-datatypes with restricted families of iltimorendices.
+datatypes with restricted families of indices.
 
-\subsection{Traversable type class}
+\subsection{Traversable type class} 
 
-Besides the higher order |Functor| instance we can also make a higher order
-|Traversable| instance, allowing us to perform effectful traversals. First we
-define a |PTraversable| type class similar to the |PFunctor| type class, we use
-the same proof object $\phi$ to restrict the family of indices.
+Besides the higher order \emph{functor} instance we can also make a higher order
+\emph{traversable} instance, allowing us to perform effectful traversals. First we
+define a |PTraversable| type class similar to the |PFunctor| type class, we also
+use a proof object $\phi$ to restrict the family of indices.
 
 > class PFunctor phi h => PTraversable phi h where
 >   ptraverse  ::  Applicative f
 >              =>  (  forall ix. phi ix ->    a ix -> f (   b ix))
->              ->     forall ix. phi ix -> h  a ix -> f (h  b ix)
+>              ->     forall ix. phi ix -> h  a ix -> f (h  b ix) 
 
 So if we are provided an effecful computation for the element type |a ix| in
 some |Applicative| -- or possibly monadic -- context |f|, the |ptraverse|
 function should be able to apply this to all elements of the structure
 |h a ix|.
-  
-\subsection{Finger tree traversable instance}
+ 
+\subsection{Finger tree traversable instance} 
 
-The |PTraversable| instance for the finger tree GADT is follows the
-same pattern as the regular |Traversable| instance, although we have to pattern
-match on- and recursively supply the proof objects, just like the |PFunctor|
-instance. 
+The |PTraversable| instance for the finger tree GADT follows the
+same pattern as the regular |Traversable| instance. But this indexed variant
+requires us to pattern match on- and recursively supply the proof objects. This
+is similar to the |PFunctor| instance.
+
+\begin{small}
 
 > instance PTraversable TreePhi (Tree a) where
 >   ptraverse f phi h =
@@ -555,91 +511,105 @@ instance.
 >       (DgPrf ZeroP,      Digit4 a b c d)  -> (| Digit4 (f NdZPrf     a) (f NdZPrf    b)  (f NdZPrf c)     (f NdZPrf d)     |)
 >       (NdZPrf,           Value0 a)        -> (| (Value0 a)                                                                 |)
 
-The instance uses idiom brackets for the effectful computations. With the both
-the higher order functor and traversable instances for our finger tree GADT, we
-can now start writing generic recursive traversals.
+\end{small} 
 
-\section{Higher order annotation classes}
+The instance uses idiom brackets to write down effectful computations. With
+both the higher order |PFunctor| and |PTraversable| instances for our finger
+tree GADT, we can now start writing generic recursive traversals.
 
-In the our generic annotation framework for regular datatypes we have created
+\section{Higher order annotation classes} 
+
+In our generic annotation framework for regular datatypes we have created
 three type classes to associate custom functionality with wrapping and
 unwrapping annotations. We have to do the same for our higher order annotation
 framework, but we cannot use the existing type classes due a clear type
 mismatch. In this chapter we extend the |AnnI| and |AnnO| type classes to
 work with indexed data types and show how make instances for the higher order
-identity and debug annotations.
+identity annotation. \todo{also debug?} 
 
 We first define the three type signatures, for the higher order query, producer
 and modifier functions. The type signatures already make clear the difference
 between annotation working on indexed types and our previous annotations
 working on regular recursive data structures.
 
-> type HIn     a h phi m  =    forall ix. phi ix ->  h (  HFixA a h) ix ->  m       (HFixA a h  ix)
-> type HOut    a h phi m  =    forall ix. phi ix ->       HFixA a h  ix ->  m (  h  (HFixA a h) ix)
-> type HInOut  a h phi m  = (  forall ix. phi ix ->  h (  HFixA a h) ix ->       h  (HFixA a h) ix)
->                         ->   forall ix. phi ix ->       HFixA a h  ix ->  m       (HFixA a h  ix)
+> type HIn     a h phi m  =    forall ix. phi ix ->  h (  HFixA a h)  ix ->  m       (HFixA a h   ix)
+> type HOut    a h phi m  =    forall ix. phi ix ->       HFixA a h   ix ->  m (  h  (HFixA a h)  ix)
+> type HInOut  a h phi m  = (  forall ix. phi ix ->  h (  HFixA a h)  ix ->       h  (HFixA a h)  ix)
+>                         ->   forall ix. phi ix ->       HFixA a h   ix ->  m       (HFixA a h   ix) 
 
 All three function types take an annotation |a|, a higher order recursive
-structure |h| with explicit recursive positions, a index family proof object
-$\phi$ and some monadic context |m|. The |HIn| type describes a producer
-function that takes a single unannotated node with fully recursive sub
-structures and wraps it with some annotation, possibly inside some effectful
-context. The functions can restrict the family of indices with the proof term
-$\phi$. The |HOut| type describes a query function that performs the dual task
-of the producer. It takes a fully annotated tree and unwraps the root
-annotation, returning a single unannotated node with fully annotated sub
-structures. The modifier function simply combines the query and producer
-functions in one step.
+structure |h| with explicit recursive positions, an index family proof object
+$\phi$ and some monadic context |m|.  
+
+The |HIn| type describes a producer function that takes a single unannotated
+node with fully recursive sub structures and wraps it with some annotation,
+possibly inside some effectful context. The functions can restrict the family
+of indices with the proof term $\phi$. The |HOut| type describes a query
+function that performs the dual task of the producer. It takes a fully
+annotated tree and unwraps the root annotation, returning a single unannotated
+node with fully annotated sub structures. The modifier function |HInOut| simply
+combines the query and producer functions in one step.  
 
 Now we introduce the three type classes that implement respectively a producer,
-a query and a modifier function for some annotation |a|, for some recursive
-structure |h|, for some index family $\phi$ and in some context |m|. These for
+a query and a modifier function. All for some annotation |a|, for some recursive
+structure |h|, for some index family $\phi$ and in some context |m|. These 
 type variables in the type class make it possible to get fine grained control
-over when which annotation should be applied in what part of a recursive
+over when, which annotation should be applied in what part of a recursive
 structure. However, in this document we will keep both |h| and $\phi$ polymorph
 and will only specialize based on some |a| running in a fixed context |m|.
 
-> class (Applicative m, Monad m) => AnnO a h phi m where
->   annO :: HOut a h phi m
+\todo{refer future work section on specializing annotations for |phi|}
+
+> class (Applicative m, Monad m) => HAnnO a h phi m where
+>   hannO :: HOut a h phi m
 > 
-> class (Applicative m, Monad m) => AnnI a h phi m where
->   annI :: HIn a h phi m
+> class (Applicative m, Monad m) => HAnnI a h phi m where
+>   hannI :: HIn a h phi m 
 
-Besides the additional proof type $\phi$ the types of the annotation type
-classes are very similar to the ones for regular recursive data structures.
-Again, the modifier function has a default implementation in terms of the query
-and producer function.
+Besides the additional proof type $\phi$ and the implicit indices, the types in
+these annotation type classes are very similar to the ones for the regular
+recursive data structures.
+  
 
-> class (AnnO a h phi m, AnnI a h phi m) => AnnIO a h phi m where
->   annIO :: HInOut a h phi m
->   annIO f phi = annI phi . f phi <=< annO phi
+Again, we create a modifier type class that has a default
+implementation in terms of the query and producer function.
+
+> class (HAnnO a h phi m, HAnnI a h phi m) => HAnnIO a h phi m where
+>   hannIO :: HInOut a h phi m
+>   hannIO f phi = hannI phi . f phi <=< hannO phi 
 
 The instances for the |HId| annotation are as simple as wrapping and unwrapping
 the constructor.
 
-> instance (Applicative m, Monad m) => AnnO HId h phi m where
->   annO _ (HInA (HId f))  = return f
->   annO _ (HInF      f )  = return f
+> instance (Applicative m, Monad m) => HAnnO HId h phi m where
+>   hannO _ (HInA (HId f))  = return f
+>   hannO _ (HInF      f )  = return f
 > 
-> instance (Applicative m, Monad m) => AnnI HId h phi m where
->   annI _ = return . HInA . HId
+> instance (Applicative m, Monad m) => HAnnI HId h phi m where
+>   hannI _ = return . HInA . HId
 > 
-> instance (Applicative m, Monad m) => AnnIO HId h phi m
+> instance (Applicative m, Monad m) => HAnnIO HId h phi m 
 
-And the two function to full annotate or fully strip all annotations from the
-top of a tree.
+And from these type classes we can simply derive the two function to fullly
+annotate or fully strip all annotations from the top of a tree.
 
-> fullyOut :: (AnnO a h phi m, PTraversable phi h) => phi ix -> HFixA a h ix -> m (HFixA a h ix)
-> fullyOut phi (HInA f) = annO phi (HInA f) >>= fmap HInF . ptraverse fullyOut phi
-> fullyOut _   a        = return a
+\todo{these functions are not yet introduced in the framework datatypes: do so}
+
+> fullyIn  ::  (HAnnI a h phi m, PTraversable phi h)
+>          =>  phi ix -> HFixA a h ix -> m (HFixA a h ix)
 >
-> fullyIn :: (AnnI a h phi m, PTraversable phi h) => phi ix -> HFixA a h ix -> m (HFixA a h ix)
-> fullyIn phi (HInF f) = ptraverse fullyIn phi f >>= annI phi
-> fullyIn _   a        = return a
+> fullyIn phi (HInF f)  = ptraverse fullyIn phi f >>= hannI phi
+> fullyIn _   a         = return a
 
-Although the types have changed the annotation framework is very similar to the
-one for regular recursive data structures. We can now use these type classes to
-implement a paramorphism for indexed datatypes.
+> fullyOut  ::  (HAnnO a h phi m, PTraversable phi h)
+>           =>  phi ix -> HFixA a h ix -> m (HFixA a h ix)
+>
+> fullyOut phi (HInA f)  = hannO phi (HInA f) >>= fmap HInF . ptraverse fullyOut phi
+> fullyOut _   a         = return a 
+
+Although the types have changed, the annotation framework is very similar to the
+one for regular recursive data types. We can now use these type classes to
+implement a paramorphism for indexed datatypes
 
 \section{Higher order paramorphism}
 
@@ -655,31 +625,41 @@ additional type index.
 
 %endif
 
+The indexed sum type:
+
 > data (f :+: g) ix = L (f ix) | R (g ix)
+
+The indexed product type:
 
 > data (f :*: g) ix = (:*:) { hfst :: f ix, hsnd :: g ix }
 
-Using the product type we can construct the higher order paramorphic algebra.
+Using the product type we can construct a higher order paramorphic algebra.
 Like the algebra for regular datatypes, this algebra should be able to
 destruct one node with the recursive results in the recursive positions to a
-some result value. The algebra can use the proof object as a restriction on the
+some result value. This indexed algebra can use a proof object as a restriction on the
 index family. Both the input structure |f| and the output structure |g| are
 indexed with the same index type |ix|. Because this is a paramorphic algebra,
 the |f| structure contains both the recursive results and the fully annotated
-sub structures as well.
+sub structures.
 
 > type HPsiA a phi f g = forall ix. phi ix -> f (HFixA a f :*: g) ix -> g ix
 
-Now we define the higher order paramorphic traversal that uses an algebra to
+Not that this algebra contains the type variable $\alpha$ and can be used for
+annotated traversals.
+
+Now we define the higher order annotated paramorphism that uses an algebra to
 recursively destruct the structure |HFixA a f ix| into a value of type |g ix|.
-Because this is an annotated paramorphism the traversal uses the |annO|
-method from the |AnnO| type class to unwrap the annotation, possibly in an
+Because this is an annotated paramorphism the traversal uses the |hannO|
+method from the |HAnnO| type class to unwrap the annotation, possibly in an
 effecful context |m|.
 
+\todo{HIER GEBLEVEN}
+
 > hparaMA
->   :: (AnnO a f phi m, PTraversable phi f)
+>   :: (HAnnO a f phi m, PTraversable phi f)
 >   => HPsiA a phi f g -> phi ix -> HFixA a f ix -> m (g ix)
-> hparaMA psi phi = return . psi phi <=< ptraverse (\p x -> (| (x :*:) (hparaMA psi p x) |)) phi <=< annO phi
+> hparaMA psi phi = return . psi phi <=<
+>   ptraverse (\p x -> (| (x :*:) (hparaMA psi p x) |)) phi <=< hannO phi
 
 \todo{not laziness, not applicative, future work}
 
@@ -764,28 +744,28 @@ from the constant functor |K| and from the monoid wrapper when needed.
 
 The |sum| function on finger trees:
 
-> sum  ::  AnnO a (Tree Int) TreePhi m
+> sum  ::  HAnnO a (Tree Int) TreePhi m
 >      =>  FingerTreeA a Int -> m Int
 >
 > sum h = (| (getSum . unK) (hparaMA sumAlg (SpPrf ZeroP) h) |)
 
 The |product| function on finger trees:
 
-> product  ::  AnnO a (Tree Int) TreePhi m
+> product  ::  HAnnO a (Tree Int) TreePhi m
 >          =>  FingerTreeA a Int -> m Int
 >
 > product h = (| (getProduct . unK) (hparaMA productAlg (SpPrf ZeroP) h) |)
 
 The |concat| function on finger trees:
 
-> concat  ::  AnnO a (Tree String) TreePhi m
+> concat  ::  HAnnO a (Tree String) TreePhi m
 >         =>  FingerTreeA a String -> m String
 >
 > concat h = (| unK (hparaMA concatAlg (SpPrf ZeroP) h) |)
 
 The |contains| function on finger trees:
 
-> contains  ::  (Eq b, AnnO a (Tree b) TreePhi m)
+> contains  ::  (Eq b, HAnnO a (Tree b) TreePhi m)
 >           =>  b -> FingerTreeA a b -> m Bool
 >
 > contains v h = (| (getAny . unK) (hparaMA (containsAlg v) (SpPrf ZeroP) h) |)
@@ -901,7 +881,7 @@ the algebra with our |TreePhi| proof object.
 
 \todo{show insert}
 
-> cons :: AnnIO a (Tree b) TreePhi m => b -> FingerTreeA a b -> m (FingerTreeA a b)
+> cons :: HAnnIO a (Tree b) TreePhi m => b -> FingerTreeA a b -> m (FingerTreeA a b)
 > cons = undefined
 
 \begin{spec}
@@ -962,7 +942,7 @@ additional type parameter |ix| we cannot reuse the existing |P| type.
 >              (ix :: *)
 >       =  HP  { unP :: Pointer (f b ix) }
 
-And now we can give the instance for the |AnnO|, |AnnI| and |AnnIO| classes for
+And now we can give the instance for the |HAnnO|, |HAnnI| and |HAnnIO| classes for
 both the read and read-write heap contexts. The implementations are rather
 straightforward and are shown below.
 
@@ -970,18 +950,18 @@ straightforward and are shown below.
 >   hput phi  (HInA f)  = hput phi f
 >   hget phi            = (| HInA (hget phi) |)
 
-> instance HBinary phi (h (HFixA HP h)) => AnnO HP h phi HeapR where
->   annO phi  (HInA (HP  h)  ) = hread phi h
->   annO _    (HInF      h   ) = return h
+> instance HBinary phi (h (HFixA HP h)) => HAnnO HP h phi HeapR where
+>   hannO phi  (HInA (HP  h)  ) = hread phi h
+>   hannO _    (HInF      h   ) = return h
 
-> instance HBinary phi (h (HFixA HP h)) => AnnO HP h phi HeapW where
->   annO phi  (HInA (HP h)  ) = liftR (hread phi h)
->   annO _    (HInF     h   ) = return h
+> instance HBinary phi (h (HFixA HP h)) => HAnnO HP h phi HeapW where
+>   hannO phi  (HInA (HP h)  ) = liftR (hread phi h)
+>   hannO _    (HInF     h   ) = return h
 
-> instance HBinary phi (h (HFixA HP h)) => AnnI HP h phi HeapW where
->   annI phi = fmap (HInA . HP) . hwrite phi
+> instance HBinary phi (h (HFixA HP h)) => HAnnI HP h phi HeapW where
+>   hannI phi = fmap (HInA . HP) . hwrite phi
 
-> instance HBinary phi (h (HFixA HP h)) => AnnIO HP h phi HeapW where
+> instance HBinary phi (h (HFixA HP h)) => HAnnIO HP h phi HeapW where
 
 This section makes clear what the implication are of moving away from regular
 datatypes to indexed datatypes. From the high level annotation instances to the
@@ -1006,7 +986,7 @@ annotation at the recursive positions.
 The |empty| function will be used to produce an empty persistent finger tree.
 
 > pempty :: HeapW IntStore
-> pempty = annI (SpPrf ZeroP) Empty
+> pempty = hannI (SpPrf ZeroP) Empty
 
 By only specializing the type we lift the |cons| function from section
 \todo{TODO} to work on persistent finger trees. We see that the type signatures
@@ -1061,6 +1041,5 @@ ghci> computeSum "test.db"
 13
 \end{verbatim}
 
-\todo{so, it works}
-
+\todo{so, it works} 
 
