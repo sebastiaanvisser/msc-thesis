@@ -455,6 +455,8 @@ The |PFunctor| instance for finger trees becomes:
 
 \end{small} 
 
+\todo{reformat somehow}
+
 To allow the |pfmap| function for this instance to apply the map function |f|
 to all the sub trees, we need to construct an appropriate proof again. We can do
 this by unpacking the input proof, repacking this with the right constructor
@@ -512,6 +514,8 @@ is similar to the |PFunctor| instance.
 >       (NdZPrf,           Value0 a)        -> (| (Value0 a)                                                                 |)
 
 \end{small} 
+
+\todo{reformat somehow}
 
 The instance uses idiom brackets to write down effectful computations. With
 both the higher order |PFunctor| and |PTraversable| instances for our finger
@@ -1079,5 +1083,7 @@ to work with indexed datatypes. By lifting all the types to an indexed level we
 were able to build up persistent higher order structures. When using our
 annotation framework we can use the indices to reason about the position in a
 higher order structure. The results of this chapter allow us to build type safe
-container datatypes that encode structural invariants in their types.
+container datatypes that encode structural invariants in their types. Although
+the final result is very pleasing, we must admit that writing operations on
+indexed datatypes in Haskell can be a tedious job. 
 

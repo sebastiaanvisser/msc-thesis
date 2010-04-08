@@ -53,24 +53,24 @@
 
 \begin{document}
 
-% \maketitle
-% \input{Abstract}
-% 
+\maketitle
+\input{Abstract}
+
 \tableofcontents
-% 
-% \input{Introduction} 
-% \input{Motivation} 
-% \input{Overview} 
-% \input{Fixpoints} 
-% \input{Morphisms} 
-% \input{Heap} 
-% \input{Storage} 
-% \input{Example} 
+
+\input{Introduction} 
+\input{Motivation} 
+\input{Overview} 
+\input{Fixpoints} 
+\input{Morphisms} 
+\input{Heap} 
+\input{Storage} 
+\input{Example} 
 \input{HigherOrder} 
-% \input{RelatedWork} 
-% \input{Conclusion}
-% \input{FutureWork} 
-% 
+\input{RelatedWork} 
+\input{Conclusion}
+\input{FutureWork} 
+
 \newpage
 \bibliographystyle{plain}
 \bibliography{thesis}

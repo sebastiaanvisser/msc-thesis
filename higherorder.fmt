@@ -77,6 +77,7 @@
 %format HeapW                   = "\TConId{Heap_W}"
 %format HeapR                   = "\TConId{Heap_R}"
 %format Pointer                 = "\TConId{Pointer}"
+%format PointerA                = "\TConId{PointerA}"
 %format HP                      = "\TConId{Pointer_\alpha^h}"
 
 %format ~                      = " \sim "

@@ -381,6 +381,46 @@ to simplify creating annotated binary trees manually.
 
 % -----------------------------------------------------------------------------
 
+\begin{section}{Multi-level annotation}
+
+In the previous chapter we have introduced how to wrap and unwrap a single
+level of a fully annotated structure. In this chapter we will introduce two
+additional functions that allows us to perform multi-level wrapping and
+unwrapping of annotations.
+
+First we define the function |fullyOut| that recursively unwraps all
+annotations from the top of an annotated strucuture. Only unwrapping
+annotations at the top means this function \emph{assumes} that once it finds an
+unannotated node the functions stops. An unannotated node is indicated by the
+use of the |InF| constructor in the fixed point.
+
+> fullyOut :: (Traversable f, AnnO a f m) => FixA a f -> m (FixA a f)
+> fullyOut (InA a)  = annO (InA a) >>= fmap InF . traverse fullyOut
+> fullyOut (InF f)  = return (InF f)
+
+The dual function |fullyIn| performs the inverse process of |fullyOut|, it
+recursively annotated the top a (partially) unannotated structure. It
+recursively wraps all unannotated nodes in an annotation, when it finds a node
+that is already annotated it stops.
+
+> fullyIn :: (Traversable f, AnnI a f m) => FixA a f -> m (FixA a f)
+> fullyIn (InF f)  = traverse fullyIn f >>= annI 
+> fullyIn (InA a)  = return (InA a)
+
+When we assume the invariant that all the sub trees of an unannotated node do
+not contain any annotations, |fullOut| makes sure the entire structure 
+will be unannotated. When we assume the invariant that all sub trees of an
+annotated node are fully annotated, |fullyIn| makes sure the entire structure
+will be annotated.
+
+In the chapter \todo{XXX} about generic annotated traversals we will see that
+the |fullyIn| function will simplify writing algebras for both endomorphic
+paramorphisms and endomorphic apomorphisms.
+
+\end{section}
+
+% -----------------------------------------------------------------------------
+
 \begin{section}{Debug annotation}
 
 \review{
