@@ -1,3 +1,25 @@
+% -----------------------------------------------------------------------------
+% GENERIC
+% -----------------------------------------------------------------------------
+
+%format Bool                       = "\TConId{Bool}"
+%format Int                        = "\TConId{Int}"
+%format Char                       = "\TConId{Char}"
+%format String                     = "\TConId{String}"
+
+%format MonadIO                    = "\TClassId{MonadIO}"
+%format Monad                      = "\TClassId{Monad}"
+%format Monoid                     = "\TClassId{Monoid}"
+%format Applicative                = "\TClassId{Applicative}"
+%format Foldable                   = "\TClassId{Foldable}"
+%format Traversable                = "\TClassId{Traversable}"
+%format Eq                         = "\TClassId{Eq}"
+%format Binary                     = "\TClassId{Binary}"
+%format AM                         = "\TClassId{Monad}"
+%format AMIO                       = "\TClassId{MonadIO}"
+
+
+%format ~         = " \sim "
 %format mempty    = "\varnothing "
 %format `mappend` = "\oplus "
 %format fmap' a   = "\widehat{" a "}"
@@ -11,52 +33,67 @@
 %format $<        = "\llbracket "
 %format >$        = " \rrbracket "
 
-%format :*: = "\times"
-%format :+: = "+"
+% -----------------------------------------------------------------------------
+% FIXPOINTS 
+% -----------------------------------------------------------------------------
 
-%format AM = "Monad"
-%format AMIO = "MonadIO"
+%format Branch_1                   = "Branch"
+%format Branch_2                   = "Branch"
+%format Leaf_1                     = "Leaf"
+%format Leaf_2                     = "Leaf"
+%format TreeA                      = "\TConId{Tree_\alpha}"
+%format Tree_1                     = "\TConId{Tree}"
+%format Tree_2                     = "\TConId{Tree}"
+%format Tree_f                     = "\TConId{Tree_f}"
+%format branchA                    = "branch_\alpha "
+%format branch_1                   = "branch"
+%format leafA                      = "leaf_\alpha "
+%format leaf_1                     = "leaf"
 
-%format Fix_1     = "\mu"
-%format In_1      = "In"
-%format out_1     = "out"
+%format Fix                        = "\TConId{\mu}"
+%format Fix1                       = "\TConId{\mu^1}"
+%format Fix2                       = "\TConId{\mu^2}"
+%format FixA                       = "\TConId{\mu_\alpha}"
+%format FixA1                      = "\TConId{\mu_\alpha^1}"
+%format FixA2                      = "\TConId{\mu_\alpha^2}"
+%format Fix_1                      = "\TConId{\mu}"
+%format InA                        = "In_\alpha "
+%format InF                        = "In_f"
+%format In_1                       = "In"
+%format out_1                      = "out"
+%format outa                       = "out_a"
+%format outf                       = "out_f"
 
-%format Tree_1    = "Tree"
-%format Leaf_1    = "Leaf"
-%format Branch_1  = "Branch"
+%format Id                         = "\TConId{Id}"
+%format Id1                        = "Id"
+%format Debug                      = "\TConId{Debug}"
 
-%format leaf_1    = "leaf"
-%format branch_1  = "branch"
 
-%format Tree_f    = "Tree_f"
+%format AnnI                       = "\TClassId{$Ann_{In}$}"
+%format AnnIO                      = "\TClassId{$Ann_{IO}$}"
+%format AnnO                       = "\TClassId{$Ann_{Out}$}"
+%format In                         = "\TConId{In}"
+%format InOut                      = "\TConId{InOut}"
+%format Out                        = "\TConId{Out}"
+%format annI                       = "ann_{In}"
+%format annIO                      = "ann_{IO}"
+%format annO                       = "ann_{Out}"
 
-%format Tree_2    = "Tree"
-%format Leaf_2    = "Leaf"
-%format Branch_2  = "Branch"
+%format fullyIn                    = "fully_{In}"
+%format fullyOut                   = "fully_{Out}"
 
 %format mapM1 = "mapM"
 
-%format FixA  = "\mu_{\alpha}"
-%format FixA1 = "\mu_{\alpha}^1"
-%format FixA2 = "\mu_{\alpha}^2"
-%format Fix   = "\mu"
-%format Fix1  = "\mu^1"
-%format Fix2  = "\mu^2"
-%format InA   = "In_{\alpha}"
-%format InF   = "In_{f}"
-%format outf  = "out_f"
-%format outa  = "out_a"
+%format TimeAnn                    = "\TConId{TimeAnn}"
+%format TimedTree                  = "\TConId{TimedTree}"
+%format LocalTime                  = "\TConId{LocalTime}"
 
-% %format AnnOut   = "Ann_{Out}"
-% %format AnnIn    = "Ann_{In}"
-% %format AnnIO    = "Ann_{IO}"
-% %format annOut   = "ann_{Out}"
-% %format annIn    = "ann_{In}"
-% %format annIO    = "ann_{IO}"
+% -----------------------------------------------------------------------------
+% MORPHISM  
+% -----------------------------------------------------------------------------
 
-%format TreeA   = "\Varid{Tree_{\alpha}}"
-%format leafA   = "\Varid{leaf_{\alpha}}"
-%format branchA = "\Varid{branch_{\alpha}}"
+%format :*: = "\times"
+%format :+: = "+"
 
 %format paraMA1 = "para^m_{\alpha}"
 %format paraM1  = "para^m"
@@ -117,6 +154,118 @@
 
 %format P           = "Pointer_{\alpha}"
 
+% -----------------------------------------------------------------------------
+% HIGHER ORDER
+% -----------------------------------------------------------------------------
+
+%format Houtf  = "hout_f"
+%format Houta  = "hout_a"
+
+%format ZeroP   = "\phi_0"
+%format (SuccP i) = "\phi_{i+1}"
+
+%format SpPrf   = "Sp_{\phi}"
+%format DgPrf   = "Dg_{\phi}"
+%format NdPrf   = "Nd_{\phi}"
+%format NdZPrf  = "Nd_{0\phi}"
+
+%format hparaMA = "hpara^m_{\alpha}"
+%format psi     = "h\psi"
+
+%format HFixA                   = "\TConId{\gamma_{\alpha}}"
+%format HFix                    = "\TConId{\gamma}"
+%format Expr                    = "\TConId{Expr}"
+%format Decl                    = "\TConId{Decl}"
+%format PerfectTree             = "\TConId{PerfectTree}"
+%format Vector                  = "\TConId{Vector}"
+%format HInA                    = "\TConId{In_{\alpha}^h}"
+%format HInF                    = "\TConId{In_{f}^h}"
+%format HId                     = "\TConId{Id^h}"
+%format unHId                   = "\TConId{unId^h}"
+
+%format houta                   = "\TConId{out_{\alpha}^h}"
+%format houtf                   = "\TConId{out_{f}^h}"
+
+
+%format Zero                    = "0"
+%format One                     = "1"
+%format Two                     = "2"
+%format Succ a                  = a "+ 1"
+%format Suc2 a                  = a "+ 2"
+%format Pred a                  = a "- 1"
+
+%format Node                    = "\TConId{Node}"
+%format Digit                   = "\TConId{Digit}"
+%format FingerTree              = "\TConId{FingerTree}"
+%format Tree                    = "\TConId{Tree}"
+%format Value                   = "\TConId{Value}"
+%format Spine                   = "\TConId{Spine}"
+%format FingerTreeA             = "\TConId{FingerTree_{\alpha}}"
+
+%format Sp                      = "\TConId{Sp}"
+%format Dg                      = "\TConId{Dg}"
+%format Nd                      = "\TConId{Nd}"
+
+%format (SpI (b))               = "\TConId{Sp_{" b "}}"
+%format (DgI (b))               = "\TConId{Dg_{" b "}}"
+%format (NdI (b))               = "\TConId{Nd_{" b "}}"
+
+%format NatPrf                  = "\TConId{Nat_{\phi}}"
+%format TreePhi                 = "\TConId{Tree_{\phi}}"
+
+%format Digit1                  = "Digit_1"
+%format Digit2                  = "Digit_2"
+%format Digit3                  = "Digit_3"
+%format Digit4                  = "Digit_4"
+%format Node2                   = "Node_2"
+%format Node3                   = "Node_3"
+%format Value0                  = "Value"
+
+%format HPsiA                   = "\TConId{\Psi_{h\alpha}}"
+%format :->                     = " \TConId{\twoheadrightarrow} "
+%format N                       = "\TConId{N} "
+%format D1                      = "\TConId{D} "
+
+%format K1                      = "\TConId{K}"
+%format HeapW                   = "\TConId{Heap_W}"
+%format HeapR                   = "\TConId{Heap_R}"
+%format Pointer                 = "\TConId{Pointer}"
+%format PointerA                = "\TConId{PointerA}"
+%format HP                      = "\TConId{Pointer_\alpha^h}"
+
+%format HBinary                 = "\TClassId{$Binary^h$}"
+%format HFunctor                = "\TClassId{$Functor^h$}"
+%format HTraversable            = "\TClassId{$Traversable^h$}"
+%format HFoldable               = "\TClassId{$Foldable^h$}"
+%format PFunctor                = "\TClassId{$Functor^p$}"
+%format PTraversable            = "\TClassId{$Traversable^p$}"
+%format PFoldable               = "\TClassId{$Foldable^p$}"
+                                
+%format HAnnI                   = "\TClassId{$Ann_{In}^h$}"
+%format HAnnO                   = "\TClassId{$Ann_{Out}^h$}"
+%format HAnnIO                  = "\TClassId{$Ann_{IO}^h$}"
+%format HIn                     = "\TClassId{$In^h$}"
+%format HOut                    = "\TClassId{$Out^h$}"
+%format HInOut                  = "\TClassId{$InOut^h$}"
+%format hannI                   = "ann_{In}^h"
+%format hannO                   = "ann_{Out}^h"
+%format hannIO                  = "ann_{IO}^h"
+                                
+%format hfullyIn                = "fully_{In}^h"
+%format hfullyOut               = "fully_{Out}^h"
+                                
+%format foldmAlg                = "foldm_{alg}"
+%format sumAlg                  = "sum_{alg}"
+%format productAlg              = "product_{alg}"
+%format concatAlg               = "concat_{alg}"
+%format containsAlg             = "contains_{alg}"
+%format consAlg                 = "cons_{alg}"
+                                
+%format hfst                    = "fst^h"
+%format hsnd                    = "snd^h"
+                                
+%format <|                      = "\triangleleft"
+%format <||                     = "\triangleleft_p"
 
 
 

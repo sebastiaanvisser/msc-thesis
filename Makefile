@@ -24,7 +24,9 @@ ${DOC}.pdf: \
 	lhs2TeX -o $@ $<
 
 %.pdf: %.tex
-	latexmk -pdf $<
+	pdflatex $<
+
+#latexmk -pdf $<
 
 #${DOC}.bbl: ${DOC}.bib
 #	bibtex ${DOC}
@@ -44,6 +46,7 @@ clean: .
 	*.ptb \
 	*.tex \
 	*.out \
+	*.hers \
 	*.toc
 
 new: clean all

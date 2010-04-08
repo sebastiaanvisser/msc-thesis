@@ -11,10 +11,13 @@
 %if style == poly
 
 % Char literal
-\colorlet{Char}{black}
+\colorlet{Char}{green!45!black}
+
+% String literal
+\colorlet{String}{green!45!black}
 
 % Numeral literal
-\colorlet{Numeral}{Char}
+\colorlet{Numeral}{green!45!black}
 
 % Keyword
 \colorlet{Keyword}{blue!55!black}
@@ -23,8 +26,8 @@
 \colorlet{ModId}{Char}
 
 % Variable identifier and symbol
-\colorlet{VarId}{Char}
-\colorlet{VarSym}{VarId}
+\colorlet{VarId}{black}
+\colorlet{VarSym}{black}
 
 % Data constructor identifier and symbol
 \colorlet{ConId}{VarId}
@@ -38,7 +41,7 @@
 \colorlet{TConSym}{TConId}
 
 % Type class identifier
-\colorlet{TClassId}{red!40!blue}
+\colorlet{TClassId}{red!60!blue}
 
 % Comment
 \colorlet{Comment}{black!45!black}

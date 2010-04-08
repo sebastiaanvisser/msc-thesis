@@ -38,9 +38,12 @@
 %if False
 
 > module Thesis where
+> import Fixpoints ()
 > import Morphisms ()
 > import Example ()
+> import Heap ()
 > import Storage ()
+> import HigherOrder ()
 
 %endif
 
@@ -53,23 +56,23 @@
 
 \begin{document}
 
-\maketitle
-\input{Abstract}
-
-\tableofcontents
-
-\input{Introduction} 
-\input{Motivation} 
-\input{Overview} 
+%\maketitle
+%\input{Abstract}
+%
+%\tableofcontents
+%
+%\input{Introduction} 
+%\input{Motivation} 
+%\input{Overview} 
 \input{Fixpoints} 
-\input{Morphisms} 
-\input{Heap} 
-\input{Storage} 
-\input{Example} 
-\input{HigherOrder} 
-\input{RelatedWork} 
-\input{Conclusion}
-\input{FutureWork} 
+% \input{Morphisms} 
+% \input{Heap} 
+% \input{Storage} 
+% \input{Example} 
+% \input{HigherOrder} 
+% \input{RelatedWork} 
+% \input{Conclusion}
+% \input{FutureWork} 
 
 \newpage
 \bibliographystyle{plain}

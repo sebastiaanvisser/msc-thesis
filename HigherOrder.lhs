@@ -598,17 +598,17 @@ annotate or fully strip all annotations from the top of a tree.
 
 \todo{these functions are not yet introduced in the framework datatypes: do so}
 
-> fullyIn  ::  (HAnnI a h phi m, PTraversable phi h)
->          =>  phi ix -> HFixA a h ix -> m (HFixA a h ix)
->
-> fullyIn phi (HInF f)  = ptraverse fullyIn phi f >>= hannI phi
-> fullyIn _   a         = return a
-
-> fullyOut  ::  (HAnnO a h phi m, PTraversable phi h)
+> hfullyIn  ::  (HAnnI a h phi m, PTraversable phi h)
 >           =>  phi ix -> HFixA a h ix -> m (HFixA a h ix)
 >
-> fullyOut phi (HInA f)  = hannO phi (HInA f) >>= fmap HInF . ptraverse fullyOut phi
-> fullyOut _   a         = return a 
+> hfullyIn phi (HInF f)  = ptraverse hfullyIn phi f >>= hannI phi
+> hfullyIn _   a         = return a
+
+> hfullyOut  ::  (HAnnO a h phi m, PTraversable phi h)
+>            =>  phi ix -> HFixA a h ix -> m (HFixA a h ix)
+>
+> hfullyOut phi (HInA f)  = hannO phi (HInA f) >>= fmap HInF . ptraverse hfullyOut phi
+> hfullyOut _   a         = return a 
 
 Although the types have changed, the annotation framework is very similar to the
 one for regular recursive data types. We can now use these type classes to
@@ -841,12 +841,12 @@ The |N| type level function forces the result to have a node type by using the
 indicate a possible empty result. The |N| data function keeps the depth index
 intact. 
 
-> newtype N  f ix = N  { unN    :: Maybe (f (Nd, Snd ix))     }
+> newtype N  f ix = N (Maybe (f (Nd, Snd ix)))
 
-The |D| type level function encodes a similar pattern, but decrements
+The |D1| type level function encodes a similar pattern, but decrements
 the depth index by one using the predecessor type family defined above.
 
-> newtype D  f ix = D  { unDec  :: f (Fst ix, Pred (Snd ix))  }
+> newtype D1  f ix = D1 (f (Fst ix, Pred (Snd ix)))
 
 We now have all the components to write down the type signature for the
 paramorphic |cons| algebra.  The type is rather complicated because it encodes
@@ -854,7 +854,7 @@ all invariants involved when appending an item to the head of the sequence.
 
 > consAlg  ::  tree ~ HFixA a (Tree b)
 >          =>  HPsiA a TreePhi (Tree b)
->                (N (D tree) :-> tree :*: N tree)
+>                (N (D1 tree) :-> tree :*: N tree)
 
 %if False
 
@@ -875,7 +875,7 @@ deeper. So, if we push a node to the head of sequence it gets inserted in the
 left 2-3 tree of the first spine node. When this 2-3 tree is already full one
 node (sub-tree) is selected to be apppended to a spine node one deeper.  The
 input node always has a depth index one less than depth index of the sub-tree
-being traversed by the algebra, indicated by the |D| type.  The result tree
+being traversed by the algebra, indicated by the |D1| type.  The result tree
 index is unaffected, this makes sense: appending a node to a finger tree
 should return a finger tree with the same index.
 
@@ -891,7 +891,7 @@ depth index one less than the tree it gets appended to. At the top level a
 finger tree is always a spine node with depth index one, as can be seen in the
 |FingerTreeA| type synonym. This means we can only insert nodes with depth
 index zero into a top level finger tree. This is exactly as we would expect:
-only |Value0| nodes have index zero. The |D| type family can only be applied to
+only |Value0| nodes have index zero. The |D1| type family can only be applied to
 non-zero indices. To proof to the compiler our input finger tree always has a
 non-zero index we parametrize the algebra with our |TreePhi| proof object.
 
@@ -907,14 +907,14 @@ The append function takes a value |x| and appends this to the existing sequence
 but a \emph{function}. This function takes the original finger tree to the result finger tree.
 We apply this function to the value |x| to get back the result finger tree.
 But, because we are working with annotations, we have to manually
-annotate the new parts of this result sequence with the |fullyIn| function.
+annotate the new parts of this result sequence with the |hfullyIn| function.
 
 > (<|)  ::  HAnnIO a (Tree b) TreePhi m
 >       =>  b -> FingerTreeA a b -> m (FingerTreeA a b)
 >
 > x <| xs = do  fun <- hparaMA consAlg (SpPrf ZeroP) xs
->               let res = hfst (fun # (N . Just . D) (HInF (Value0 x)))
->               fullyIn (SpPrf ZeroP) res
+>               let res = hfst (fun # (N . Just . D1) (HInF (Value0 x)))
+>               hfullyIn (SpPrf ZeroP) res
 
 As can be seen in the definition of the function, we have to include a lot of
 boilerplate code to pack and unpack all the intermediate wrappers. These
