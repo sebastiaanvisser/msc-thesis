@@ -1,7 +1,7 @@
 %\documentclass{article}
 %\documentclass[12pt]{scrartcl}
 %\documentclass[a4wide,10pt]{article}
-\documentclass[12pt, a4paper]{report}
+\documentclass[twosided, 12pt, a4paper]{report}
 
 %include polycode.fmt
 
@@ -56,16 +56,16 @@
 
 \begin{document}
 
-%\maketitle
-%\input{Abstract}
+% \maketitle
+% \input{Abstract}
 %
-%\tableofcontents
+\tableofcontents
 %
 %\input{Introduction} 
 %\input{Motivation} 
 %\input{Overview} 
-\input{Fixpoints} 
-% \input{Morphisms} 
+% \input{Fixpoints} 
+\input{Morphisms} 
 % \input{Heap} 
 % \input{Storage} 
 % \input{Example} 

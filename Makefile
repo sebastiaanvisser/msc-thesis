@@ -24,9 +24,7 @@ ${DOC}.pdf: \
 	lhs2TeX -o $@ $<
 
 %.pdf: %.tex
-	pdflatex $<
-
-#latexmk -pdf $<
+	latexmk -pdf $<
 
 #${DOC}.bbl: ${DOC}.bib
 #	bibtex ${DOC}

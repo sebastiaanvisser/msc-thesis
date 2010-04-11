@@ -1,5 +1,5 @@
 %include polycode.fmt
-%include higherorder.fmt
+%include thesis.fmt
 %include haskell.fmt
 %include forall.fmt
 
@@ -12,6 +12,7 @@
 >   , KindSignatures
 >   , GADTs
 >   , FlexibleContexts
+>   , RankNTypes
 >   #-}
 > module Morphisms where
 
@@ -27,45 +28,66 @@
 
 %endif
 
-\begin{chapter}{Generic traversals with annotations}
+\begin{chapter}{Annotated Generic Traversals}
+
+In the previous chapter we have seen how to associate functionality with
+annotations. In this chapter will show how to write operations over annotated
+recursive data structures. We make sure that all operations we write are
+annotation unaware, which means we will use an existential annotation variable
+in the type signature of our operations. This existential makes sure the
+operations can be used in combination with all possible annotations.
+
+Writing annotation-generic operations can only be done when the functions
+cannot touch the recursive positions of the annotated datatypes, because the
+recursive positions contain the annotations. We have to find a way to abstract
+away from recursion when writing our algorithms.
+
+
+In this chapter we will use a well known functional programming technique for
+working with recursive datatypes. This technique has been explained by Meijer
+et al. in their paper \emph{Functional programming with bananas, lenses,
+envelopes and barbed wire.}\cite{bananas} We will introduce \emph{morphisms} to write
+operations that abstract away from recursion. We will implement both an
+annotation aware \emph{paramorphism} and \emph{apomorphism}. By writing
+\emph{algebras} for these morphisms we will be able to destruct and construct
+recursive data structures without explicitly touching the recursive positions.
+By creating an endomorphic paramorphism and an endomorphic apomorphism we
+will also be able to update existing recursive structures.
+
+In the last part of this chapter we show how to combine multiple algebras into
+one. This will allow us to perform multiple actions in a single tree traversal.
+We will also investigate the effect of traversals for annotations that work
+in a strict context on the running time of the operations.
 
 \begin{section}{Paramorphisms}
 
-\review{
-Now that we have a way to associate functionality with annotations we should be
-able to write operations over our annotated structures and perform actions each
-time we would normally go directly into recursion.  To generalize this pattern
-we abstract away from recursion when writing the structure-processing
-algorithms and use \emph{morphisms}. We start out with the \emph{paramorphism},
-which is a generalization of the \emph{catamorphism}, a bottom up traversal
-that can fold an entire structure into a single value. \docite{paramorphisms}
-}
+We start out by implementing a \emph{paramorphism}\cite{Paramorphisms}, a
+bottom up traversal that can fold a recursive structure into a single value.  A
+paramorphism is a generalization of the more commonly known
+\emph{catamorphism}\cite{bananas}. The standard Haskell function |foldr|, which
+can be used to destruct a list to a result value, is an example of a
+catamorphism.
 
-\review{
 We first write down the type signature of the algebra for paramorphisms, we
 call this algebra |Psi1|. 
-}
 
 > type Psi1 a f r = f (FixA a f :*: r) -> r
 
-\noindent
-\review{
 This type signature describes an algebra that should be able to produce an
 value of type |r| from one single node containing both the fully annotated
 sub-structures \emph{and} the recursive results of the paramorphic computation.
-}
 
-\review{
+We now create a derived algebra type that hides the annotation variable inside
+an existential quantification. This makes explicit that the algebras cannot
+reason about the annotation.
+
+> type Psi1A f r = forall a. Psi1 a f r
+
 An example of such an algebra is the function |containsAlg| for binary
-trees.\footnote{Note that because the |containsAlg| algebra only uses the
-recursive sub-results and not the original sub-structures this algebra is
-actually a catamorphism, a special case of the more general paramorphism.
-Because all catamorphisms are paramorphisms this does not invalidate the
-example.} This algebra describes a recursive traversal over a binary tree that
+trees. This algebra describes a recursive traversal over a binary tree that
 checks whether a certain integer value is included in the tree or not.
-}
 
-> containsAlg :: Int -> Psi1 a Tree_f Bool
+> containsAlg :: Int -> Psi1A Tree_f Bool
 > containsAlg _  Leaf                      = False
 > containsAlg v  (Branch c (_, l) (_, r))  = 
 >   case v `compare` c of
@@ -73,59 +95,53 @@ checks whether a certain integer value is included in the tree or not.
 >     EQ  -> True
 >     GT  -> r
 
-\noindent
-\review{
+Note that because the |containsAlg| algebra only uses the recursive
+sub-results, and not the original sub-structures, this algebra is actually a
+catamorphism, a special case of the more general paramorphism.  Because all
+catamorphisms are paramorphisms this does not invalidate the example.
+
 The paramorphism function performs a bottom up traversal over some
 |Traversable| |Functor| and for every node applies the algebra, the result of
 the algebra will be returned. The most generic version of this paramorphism
-within our framework is the |paraMA1|.  This function runs is some monadic
-context |m| and performs a traversal over some annotated structure |FixA a f|
-using the |AnnO| type class to perform annotation specific queries.
-}
+within our framework is the |paraMA1| function.  This function runs is some
+monadic context |m| and performs a traversal over some annotated structure
+|FixA a f| using the |AnnO| type class to perform annotation specific queries.
 
 > paraMA1 :: AnnO a f m => Psi1 a f r -> FixA a f -> m r
 > paraMA1 psi = return . psi <=< mapM (group (paraMA1 psi)) <=< annO
 >   where group f c = fmap ((,) c) (f c)
 
-\review{
 From now on the $(_{\alpha}^m)$ postfix will be used to indicate that a
-function requires a context and works on annotated strucutres.
-}
+function requires a context and works on annotated structures.
 
-\review{
 The implementation of this generic paramorphism might seem a bit cryptic at
 first sight, this is due to its very generic behaviour. Quickly summarized this
 function performs a bottom-up traversal over a recursive structure like our
-binary tree example.  As input it receives a fully annotated structure and it
-uses the |annO| function to get a true node out of the annotation.  The
+binary tree. As input it receives a fully annotated structure and it uses the
+|annO| function to unwrap a single node out of the annotation.  The
 |Traversable| instance, which is an implicit super class of the |AnnO| class,
 allows us to use the |mapM| function to recursively apply the |paraMA1|
 function to the sub-structures. This recursive invocation is used to come up
 with the sub-results.  The sub-results will be grouped together with the
-original sub-structures these results are computed from. The original input
-node with these grouped results as the values will be passed into the algebra
-|psi|.  The algebra can now compute the result value for one level of the
-recursive computation, possible using the results of deeper traversals.
-}
+original sub-structures that these results are computed from. The original
+input node with these grouped results as the values will be passed into the
+algebra |psi|.  The algebra can now compute the result value for one level of
+the recursive computation, possible using the results of deeper traversals.
 
-\review{
 To illustrate the usage of the |paraMA1| function we apply it to the
 |containsAlg| algebra and get back a true function that performs a containment
 check over a fully annotation binary tree.
-}
 
-> containsMA :: AnnO a Tree_f m => Int -> FixA a Tree_f -> m Bool
+> containsMA :: AnnO a Tree_f m => Int -> TreeA a -> m Bool
 > containsMA v = paraMA1 (containsAlg v)
 
-\noindent
-\review{
 We can easily test this function in the interactive environment of the GHC
 compiler.  We first manually construct a binary tree and constrain this to the
 |IO| context and |Debug| annotation. While the binary tree is being
 constructed, using our previously defined smart constructors, the debug
 annotation prints out a trace of all nodes being produced.
-}
 
+\begin{small}
 \begin{verbatim}
 ghci> join (branchA 3 <$> leafA <*> leafA) :: IO (TreeA Debug)
 annI: Leaf
@@ -133,15 +149,14 @@ annI: Leaf
 annI: Branch 3 <D Leaf> <D Leaf>
 <D Branch 3 <D Leaf> <D Leaf>>
 \end{verbatim}
+\end{small}
 
-\noindent
-\review{
 Now we can apply the |containsMA| function to the resulting binary tree and
 check for the existence of a |Branch| with value |3|. While running this
 function the debug annotation prints out a trace of all sub-structures being
 queried.
-}
 
+\begin{small}
 \begin{verbatim}
 ghci> containsMA 3 it
 annO: Branch 3 <D Leaf> <D Leaf>
@@ -149,119 +164,143 @@ annO: Leaf
 annO: Leaf
 True
 \end{verbatim}
+\end{small}
 
-\noindent
-\review{
 Note that the paramorphic traversal is as strict as the context it runs in.
 This means that because the |Debug| annotation requires the |IO| monad the
 |containsMA| function becomes more strict then necessary. In section
-\todo{section} we will describe a method to regain laziness for paramorphisms
-running in strict contexts.
-}
+\ref{sec:laziness} we will describe a method to regain laziness for
+paramorphisms running in strict contexts.
 
-\review{
 The paramorphism we have defined above is generic in the sense that it works
 on structures with arbitrary annotations that run in an arbitrary context.
 When an annotation does not have any requirements about the type of context to
-run in we can use the |Identity| monad to create a pure paramorphic traversal.
-}
+run in, we can use the |Identity| monad to create a pure paramorphic traversal.
 
-> paraA1 :: (AnnO a f Identity, Traversable f) => Psi1 a f c -> FixA a f -> c
+> paraA1 :: (AnnO a f Identity, Traversable f) => Psi1 a f r -> FixA a f -> r
 > paraA1 psi = runIdentity . paraMA1 psi
 
-\noindent
-\review{
-When we further restrict the annotation to be the identity annotation we get
+When we further restrict the annotation to be the identity annotation, we get
 back a pure paramorphism that works on plain unannotated structures.
-}
 
-> para1 :: Traversable f => Psi1 Id f c -> Fix f -> c
+> para1 :: Traversable f => Psi1 Id f r -> Fix f -> r
 > para1 psi = paraA1 psi
 
-\noindent
-\review{
 To illustrate this pure paramorphism we apply it to the |containsAlg| algebra
 and get back a pure |contains| function.
-}
 
 > contains :: Int -> Tree -> Bool
 > contains v = para1 (containsAlg v)
+
+In this section we have shown how to build an annotation aware paramorphism,
+which can be applied to annotation-generic algebras. The |paraMA| function is
+generic in both the annotation and the context the annotation requires. By only
+restricting the types we can derive operations that operate over the pure,
+in-memory variants of our data structures. In the next chapter will we do the
+same for \emph{apomorphisms} which can be used to construct recursive data
+structures from a seed value.
 
 \end{section}
 
 \begin{section}{Apomorphisms}
 
-\review{
-Dual to the paramorphism is the \emph{apomorphism}. Where the paramorphism
+Dual to the paramorphism is the \emph{apomorphism}\cite{apomorphisms}. Where the paramorphism
 abstract away from recursion, the apomorphisms abstracts away from corecursion.
-\docite{apomorphisms} Similarly, where paramorphisms use algebras to describe
-recursive operations, apomorphisms use coalgebras to describe corecursive
-operations. Apomorphisms are generalizations of the more well known
-\emph{anamorphisms}. The standard Haskell function |unfold|, which can be used
-to create lists from a seed value, is an example of an anamorphisms.
-}
+Similarly, where paramorphisms use algebras to describe recursive operations,
+apomorphisms use coalgebras to describe corecursive operations. Apomorphisms
+are generalizations of the more well known \emph{anamorphisms}. The standard
+Haskell function |unfold|, which can be used to create lists from a seed value,
+is an example of an anamorphisms.
 
-\review{
 The coalgebra for an apomorphism, called |Phi|, takes a seed value of some type
-|s| and should be able to produce a node containing either a new seed or a
+|s| and must produce a node containing either a new seed or a
 new recursive structure.
-}
 
 > type Phi a f s = s -> f (s :+: FixA a f)
 
-\noindent
-\review{
 From the type signature of the |Phi| coalgebra it is obvious that it is dual to
 the |Psi| algebra for paramorphisms. Paramorphisms destruct recursive
 structures to some result value |r|, apomorphisms construct recursive
 structures from some seed value |s|.
-}
+
+We now create a derived coalgebra type that hides the annotation variable
+inside an existential quantification. This makes explicit that the coalgebras
+cannot reason about the annotation.
+
+> type PhiA f s = forall a. Phi a f s
+
+Because the annotation variable |a| is not accessible to coalgebras that are
+written using the |PhiA| type synonym, it can never produce annotation values.
+But the coalgebras is allowed to stop the corecursive traversal by using the
+|Right| constructor to return a value of type |FixA a f|, an annotated
+structure. There are three ways the coalgebras can use the second component of
+the result sum type to stop the corecursion:
+
+\begin{enumerate}
+\item The first posibility for the coalgebra to stop the corecursive process is
+to return an unannotated structure using the |Right| constructor. This can only
+be done by using the |InF| fixed point constructor.
+\item The coalgebra can \emph{reuse} an existing annotated structure it
+receives as input. This can only work when the input is also an annotated
+structure, and this can only be the case when the seed type is exactly |FixA a f|.
+Apomorphisms that have a seed type equal to the result of the corecursion are
+called \emph{endomorphic} apomorphisms, these will be discussed in section
+\ref{sec:endoapo}.
+\item The third options is to wrap an existing annotated structure
+with one or more levels of unannotated nodes. This method is a combination of
+method 1 and method 2.
+\end{enumerate}
 
 To illustrate the usage of coalgebras we define the function |fromListCoalg|
 that describes how to create a balanced binary tree from an input list of
-integer values. \footnote{Note that because the |fromListCoalg| coalgebra only
-produces new seeds, using the |Left| constructor, instead of directly producing
-sub-structures it is actually an anamorphism. Because all anamorphisms are
-apomorphisms this does not invalidate the example.} 
+integer values.
 
-> fromListCoalg :: Phi a Tree_f [Int]
+> fromListCoalg :: PhiA Tree_f [Int]
 > fromListCoalg []      = Leaf
 > fromListCoalg (y:ys)  =
 >   let  l  = take (length ys `div` 2) ys
 >        r  = drop (length l) ys
 >   in Branch y (Left l) (Left r)
 
-\noindent
+Note that because the |fromListCoalg| coalgebra only produces new seeds using
+the |Left| constructor, instead of directly producing sub-structures, it is
+actually an anamorphism. Because all anamorphisms are apomorphisms this does
+not invalidate the example.
+
 Like the paramorphism we start with an apomorphism that corecursively generates
 an annotated structure in some, possibly monadic, context. We call this
 function |apoMA|. This apomorphism takes a coalgebra |Phi| and some initial
 seed value |s| and uses this to produce an annotated structure |FixA a f|.
 
 > apoMA :: AnnI a f m => Phi a f s -> s -> m (FixA a f)
-> apoMA phi = annI <=< mapM (apoMA phi `either` return) . phi
+> apoMA phi = annI <=< mapM (apoMA phi `either` fullyIn) . phi
 
-\noindent
 This apomorphism first applies the algebra |phi| to the initial seed value |s|
-and new structure |f| with either a new seed or an recursive sub-structure in
-the sub-positions. When a new seed has been supplied by the coalgebra the
-|apoMA| function will be call recursively to produce a new sub-structure. When
-the coalgebra supplied an existing sub-structure the |annI| function from
-the |AnnI| type class will be used to provide an annotation for it. The entire
-structure itself will be supplied with an annotation as well using the
-|annI| function again.
+to produce a new structure of type |f (s :+: FixA a f)|. This results has
+either a new seed or a recursive sub-structure in the sub-positions. When we
+encounter a new seed in the |Left| constructor we use the |apoMA| function to
+recursively to produce a new sub-structure.  When we encounter a |Right|
+constructor containg a (partially) annotated recursive structure again, we do
+not go further into recusrion. Point 1 and 2 of the enumeration above show us
+we are forced to reannotate the top of this structure. Because the coalgebra
+can possibly create multiple levels of unannotated nodes, we have to use the
+|fullyIn| function. When taken care of the sub-results the result will be
+wrapped inside an annotation using the |annI| function.
 
-Now we can apply this to our example coalgebra |fromListCoalg| and get back a
-true fromList function that can be used to produce annotation binary trees.
+Now we can apply the |apoMA| function to our example coalgebra |fromListCoalg|
+and get back a function that can be used to produce annotated binary trees from
+a list of integers.
 
-> fromListMA :: AnnI a Tree_f m => [Int] -> m (FixA a Tree_f)
+> fromListMA :: AnnI a Tree_f m => [Int] -> m (TreeA a)
 > fromListMA = apoMA fromListCoalg
 
-Now we can illustrate the usage of the |fromListMA| function by construction a
-simple binary tree from a two-element lists. Again we constraint the context to
-|IO| and the annotation to |Debug|. The annotation nicely prints out all the
+To illustrate the usage of the |fromListMA| function we construct a simple
+binary tree from a two-element lists. Again we constrain the context to |IO|
+and the annotation to |Debug|. The annotation nicely prints out all the
 sub-structures that are being produced before the final result tree is
 returned.
 
+\begin{small}
 \begin{verbatim}
 ghci> fromListMA [1, 3] :: IO (FixA Debug (Tree_f Int))       
 annI: Leaf
@@ -271,92 +310,84 @@ annI: Branch 3 <D Leaf> <D Leaf>
 annI: Branch 1 <D Leaf> <D (Branch 3 <D Leaf> <D Leaf>)>
 <D (Branch 1 <D Leaf> <D (Branch 3 <D Leaf> <D Leaf>)>)>
 \end{verbatim}
+\end{small}
 
-\noindent
-Like for paramorphisms we can create a specialized version that works for
+Like we did for paramorphisms, we can specialize the |apoMA| function for
 annotation types that do not require a context to run in. We use the identity
 monad to get back a pure annotated apomorphism.
 
 > apoA :: AnnI a f Identity => Phi a f s -> s -> FixA a f
 > apoA phi = runIdentity . apoMA phi
 
-\noindent
 Fixing the annotation to be the identity gives us back a pure apomorphism
 working over structure without annotations.
 
 > apo :: Traversable f => Phi Id f s -> s -> Fix f
 > apo phi = apoA phi
 
-\noindent
 Now we can simply create a pure |fromList| version working on plain binary
 trees without annotations.
 
 > fromList :: [Int] -> Tree
 > fromList = apo fromListCoalg
 
+In the last two section we have seen how to create recursive destructor and
+constructor functions using an algebraic approach. The seed and result values
+for both the paramorphisms and the apomorphisms were polymorph. The next two
+sections show what happens when we move away from polymorphic result and seed
+types to using annotated data structures as the result and seed types. This
+will allow us to write modification functions on our annotated structures, like
+\emph{insert} and \emph{delete}.
+
 \end{section}
 
 \begin{section}{Endomorphic paramorphism}
 
 Both the paramorphisms and the apomorphisms working on annotated structures had
-enough information to know when to use the |annO| or |annI| function to
-read a structure from an annotation or to annotate a new structure. The
-paramorphism starts out with querying the value from the annotation before
-applying the algebra. The apomorphism produces an annotation returned by the
-coalgebra.
+enough information to know when to use the |annO| or |annI| functions to
+wrap and unwrap annotations. The paramorphism starts out with querying the
+value from the annotation before applying the algebra. The apomorphism produces
+an annotation returned by the coalgebra. The algebras as defined in the
+previous sections are very general in the sense that they can return a value of
+any result type |r|. Some paramorphisms might choose to produce a value with a
+type equal to the input type. 
 
-The algebras as defiend in the previous sections are very general in the sense
-that they can return a value of any result type |r|. Some paramorphisms might
-choose to produce a value that is equal to the input value. An example of such
-an algebra is the |replicate| algebra that replaces every value in a binary
-tree with one and the same value.
+We create two new type synonyms that describe \emph{endomorphic paramorphisms}.
+The result value is fixed to the same type as the input type |FixA a f|. The
+second type synonym additionaly hides the annotation variable |a| inside an
+existential quantification.
 
-> replicateAlg1 :: Int -> Psi1 a Tree_f (Tree_f (Fix Tree_f))
-> replicateAlg1 _    Leaf                     = Leaf
-> replicateAlg1 v (  Branch _ (_, l) (_, r))  = Branch v (InA (Id l)) (InA (Id r))
+> type Endo a  f = Psi1 a f (FixA a f)
+>
+> type EndoA   f = forall a. Endo a f 
 
-\noindent
-The value that gets into the |replicateAlg| is of |Tree_f v (FixA a (Tree_f v))|
-for some arbitrary annotation. The algebra does not run in any context, and
-should not run in any context, and cannot come up with new annotations. The
-only thing it can do is fix the annotation type to |Id| and return a plain
-binary tree as a result.
-  
-Because the type of |Psi| does not allow the reuse of existing sub-structure
-with annotations in the output we have to create a new type of albera for
-\emph{endomorphic paramorphisms}, paramorphisms for which the result type
-equals the output type.
-
-> type Endo a f = f (FixA a f :*: FixA a f) -> (FixA a f :+: a f (FixA a f))
-
-\noindent
 The |Endo| type is an specialized version of the |Psi| type and describes an
 algbera that returns either an existing fully annotated structure or produces a
-new structure with existing fully annotated sub-structures. 
+new fully annotated structure.
 
 > endoMA :: AnnIO a f m => Endo a f -> FixA a f -> m (FixA a f)
-> endoMA psi = (return `either` annI) . psi <=< mapM (group (endoMA psi)) <=< annO
+> endoMA psi = fullyIn . psi <=< mapM (group (paraMA1 psi)) <=< annO
 >   where group f c = fmap ((,) c) (f c)
 
-\noindent
 The only real difference between the |paraMA| and the |endoMA| function is that
-the latter knows it might need to use the |annI| function on the result of
-the algbera |psi|. The |paraMA| function can be used to compute any results
-value from an input structure, even unannotated forms of the input structure.
-The |endoMA| function can be used to compute a fully annotated structure with
-the same type as the input structure.
+the latter knows it needs to use the |fullyIn| function on the result of the
+algbera |psi|.  The |paraMA| function can be used to compute result values of
+any types from an input structure, even unannotated forms of the input
+structure.  The |endoMA| function can only be used to compute a fully annotated
+structure with the same type as the input structure.
 
-We can now rewrite the |replicateAlg| algbera to produce annotated structures.
+We illustrate the usage of the endomorphic paramorphisms using the
+|replicateAlg| function. This algebra describes an operation that distributes a
+single value to all the value positions in a the binary tree.
 
-> replicateAlg :: Int -> Endo a Tree_f
-> replicateAlg _    Leaf                     = Right Leaf
-> replicateAlg v (  Branch _ (_, l) (_, r))  = Right (Branch v l r)
+> replicateAlg :: Int -> EndoA Tree_f
+> replicateAlg _    Leaf                     = InF Leaf
+> replicateAlg v (  Branch _ (_, l) (_, r))  = InF (Branch v l r)
 
-\noindent
-Because the |replicateAlg| produces a new structure and does not directly
-resuses pre-annotated sub-structure it uses the |Right| constructor from the
-sum-type. The |endoMA| morphism now know to provide annotations for these new
-structures using the |annI| function.
+Because the |replicateAlg| produces a new structure it uses the |Right|
+constructor from the sum-type. The |endoMA| morphism now knows it should
+provide new annotations to the top of the result structure using the |fullyIn|
+function.
 
 Combinging the endomorphic paramorphism with the algbera for replication gives
 us back a true replicate function for annotated structures.
@@ -364,12 +395,12 @@ us back a true replicate function for annotated structures.
 > replicateMA :: AnnIO a Tree_f m => Int -> FixA a Tree_f -> m (FixA a Tree_f)
 > replicateMA v = endoMA (replicateAlg v)
 
-\noindent
 We can now test this function on the result of our prevouis example, the
-|fromListMA [1, 3]|. The result shows a nice debug trace of how the
-|replicateMA| function traverses the binary tree and builds it up again using
-the replicated value.
+expression |fromListMA [1, 3]|. The result shows a debug trace of how the
+|replicateMA| function traverses the binary tree and builds up a new tree again
+with the replicated value.
 
+\begin{small}
 \begin{verbatim}
 ghci> replicateMA 4 it
 annO: Branch 1 <D Leaf> <D (Branch 3 <D Leaf> <D Leaf>)>
@@ -384,8 +415,8 @@ annI: Branch 4 <D Leaf> <D Leaf>
 annI: Branch 4 <D Leaf> <D (Branch 4 <D Leaf> <D Leaf>)>
 <D (Branch 4 <D Leaf> <D (Branch 4 <D Leaf> <D Leaf>)>)>
 \end{verbatim}
+\end{small}
 
-\noindent
 Like for regular paramorphisms we can create a specialized version that works for
 annotation types that do not require a context to run in. We use the identity
 monad to get back a pure annotated endomorphic paramorphism.
@@ -393,104 +424,104 @@ monad to get back a pure annotated endomorphic paramorphism.
 > endoA :: AnnIO a f Identity => Endo a f -> FixA a f -> FixA a f
 > endoA psi = runIdentity . endoMA psi
 
-\noindent
 Fixing the annotation to be the identity gives us back a pure endomorphic
 paramorphism working over structure without annotations.
 
 > endo :: Traversable f => Endo Id f -> Fix f -> Fix f
 > endo psi = endoA psi
 
+So, in this section we have seen how to specialize paramorphisms to work with
+results values of the same type as the input values. Because the result values
+when working with endomorphic paramorphisms is also an annotated structure, we
+had to specialize the traversal function to produce annotations for the result
+structure. In the next section we show how to specialize apomorphisms for have
+annotated structures as the input seeds.
+
 \end{section}
 
 \begin{section}{Endomorphic apomorphisms}
+\label{sec:endoapo}
 
-Similar to the concept of endomorphic paramorphism are the endomorphic
-apomorphisms. Endomorphic paramorphisms are specific apomorphisms in the sense
+Similar to the concept of endomorphic paramorphisms are the endomorphic
+apomorphisms. Endomorphic apomorphisms are specific apomorphisms in the sense
 that the input seed to produce new structures from is itself of the same
 structure type. Endomorphic apomorphisms working on annotated structures suffer
-from the same problem their paramorphic counterparts, the (co)algberas do not
-have enough information to reason about the annotation type.  This can
-illustrated with the coalgebra for insertion into a binary tree.
+from the same problem as their paramorphic counterparts: the apomorphic
+traversal function |apoMA| it to generic to reason about annotated
+seed values.
 
-\todo{this example might be a bit to undefined}
+To allow writing proper endomorphic coalgebras for annotated structure we
+introduce a two endomorphic coalgbera types. 
 
-> insertCoalg1 :: Int -> Phi a Tree_f (Tree_f (Fix Tree_f))
-> insertCoalg1 v s =
->  case s of
->    Branch w l r ->
->      case v `compare` w of
->        LT  -> Branch w  (Left  undefined) (Right undefined)
->        EQ  -> Branch v  (Right undefined) (Left  undefined)
->        GT  -> Branch w  (Right undefined) (Right undefined)
->    Leaf    -> Branch v  (Right undefined) (Right undefined)
+> type Coendo a f = Phi a f (FixA a f)
+>
+> type CoendoA  f = forall a. Coendo a f 
 
-Remeber that the coalgebra for apomorphisms could decide whether to produce a
-new seed or a new sub-structure directly using the |Left| and |Right|
-constructors of the sum datatype. The |undefined| symbols (Haskells
-\emph{undefined}) in the |insertCoalg| are the places that cannot be filled in
-because the coalgebra cannot inspect annotated structures. To allow writing
-proper endomorphic coalgebras for annotated structure we introduce a new
-coalgbera type that can exploit more information.
+The |Coendo| type signature fixes the input seed to the type of the structure
+that will be produced. The additional type |CoendoA| hides the annotation
+variable inside an existential quantification.
 
-> type CoEndo a f = f (FixA a f) -> f (FixA a f :+: (FixA a f :+: f (FixA a f)))
+We will now write the |coendoMA| function, that takes a endomorphic coalgbera
+and an fully annotated input structure and produces an fully annotated output
+structure. Note that both the endomorphic paramorphism and the endomorphic
+apomorphism modify an input structure to an output structure of the same type.
+Where the endomorphic paramorphisms takes in input algberas and the endomorphic
+apomorphisms take coalgberas.
 
-The |CoEndo| type signature fixes the input seed to the type of the structure
-that will be produced. The output structure can have three different types of
-value at the sub-positions, hence the nested sum type. 
-
-\begin{itemize}
-\item The first is a new seed to recursively continue.
-\item The second means stopping and reusing pre-annotated structure.
-\item The third means stopping and invention structure with pre-annotated sub-structures.
-\end{itemize}
-
-Using the |CoEndo| type for endomorphic coalgberas we can rewrite the
-|insertCoalg| to take advantage of this and write a true insertion coalgbera.
-
-> insertCoalg :: Int -> CoEndo a Tree_f
-> insertCoalg v s =
->   case s of
->     Branch w l r ->
->       case v `compare` w of
->         LT  -> Branch w  (Left l)              (Right (Left r))
->         EQ  -> Branch v  (Right (Left l))      (Right (Left r))
->         GT  -> Branch w  (Right (Left l))      (Left r)
->     Leaf    -> Branch v  (Right (Right Leaf))  (Right (Right Leaf))
-
-The |coendoMA| function takes a endomorphic coalgbera and an fully annotated
-input structure and produces an fully annotated output structure. Note that
-both the endomorphic paramorphism and the endomorphic apomorphism modify an
-input structure to an output structure of the same type. Where the endomorphic
-paramorphisms takes in input algberas and the endomorphic apomorphisms take
-coalgberas.
-
-> coendoMA :: (Traversable f, AnnIO a f m) => CoEndo a f -> FixA a f -> m (FixA a f)
-> coendoMA phi = annIO (mapM c . phi)
->   where
->   c (Left x)           = coendoMA phi x
->   c (Right (Left  x))  = return x
->   c (Right (Right x))  = annI x
+> coendoMA  ::  (Traversable f, AnnIO a f m)
+>           =>  Coendo a f -> FixA a f -> m (FixA a f)
+> coendoMA phi = annIO (mapM (coendoMA phi `either` fullyIn) . phi . InF)
 
 The |coendoMA| morphism applies the coalgbera |phi| to the annotated input
 structure throught the use of the |annIO| function from the |AnnIO| type class.
 The |annIO| function makes sure the input structure is queried from the root
 annotation and will be supplied a new annotation after applying the specified
 function. After applying the coalgbera |phi| a case analysis will be done on
-the result. The three possible cases of the nested sum type will be: going into
-corecursion with a new seed value, reusing an existing fully annotated
-structure, or producing a new structure while reusing the fully annotated
-sub-structures.
+the result. Either a new seed is produced or an existing structure is reused,
+similar to the regular apomorphisms. A new seed triggers a new recursive step,
+an existing structure will be fully annotated.
+
+As an example we will create an endomorphic coalgbera that describes the
+insertion of one value into a binary tree. The seed value for this coalgbera is
+an annotated binary tree of which the top level node is guaranteed not to have
+an annotation\footnote{The fact that this node is always wrapped inside an
+|InF| constructor and never in an |InA| constructor follows from the
+implementation of the |coendoMA|, but is not encoded in the type.
+Unfortunately, we cannot change the seed type to |f (FixA a f)| to encode this
+invariant in the type, because this will also change the type of the seed we
+have to produce.}. When the input is a |Leaf| we produce a singleton binary
+tree with the specified input value. Because we use the |Right| constructor in
+the recursive positions of the result, the traversals stops. When the input
+value is a |Branch| we compare the value to be inserted with the value inside
+this |Branch|. Based on the result we decide whether to insert the value in the
+left or right sub-tree. When we want to insert the value into the right
+sub-tree we stop the recursion with the |Right| constructor for the left
+sub-tree and continue with a new seed using the |Left| constructor for the
+right sub-tree.  When we want to insert the value into the left sub-tree we
+perform the opposite task.
+
+> insertCoalg :: Int -> CoendoA Tree_f
+> insertCoalg v (InF s) =
+>   case s of
+>     Leaf          -> Branch v  (Right (InF Leaf))  (Right (InF Leaf))
+>     Branch w l r  ->
+>       case v `compare` w of
+>         LT  -> Branch w  (Right l)           (Left  r)  
+>         _   -> Branch w  (Left  l)           (Right r)
 
 Combining the endomorphic apomorphism with the endomorphic coalgbera for binary
-tree insertion gives us back a true insert function on annotated binary trees.
+tree insertion gives us back a true |insert| function on annotated binary
+trees.
 
 > insert :: AnnIO a Tree_f m => Int -> FixA a Tree_f -> m (FixA a Tree_f)
 > insert v = coendoMA (insertCoalg v)
 
-We can test this by inserting the value |0| into the example tree binary tree
-produced before with the |fromList [1, 2]|. The debug trace shows the traversal
-that is being performed.
+We can test the |insert| function by inserting the value |0| into the example
+tree binary tree produced before with the |fromList [1, 2]|. The debug trace
+shows the traversal that is being performed while inserting a new element into
+the binary tree.
 
+\begin{small}
 \begin{verbatim}
 ghci> insert 0 it
 annO: Branch 1 <D Leaf> <D (Branch 3 <D Leaf> <D Leaf>)>
@@ -503,37 +534,48 @@ annI: Branch 1 <D (Branch 0 <D Leaf> <D Leaf>)>
 <D (Branch 1 <D (Branch 0 <D Leaf> <D Leaf>)>
              <D (Branch 3 <D Leaf> <D Leaf>)>)>
 \end{verbatim}
+\end{small}
 
-\noindent
-And additionally, in the line of the other morphisms defined, two
+And additionally, in the line of the other morphisms, we define two
 specializations of this endomorphic apomorphism. The |coendoA| works for
 annotations not requiring any context, the |coendo| working on pure structures
 not requiring any context or annotation.
 
-> coendoA :: AnnIO a f Identity => CoEndo a f -> FixA a f -> FixA a f 
+> coendoA :: AnnIO a f Identity => Coendo a f -> FixA a f -> FixA a f 
 > coendoA phi = runIdentity . coendoMA phi
 
-> coendo :: Traversable f => CoEndo Id f -> Fix f -> Fix f
+> coendo :: Traversable f => Coendo Id f -> Fix f -> Fix f
 > coendo phi = coendoA phi
+
+So, in this section we have seen how to specialize apomorphisms to work with
+seed values of the same type as the output values.  Because the seed values are
+now also annotated structures we had to specialize the traversal function to
+query the structure out of the annotation before using it as the seed.
 
 \end{section}
 
 \begin{section}{Applicative paramorphisms}
 
-When writing modification functions over datatypes using morphisms like the
-ones defined above it is not always easy to compose small functions into bigger
-ones. Combining multilpe algebras into a single one that can be used in a
-single traversal is a well known problem in the world of functional
-programming. Attribute grammar systems can be used to combine different
-algebraic operations into a single tree traversal in an aspect-oriented way.
+\todo{review form here -------------------------------------------------------------}
+
+In section \todo{XXX} we have seen how to write some simple paramorphic
+algebras. Writing more complicated algebras can be quite hard, mainly because
+it is not always easy to compose multiple aspects of an operation into one algebra.
+Combining multilpe algebras into a single one that can be used in a single
+traversal is a well known problem in the world of functional programming.
+Attribute grammar systems like the \emph{UUAGC}\cite{ag} can be used to combine
+different algebraic operations into a single traversal in an aspect-oriented
+way.
 
 This section describes a more lightweight and idiomatic approach to algebra
-composition. We make the paramorphic algebra type an instance of where
-Haskell's applicative functors type class.
+composition. We make the paramorphic algebra type an instance of Haskell's
+|Applicative| type class.
 
 First we change the type for the algebra |Psi| from a type synonym into a real
-datatype using a GADT. We do so to be able to add additional constructor as we
-will later see is needed for the applicative instance. 
+datatype using a generalized algebraic datatypes, or GADT. We change the
+algebra into a real datatype, because this allows us to add an additional
+constructor. As we will later see, this extra constructor is needed for the
+|Applicative| instance. 
 
 > data Psi (a :: (* -> *) -> * -> *) (f :: * -> *) (r :: *) where
 >   Alg  :: (f (FixA a f, r) -> r)  -> Psi a f r
@@ -544,8 +586,7 @@ will later see is needed for the applicative instance.
 
 %endif
 
-\noindent
-The applicative type class requires us to have a |Functor| instance and to
+The |Applicative| type class requires us to have a |Functor| instance and to
 implement two functions, |pure| and |<*>|.
 
 \begin{spec}
@@ -554,18 +595,16 @@ class Functor f => Applicative f where
   (<*>)  :: f (a -> b) -> f a -> f b
 \end{spec}
 
-\noindent
 When we unify the type |f| with the the |Psi| type we get the following
-function type we have to support when implementing applicative algebras.
+function type we have to support when implementing \emph{applicative} algebras.
 
 \begin{spec}
 Psi c f (a -> b) -> Psi c f a -> Psi c f b
 \end{spec}
 
-\noindent
 From this signature it is clear that combining an algebra that produces a
 function from |a -> b| and an algebra that produces a |a| into an algebra that
-produces only a |b| throws away any information about |a|. Because both the
+produces only a |b|, throws away any information about |a|. Because both the
 function and the argument are needed \emph{in every stage of the traversal} we
 first create a function |<++>| that groups together both the function, the
 argument and the result.
@@ -595,21 +634,19 @@ argument and the result.
 
 %endif
 
-\noindent
 Now we add an additional constructor to the |Psi| datatype that projects the
 last component from the triple algebra created by the |<++>| function. It uses
-the |Psi| GADT to create an existential quantificaiton that hide the type
+the |Psi| GADT to create an existential quantification that hides the type
 variable |r| inside the |Prj| constructor.
 
 \begin{spec}
 Prj :: Psi a f (r -> s, r, s)  -> Psi a f s
 \end{spec}
 
-\noindent
 The new constructor requires us the to extend the grouping function with the
 three additional cases involving the projection constructor. The implementation
 is quite straightforward but note that it uses the |pure| function from the
-applicative instance we do not yet have defined.
+|Applicative| instance, which we have not defined yet.
 
 \begin{spec}
 Prj  f <++> Prj  g = fmap trd3 f <++> fmap trd3 g 
@@ -617,9 +654,8 @@ Alg  f <++> Prj  g = Prj (pure id <++> Alg f) <++> Prj g
 Prj  f <++> Alg  g = Prj f <++> Prj (pure id <++> Alg g)
 \end{spec}
 
-\noindent
 With the both the grouping function and the projection function we have enough
-tools to easily create the applicative instance for paramorphic algebras. The
+tools to easily create the |Applicative| instance for paramorphic algebras. The
 applicative sequencing is a matter of grouping the input and output information
 together and then only throwing the input types away using the existential from
 the GADT.
@@ -628,15 +664,14 @@ the GADT.
 >   pure    = Alg . const
 >   a <*> b = Prj (a <++> b)
 
-\noindent
-We require a |Functor| super instance for this applicative instance which can
-easily be done more or less the same way as the applicative instance by lifting
-the function to fmap using |pure|.
+We require a |Functor| super instance for this instance which can easily be
+done more or less the same way as the |Applicative| instance by lifting the
+function to fmap using |pure|.
 
 > instance Functor f => Functor (Psi a f) where
 >   fmap f psi = Prj (pure f <++> psi)
 
-Using the applicative instance we can now easily compose multiple algebras into
+Using the |Applicative| instance we can now easily compose multiple algebras into
 one to be able to apply them to an input structure in one traversal. This
 composability can really help us to create more complicated algebras without
 creating very big tuples representing the all the components at once.
@@ -662,16 +697,34 @@ be adapted to be able to produce both |Alg| and |Prj| constructors.
 > paraMA (Alg  psi) = return . psi <=< mapM (g (lazy . paraMA (Alg psi))) <=< annO
 >   where g f c = fmap ((,) c) (f c)
 
+\todo{what is Lazy doing here?}
+
 The implementation of the projection aware |paraMA| is not very exciting and
 quite similar to the |paraMA| defined previously. The only conceptual
 difference is that for the |Prj| constructor the function unpacks the
 existential and recursively applies the paramorphism. 
 
+
+% minAlg :: Alg Int
+% minAlg = Para.Psi $ \a ->
+%   case fst a of
+%     F.Leaf           -> maxBound
+%     F.Branch _ v l r -> minimum [v, l, r]
+
+% repAlg :: Alg (Int -> Tree)
+% repAlg = Para.Psi $ \a x ->
+%   case fst a of
+%     F.Leaf           -> In (Id (F.Leaf))
+%     F.Branch k _ l r -> In (Id (F.Branch k x (l x) (r x)))
+%
+% repMinAlg :: Alg Tree
+% repMinAlg = repAlg <*> minAlg
+
 \end{section}
 
 \begin{section}{Lazy IO and strict paramorphisms}
+\label{sec:laziness}
 
-\review{
 The paramorphism function working on annotated structures is as strict as the
 context associated with the annotation. For example, the debug annotation works
 in the |IO| monad, which makes all computations strict. This strictness can
@@ -680,9 +733,7 @@ context all the sub results of the recursive computation will be computed, even
 when the algebra discards them immediately. This is the reason that the debug
 annotation in example \todo{TODO} prints out far more sub-trees than one would
 expect from a lazy traversal.
-}
 
-\review{
 Some monads are lazy by default like the |Identity| monad and the |Reader|
 monad. Using these lazy monads as the annotation context would make the
 traversal naturally lazy. Some other monads are strict by default requiring all
@@ -694,9 +745,7 @@ be traversed when the algebra requires them for the computation of the result
 value. The goal is to make the running time of the paramorphic traversals in
 strict contexts equivalent to the running time of pure traversals without any
 context.
-}
 
-\review{
 The decision about what sub-structures are needed for a certain computation is
 up to the algebra and not to the paramorphism function itself. The algebra is a
 pure description that is unaware of the annotation or associated context.
@@ -711,25 +760,20 @@ paramorphic traversal inside a strict context, like |IO| for our debug
 annotation, will actually strictly precompute the recursive results before
 passing them into the algebra. This changes the running time for the
 |containsMA| function from the expected |O(log n)| to an unacceptable |O(n)|.
-}
 
-\review{
 To solve the problem described above we introduce a type class |Lazy| that will
 allow us to explicitly turn strict monads into lazy ones when this is possible.
 The only class method is the function |lazy| that gets a monadic computation
 and turns it into an lazy variant of this computation. Off course this will not
 be possible in the most general case for all monads.
-}
 
 > class AM m => Lazy m where
 >   lazy :: m a -> m a
 
-\review{
 Both the |Identity| monad and the |Reader| monad are lazy by default and can
 trivially be made an instance of this type class. To be a bit more general we
 make the |ReaderT| monad transformer an instance of the |Lazy| class for all
 cases that it transforms another lazy monad.
-}
 
 > instance Lazy Identity where
 >   lazy = id
@@ -737,50 +781,42 @@ cases that it transforms another lazy monad.
 > instance Lazy m => Lazy (ReaderT r m) where
 >   lazy c = ask >>= lift . lazy . runReaderT c
 
-\review{
 Most interesting of all, we can also make |IO| an instance of the |Lazy| class
 by using the |unsafeInterleaveIO| function. This function takes an |IO|
 computation and produces an |IO| computation that will only be performed when
 the result value is needed. This breaks the strict semantics of the |IO| monad,
 which can become useful for our case.
-}
 
 > instance Lazy IO where
 >   lazy = unsafeInterleaveIO
 
-\review{
 Now we have a way to enforce lazy semantics for some of the contexts our
 traversals may run. By explicitly putting a call to |lazy| just before the
 recursive invocations in the paramorphism we can make the entire traversal
 lazy. The laziness of the computation is reflected in the function's class
-context.
-}
 
 > lazyParaMA :: (Lazy m, AnnO a f m) => Psi1 a f r -> FixA a f -> m r
 > lazyParaMA psi = return . psi <=< mapM (group (lazy . lazyParaMA psi)) <=< annO
 >   where group f c = fmap ((,) c) (f c)
 
-\review{
 When we now express the |containsMA| in terms of the more lazy paramorphism.
-}
 
 > containsMA2 :: (Lazy m, AnnO a Tree_f m) => Int -> FixA a Tree_f -> m Bool
 > containsMA2 v = lazyParaMA (containsAlg v)
 
-\review{
 When we now run the |containsMA| functions on example tree created by |fromList
 [1, 2]| shows that the debug trace only prints out the first element of the
 binary tree, because no other sub-results are needed to come up with the
 answer.
-}
 
+\begin{small}
 \begin{verbatim}
 ghci> containsMA2 3 it
 annO: Branch 3 <D Leaf> <D Leaf>
 True
 \end{verbatim}
+\end{small}
 
-\review{
 The GHCi debugger by default prints out the value the user requests at the
 prompt, this is the only reason the expression |containsMA2 3 it| is even
 evaluated at all. The traversal has become become lazy on the inside, no
@@ -798,9 +834,7 @@ in when the result is inspected. While this behaviour is probably safe for the
 debug annotation this might not be the case in general. There is a really good
 reason the |unsafeInterleaveIO| function starts with the word `unsafe', there
 are a lot of problems associated with lazy IO. \docite{someone no lazy IO}.
-}
 
-\review{
 To make sure all the potential side effect stay within the context they belong to
 we have to make sure our paramorphism remains strict on the outside. We do
 this by forcing the entire result of the evaluation before returning the
@@ -810,7 +844,6 @@ the moment it would normally only get forced \emph{weak head normal form}
 (WHNF). The implementation internally uses the |seq| function from the Haskell
 prelude that forces the first argument WHNF when the second argument gets
 forced. \todo{ref dseq}
-}
 
 > dseq1  :: a -> a
 > seq1   :: a -> b -> b
@@ -822,17 +855,17 @@ forced. \todo{ref dseq}
 
 %endif
 
-\review{
 By creating a new paramorphism function that forces the result before returing
 we get a traversal that is lazy internally but is strict on the outside. As we
 will see later when dealing with data persistency this evaluation semantics is
 essential.
-}
 
 > paraMA' :: (Lazy m, AnnO a f m) => Psi1 a f r -> FixA a f -> m r
 > paraMA' psi = dseq1 `liftM` lazyParaMA psi
 
 \end{section}
+
+\todo{review till here -------------------------------------------------------------}
 
 \end{chapter}
 

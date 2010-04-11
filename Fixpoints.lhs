@@ -368,6 +368,7 @@ functionality. It will print out a trace of every node that gets |produced| or
 First we define the |Debug| datatype that is just a |newtype| similar to the
 identity annotation. No additional information is stored, the |newtype| is only
 used to associate specific actions to this annotation.
+
 > newtype Debug f c = D { unD :: f c }
 
 %if False

@@ -6,6 +6,9 @@
 %format Int                        = "\TConId{Int}"
 %format Char                       = "\TConId{Char}"
 %format String                     = "\TConId{String}"
+%format Identity                   = "\TConId{Identity}"
+%format IO                         = "\TConId{IO}"
+%format ReaderT                    = "\TConId{ReaderT}"
 
 %format MonadIO                    = "\TClassId{MonadIO}"
 %format Monad                      = "\TClassId{Monad}"
@@ -64,10 +67,12 @@
 %format outa                       = "out_a"
 %format outf                       = "out_f"
 
+%format a                          = "\alpha"
+%format b                          = "\beta"
+
 %format Id                         = "\TConId{Id}"
 %format Id1                        = "Id"
 %format Debug                      = "\TConId{Debug}"
-
 
 %format AnnI                       = "\TClassId{$Ann_{In}$}"
 %format AnnIO                      = "\TClassId{$Ann_{IO}$}"
@@ -92,27 +97,42 @@
 % MORPHISM  
 % -----------------------------------------------------------------------------
 
-%format :*: = "\times"
-%format :+: = "+"
+%format :*:                        = "\times"
+%format :+:                        = "+"
 
-%format paraMA1 = "para^m_{\alpha}"
-%format paraM1  = "para^m"
-%format paraA1  = "para_{\alpha}"
-%format para1   = "para"
-%format psi     = "\psi"
-%format Psi1    = "\Psi"
-%format Psi2    = "\Psi"
-%format Psi     = "\Psi"
+%format Coendo                     = "\TConId{\Phi^\varepsilon_\alpha}"
+%format CoendoA                    = "\TConId{\Phi^\varepsilon}"
+%format Endo                       = "\TConId{\Psi^\varepsilon_\alpha}"
+%format EndoA                      = "\TConId{\Psi^\varepsilon}"
+%format Phi                        = "\TConId{\Phi_\alpha}"
+%format PhiA                       = "\TConId{\Phi}"
+%format Psi                        = "\TConId{\Psi_\alpha}"
+%format Psi1                       = "\TConId{\Psi_\alpha}"
+%format Psi1A                      = "\TConId{\Psi}"
+%format Psi2                       = "\TConId{\Psi}"
+%format apo                        = "apo"
+%format apoA                       = "apo_{\alpha}"
+%format apoM                       = "apo^m"
+%format apoMA                      = "apo^m_{\alpha}"
+%format coendo                     = "coendo"
+%format coendoA                    = "coendo_{\alpha}"
+%format coendoM                    = "coendo^m"
+%format coendoMA                   = "coendo^m_{\alpha}"
+%format endo                       = "endo"
+%format endoA                      = "endo_{\alpha}"
+%format endoM                      = "endo^m"
+%format endoMA                     = "endo^m_{\alpha}"
+%format endoMA'                    = "helper"
+%format para1                      = "para"
+%format paraA1                     = "para_{\alpha}"
+%format paraM1                     = "para^m"
+%format paraMA'                    = "para^m_{\alpha}"
+%format paraMA1                    = "para^m_{\alpha}"
+%format phi                        = "\phi"
+%format psi                        = "\psi"
 
-%format containsAlg = "contains_{alg}"
-%format containsMA  = "contains^m_{\alpha}"
-
-%format apoMA = "apo^m_{\alpha}"
-%format apoM  = "apo^m"
-%format apoA  = "apo_{\alpha}"
-%format apo   = "apo"
-%format phi   = "\phi"
-%format Phi   = "\Phi"
+%format containsAlg                = "contains_{alg}"
+%format containsMA                 = "contains^m_{\alpha}"
 
 %format fromListCoalg = "fromList_{coalg}"
 %format fromListMA    = "fromList^m_{\alpha}"
@@ -125,32 +145,19 @@
 %format replicateAlg1 = "replicate_{alg}"
 %format replicateMA = "replicate^m_{\alpha}"
 
-%format Endo    = "\Psi_{endo}"
-%format endoMA  = " endo^m_{\alpha}"
-%format endoMA' = "helper"
-%format endoM   = "endo^m"
-%format endoA   = "endo_{\alpha}"
-%format endo    = "endo"
-
 %format insertCoalg  = "insert_{coalg}"
 %format insertCoalg1 = "insert_{coalg}"
 %format insertMA     = "insert^m_{\alpha}"
-
-%format CoEndo    = "\Phi_{endo}"
-%format coendoMA  = " coendo^m_{\alpha}"
-%format coendoM   = "coendo^m"
-%format coendoA   = "coendo_{\alpha}"
-%format coendo    = "coendo"
 
 %format fst3 = "fst_3"
 %format snd3 = "snd_3"
 %format trd3 = "trd_3"
 
+%format Lazy        = "\TClassId{Lazy}"
 %format lazyParaMA  = "lazyPara^m_{\alpha}"
 %format containsMA2 = "contains^m_{\alpha}"
 %format dseq1       = "gdseq"
 %format seq1        = "seq"
-%format paraMA'     = "para^m_{\alpha}"
 
 %format P           = "Pointer_{\alpha}"
 
@@ -170,7 +177,6 @@
 %format NdZPrf  = "Nd_{0\phi}"
 
 %format hparaMA = "hpara^m_{\alpha}"
-%format psi     = "h\psi"
 
 %format HFixA                   = "\TConId{\gamma_{\alpha}}"
 %format HFix                    = "\TConId{\gamma}"
