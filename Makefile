@@ -4,20 +4,6 @@ all: ${DOC}.pdf thesis.fmt haskell.fmt higherorder.fmt
 	open *.pdf
 
 ${DOC}.pdf: \
-	Abstract.tex \
-	Motivation.tex \
-	Overview.tex \
-	Introduction.tex \
-	Fixpoints.tex \
-	Morphisms.tex \
-	Example.tex \
-	Heap.tex \
-	Storage.tex \
-  HigherOrder.tex \
-  FingerTree.tex \
-	RelatedWork.tex \
-	Conclusion.tex \
-	FutureWork.tex \
 	${DOC}.tex
 
 %.tex: %.lhs
@@ -48,4 +34,19 @@ clean: .
 	*.toc
 
 new: clean all
+
+#	Abstract.tex \
+#	Motivation.tex \
+#	Overview.tex \
+#	Introduction.tex \
+#	Fixpoints.tex \
+#	Morphisms.tex \
+#	Example.tex \
+#	Heap.tex \
+#	Storage.tex \
+#  HigherOrder.tex \
+#  FingerTree.tex \
+#	RelatedWork.tex \
+#	Conclusion.tex \
+#	FutureWork.tex \
 

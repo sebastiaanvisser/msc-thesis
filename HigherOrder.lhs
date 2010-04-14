@@ -1,9 +1,3 @@
-%include polycode.fmt
-%include thesis.fmt
-%include higherorder.fmt
-%include haskell.fmt
-%include forall.fmt
-
 %if False
 
 > {-# OPTIONS_GHC -F -pgmF she #-}

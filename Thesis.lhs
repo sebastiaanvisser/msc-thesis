@@ -3,7 +3,6 @@
 %\documentclass[a4wide,10pt]{article}
 \documentclass[twosided, 12pt, a4paper]{report}
 
-%include polycode.fmt
 
 \usepackage[pdftex]{graphicx}
 \usepackage{xcolor}
@@ -28,6 +27,11 @@
 %\lhead{Generic persistence of Haskell data types}
 
 \bibliographystyle{alpha}
+
+%include polycode.fmt
+%include thesis.fmt
+%include haskell.fmt
+%include forall.fmt
 
 % \addtolength{\voffset}{-0.4in}
 % \addtolength{\textheight}{0.6in}
@@ -56,25 +60,24 @@
 
 \begin{document}
 
-% \maketitle
-% \input{Abstract}
-%
-\tableofcontents
-%
-%\input{Introduction} 
-%\input{Motivation} 
-%\input{Overview} 
-% \input{Fixpoints} 
-\input{Morphisms} 
-% \input{Heap} 
-% \input{Storage} 
-% \input{Example} 
-% \input{HigherOrder} 
-% \input{RelatedWork} 
-% \input{Conclusion}
-% \input{FutureWork} 
+\maketitle
+%include Abstract.lh.lhs
 
-\newpage
+\tableofcontents
+
+%include Introduction.lhs
+%include Motivation.lhs
+%include Overview.lhs
+%include Fixpoints.lhs
+%include Morphisms.lhs
+%include Heap.lhs
+%include Storage.lhs
+%include Example.lhs
+%include HigherOrder.lhs
+%include RelatedWork.lhs
+%include Conclusion.lhs
+%include FutureWork.lhs
+
 \bibliographystyle{plain}
 \bibliography{thesis}
 
