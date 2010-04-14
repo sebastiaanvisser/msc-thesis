@@ -21,7 +21,7 @@
 > import Control.Monad.Identity
 > import Control.Monad.Reader hiding (mapM)
 > import System.IO.Unsafe
-> import Data.Foldable
+> import Data.Foldable hiding (minimum)
 > import Data.Traversable
 > import Prelude hiding ((.), id, mapM, lookup)
 > import Fixpoints
@@ -60,6 +60,7 @@ We will also investigate the effect of traversals for annotations that work
 in a strict context on the running time of the operations.
 
 \begin{section}{Paramorphisms}
+\label{sec:para}
 
 We start out by implementing a \emph{paramorphism}\cite{Paramorphisms}, a
 bottom up traversal that can fold a recursive structure into a single value.  A
@@ -366,7 +367,7 @@ algbera that returns either an existing fully annotated structure or produces a
 new fully annotated structure.
 
 > endoMA :: AnnIO a f m => Endo a f -> FixA a f -> m (FixA a f)
-> endoMA psi = fullyIn . psi <=< mapM (group (paraMA1 psi)) <=< annO
+> endoMA psi = fullyIn . psi <=< mapM (group (endoMA psi)) <=< annO
 >   where group f c = fmap ((,) c) (f c)
 
 The only real difference between the |paraMA| and the |endoMA| function is that
@@ -509,6 +510,12 @@ perform the opposite task.
 >         LT  -> Branch w  (Right l)           (Left  r)  
 >         _   -> Branch w  (Left  l)           (Right r)
 
+%if False
+
+> insertCoalg _ (InA _) = error "something error happened"
+
+%endif
+
 Combining the endomorphic apomorphism with the endomorphic coalgbera for binary
 tree insertion gives us back a true |insert| function on annotated binary
 trees.
@@ -556,26 +563,23 @@ query the structure out of the annotation before using it as the seed.
 
 \begin{section}{Applicative paramorphisms}
 
-\todo{review form here -------------------------------------------------------------}
-
-In section \todo{XXX} we have seen how to write some simple paramorphic
+In section \ref{sec:para} we have seen how to write some simple paramorphic
 algebras. Writing more complicated algebras can be quite hard, mainly because
-it is not always easy to compose multiple aspects of an operation into one algebra.
-Combining multilpe algebras into a single one that can be used in a single
-traversal is a well known problem in the world of functional programming.
-Attribute grammar systems like the \emph{UUAGC}\cite{ag} can be used to combine
-different algebraic operations into a single traversal in an aspect-oriented
-way.
-
-This section describes a more lightweight and idiomatic approach to algebra
-composition. We make the paramorphic algebra type an instance of Haskell's
-|Applicative| type class.
+it is not always easy to compose multiple aspects of an operation into one
+algebra. Combining multilpe algebras into a single algebra that can be used in
+a single traversal is a well known problem in the world of functional
+programming.  Attribute grammar systems like the \emph{UUAGC}\cite{ag} can be
+used to combine different algebraic operations into a single traversal in an
+aspect-oriented way. This section describes a more lightweight and idiomatic
+approach to algebra composition. We make the paramorphic algebra type an
+instance of Haskell's |Applicative| type class.
 
 First we change the type for the algebra |Psi| from a type synonym into a real
-datatype using a generalized algebraic datatypes, or GADT. We change the
-algebra into a real datatype, because this allows us to add an additional
-constructor. As we will later see, this extra constructor is needed for the
-|Applicative| instance. 
+datatype. We change the algebra into a real datatype, because this allows us to
+add an additional constructor. As we will later see, this extra constructor is
+needed for the |Applicative| instance.  The new |Psi| datatype will be a
+generalized algebraic datatypes, or GADT, because we need an existentially
+quantified type parameter later on.
 
 > data Psi (a :: (* -> *) -> * -> *) (f :: * -> *) (r :: *) where
 >   Alg  :: (f (FixA a f, r) -> r)  -> Psi a f r
@@ -584,34 +588,49 @@ constructor. As we will later see, this extra constructor is needed for the
 
 >   Prj  :: Psi a f (r -> s, r, s)  -> Psi a f s
 
+> type PsiA f r = forall a. Psi a f r
+
+> type EndoAppA a f = Psi a f (FixA a f)
+> type EndoApp f = forall a. Psi a f (FixA a f)
+
 %endif
 
-The |Applicative| type class requires us to have a |Functor| instance and to
-implement two functions, |pure| and |<*>|.
+The |Applicative| type class requires us to have a |Functor| instance and
+requires us to implement two functions, |pure| and |<*>|.
 
 \begin{spec}
 class Functor f => Applicative f where
-  pure   :: f a
+  pure   :: a -> f a
   (<*>)  :: f (a -> b) -> f a -> f b
 \end{spec}
 
-When we unify the type |f| with the the |Psi| type we get the following
-function type we have to support when implementing \emph{applicative} algebras.
+When we unify the type |f| with the the |Psi| type we get the following two
+functions we have to implement in otder to have an |Applicative| instance. To
+not get confused with our annotation variable we change the type variable |a|
+and |b| to |r| and |s|.
 
 \begin{spec}
-Psi c f (a -> b) -> Psi c f a -> Psi c f b
+pure   :: r -> Psi a f r
+(<*>)  :: Psi a f (r -> s) -> Psi c f r -> Psi c f s
 \end{spec}
 
-From this signature it is clear that combining an algebra that produces a
-function from |a -> b| and an algebra that produces a |a| into an algebra that
-produces only a |b|, throws away any information about |a|. Because both the
-function and the argument are needed \emph{in every stage of the traversal} we
-first create a function |<++>| that groups together both the function, the
-argument and the result.
+From the signature for (|<*>|) it is clear that we should use an algebra that
+produces a function from |a -> b| and an algebra that produces a |a| to build
+an algebra that produces only a |b|. This applicative sequencing function
+throws away any information about |a|. Because both the function and the
+argument are needed \emph{in every stage of the traversal} we first create a
+function |<++>| that simply groups together both the function |r -> s|, the
+argument |r| and the result |s|.
 
 > (<++>) :: Functor f => Psi a f (r -> s) -> Psi a f r -> Psi a f (r -> s, r, s)
-> Alg  f <++> Alg  g = Alg (\x -> f (fmap (fmap fst3) x) `mk` g  (fmap (fmap snd3) x))
->   where mk x y = (x, y, x y)
+> Alg f <++> Alg g = Alg $ \x -> mk  (f (fmap2 fst3 x))
+>                                    (g (fmap2 snd3 x))
+>   where  mk x y  = (x, y, x y)
+>          fmap2   = fmap . fmap
+
+This grouping function simply collect the results of the two input algebras,
+the function and the argument, and results in a new algebra that combines these
+two values and the application of the two.
 
 %if False
 
@@ -634,10 +653,11 @@ argument and the result.
 
 %endif
 
-Now we add an additional constructor to the |Psi| datatype that projects the
-last component from the triple algebra created by the |<++>| function. It uses
-the |Psi| GADT to create an existential quantification that hides the type
-variable |r| inside the |Prj| constructor.
+The next step in our attempt to create an |Applicative| instance for our
+paramorphic algebras is to add an additional constructor to the |Psi| datatype.
+This constructor projects the last component from the triple algebra created by
+the grouping function. It uses the |Psi| GADT to create an existential that
+hides the type variable |r| inside the |Prj| constructor.
 
 \begin{spec}
 Prj :: Psi a f (r -> s, r, s)  -> Psi a f s
@@ -645,36 +665,38 @@ Prj :: Psi a f (r -> s, r, s)  -> Psi a f s
 
 The new constructor requires us the to extend the grouping function with the
 three additional cases involving the projection constructor. The implementation
-is quite straightforward but note that it uses the |pure| function from the
+is quite straightforward, but note that it uses the |pure| function from the
 |Applicative| instance, which we have not defined yet.
 
 \begin{spec}
+(<++>) :: Functor f => Psi a f (r -> s) -> Psi a f r -> Psi a f (r -> s, r, s)
+...
 Prj  f <++> Prj  g = fmap trd3 f <++> fmap trd3 g 
 Alg  f <++> Prj  g = Prj (pure id <++> Alg f) <++> Prj g
 Prj  f <++> Alg  g = Prj f <++> Prj (pure id <++> Alg g)
 \end{spec}
 
 With the both the grouping function and the projection function we have enough
-tools to easily create the |Applicative| instance for paramorphic algebras. The
-applicative sequencing is a matter of grouping the input and output information
-together and then only throwing the input types away using the existential from
-the GADT.
+tools to create the |Applicative| instance for paramorphic algebras. The
+applicative sequencing is a matter of grouping two input algebras together and
+then only throwing the input types away using the existential from the GADT.
+The pure function is an algebra that ignores the input structure and always
+outputs the same value.
 
 > instance Functor f => Applicative (Psi a f) where
->   pure    = Alg . const
->   a <*> b = Prj (a <++> b)
+>   pure     = Alg . const
+>   a <*> b  = Prj (a <++> b)
 
-We require a |Functor| super instance for this instance which can easily be
-done more or less the same way as the |Applicative| instance by lifting the
-function to fmap using |pure|.
+We require a |Functor| super class instance for this |Applicative| instance
+which can easily be made in terms of the |Applicative| type class.
 
 > instance Functor f => Functor (Psi a f) where
->   fmap f psi = Prj (pure f <++> psi)
+>   fmap f h = pure f <*> h
 
-Using the |Applicative| instance we can now easily compose multiple algebras into
-one to be able to apply them to an input structure in one traversal. This
-composability can really help us to create more complicated algebras without
-creating very big tuples representing the all the components at once.
+The |Applicative| instance allows us to easily compose multiple algebras into
+one, this grouped operation can now be applied to an input structure in one
+traversal. This composability can help us to create more complicated algebras
+without creating very big tuples representing all the components at once.
 
 Because the algebra type |Psi| has become more complicated the |paraMA| should
 be adapted to be able to produce both |Alg| and |Prj| constructors.
@@ -692,33 +714,62 @@ be adapted to be able to produce both |Alg| and |Prj| constructors.
 
 %endif
 
-> paraMA :: (Lazy m, AnnO a f m) =>  Psi a f r -> FixA a f -> m r
+> paraMA :: AnnO a f m =>  Psi a f r -> FixA a f -> m r
 > paraMA (Prj  psi) = fmap trd3 . paraMA psi
-> paraMA (Alg  psi) = return . psi <=< mapM (g (lazy . paraMA (Alg psi))) <=< annO
+> paraMA (Alg  psi) = return . psi <=< mapM (g (paraMA (Alg psi))) <=< annO
 >   where g f c = fmap ((,) c) (f c)
 
-\todo{what is Lazy doing here?}
+The implementation of this projection aware |paraMA| is not very different from
+our original |paraMA|. The only difference is that this new version unpacks the
+projection and applies the inner algebra. After applying only the result value,
+the third component of the grouped triple, will be returned. The endomorphic
+variant |endoMA| can be extended in the same trivial way, so we will not show
+the implementation here.
 
-The implementation of the projection aware |paraMA| is not very exciting and
-quite similar to the |paraMA| defined previously. The only conceptual
-difference is that for the |Prj| constructor the function unpacks the
-existential and recursively applies the paramorphism. 
+%if False
 
+> endoMApp :: AnnIO a f m => EndoAppA a f -> FixA a f -> m (FixA a f)
+> endoMApp (Prj psi) = fmap trd3 . paraMA psi
+> endoMApp (Alg psi) = fullyIn . psi <=< mapM (group (endoMApp (Alg psi))) <=< annO
+>   where group f c = fmap ((,) c) (f c)
 
-% minAlg :: Alg Int
-% minAlg = Para.Psi $ \a ->
-%   case fst a of
-%     F.Leaf           -> maxBound
-%     F.Branch _ v l r -> minimum [v, l, r]
+%endif
 
-% repAlg :: Alg (Int -> Tree)
-% repAlg = Para.Psi $ \a x ->
-%   case fst a of
-%     F.Leaf           -> In (Id (F.Leaf))
-%     F.Branch k _ l r -> In (Id (F.Branch k x (l x) (r x)))
-%
-% repMinAlg :: Alg Tree
-% repMinAlg = repAlg <*> minAlg
+We can now illustrate the applicative paramorphisms using a well known example,
+the |repmin| problem. The |repmin| problem describes a single traversal in
+which every value in a structure, for example our binary tree, will be replaced
+with the minimum value already in the structure. Our |Applicative| algebra
+instance allows us to write the two aspects of this operation separately and
+join them together using the sequencing operator |(<*>)|.
+
+First we write down the algebra for computing the minimum value stored inside a
+binary tree.
+
+> minAlg :: PsiA Tree_f Int
+> minAlg = Alg $ \a ->
+>  case a of
+>    Leaf          -> maxBound
+>    Branch v l r  -> minimum [v, snd l, snd r]
+
+And now we write the replication algebra that produces a \emph{function}. This
+function produces the new binary tree given some input value. 
+
+> repAlg :: PsiA Tree_f (Int -> TreeA a)
+> repAlg = Alg $ \a x ->
+>   case a of
+>     Leaf          -> InF Leaf
+>     Branch _ l r  -> InF (Branch x (snd l x) (snd r x))
+
+Now we can write the |repmin| function by using the |endoMApp| function on the
+applicative composition of the |repAlg| and the |minAlg|.
+
+> repmin :: AnnIO a Tree_f m => TreeA a -> m (TreeA a)
+> repmin = endoMApp (repAlg <*> minAlg)
+
+In this chapter we have seen how to combine multiple algebras into one using the
+Haskell |Applicative| type class. Writing more complicated operations as a
+composition of separate algebras is generally more easy than writing monolithic
+algebras containing multiple aspects in one.
 
 \end{section}
 
@@ -731,8 +782,8 @@ in the |IO| monad, which makes all computations strict. This strictness can
 have severe implications on the running time of the algorithms. In a strict
 context all the sub results of the recursive computation will be computed, even
 when the algebra discards them immediately. This is the reason that the debug
-annotation in example \todo{TODO} prints out far more sub-trees than one would
-expect from a lazy traversal.
+annotation in example \ref{sec:para} prints out far more sub-trees
+than one would expect from a lazy traversal.
 
 Some monads are lazy by default like the |Identity| monad and the |Reader|
 monad. Using these lazy monads as the annotation context would make the
@@ -752,7 +803,7 @@ pure description that is unaware of the annotation or associated context.
 Because the paramorphism function does not know what information will be used by
 the algebra it has to pass in all the recursive sub-results. To clarify this we
 can look at the |containsAlg| for binary trees. As input this algebra get a
-single structure with two booleans in the sub-structures, these booleans are
+single structure with two booleans in the sub-structures. These booleans are
 the indication whether the value is contained in one of the sub-structures.
 Because we are dealing with a lazy language these sub-results are ideally not
 computed yet, and will only be used when the algebras desires so. Running the
@@ -777,7 +828,7 @@ cases that it transforms another lazy monad.
 
 > instance Lazy Identity where
 >   lazy = id
-
+>
 > instance Lazy m => Lazy (ReaderT r m) where
 >   lazy c = ask >>= lift . lazy . runReaderT c
 
@@ -804,21 +855,23 @@ When we now express the |containsMA| in terms of the more lazy paramorphism.
 > containsMA2 :: (Lazy m, AnnO a Tree_f m) => Int -> FixA a Tree_f -> m Bool
 > containsMA2 v = lazyParaMA (containsAlg v)
 
-When we now run the |containsMA| functions on example tree created by |fromList
-[1, 2]| shows that the debug trace only prints out the first element of the
-binary tree, because no other sub-results are needed to come up with the
-answer.
+When we now run the |containsMA| functions on an example tree, in this case
+created by |fromList [2, 1, 3]|, we see that the debug trace only prints out
+the first element of the binary tree, because no other sub-results are needed
+to come up with the answer.
 
 \begin{small}
 \begin{verbatim}
-ghci> containsMA2 3 it
-annO: Branch 3 <D Leaf> <D Leaf>
+ghci> let tree = fromList [2, 1, 3]
+ghci> containsMA 2 tree
+annO: Branch 2  <D Branch 1 <D Leaf> <D Leaf>>
+                <D Branch 3 <D Leaf> <D Leaf>>
 True
 \end{verbatim}
 \end{small}
 
 The GHCi debugger by default prints out the value the user requests at the
-prompt, this is the only reason the expression |containsMA2 3 it| is even
+prompt, this is the only reason the expression |containsMA2 2 tree| is even
 evaluated at all. The traversal has become become lazy on the inside, no
 unneeded traversals will be performed, but also lazy on the outside, nothing
 at all will happen until the answer is forced. This behaviour can be compared
@@ -833,7 +886,7 @@ The same is the case for our lazy traversals, the debug annotations only kicks
 in when the result is inspected. While this behaviour is probably safe for the
 debug annotation this might not be the case in general. There is a really good
 reason the |unsafeInterleaveIO| function starts with the word `unsafe', there
-are a lot of problems associated with lazy IO. \docite{someone no lazy IO}.
+are a lot of problems associated with lazy IO\cite{lazyioharmful}.
 
 To make sure all the potential side effect stay within the context they belong to
 we have to make sure our paramorphism remains strict on the outside. We do
@@ -843,7 +896,7 @@ function that can be used to force an entire computation fully and recursively
 the moment it would normally only get forced \emph{weak head normal form}
 (WHNF). The implementation internally uses the |seq| function from the Haskell
 prelude that forces the first argument WHNF when the second argument gets
-forced. \todo{ref dseq}
+forced.
 
 > dseq1  :: a -> a
 > seq1   :: a -> b -> b
@@ -855,17 +908,17 @@ forced. \todo{ref dseq}
 
 %endif
 
-By creating a new paramorphism function that forces the result before returing
-we get a traversal that is lazy internally but is strict on the outside. As we
-will see later when dealing with data persistency this evaluation semantics is
-essential.
+We now apply the |dseq1| to the result of the paramorphism.
 
 > paraMA' :: (Lazy m, AnnO a f m) => Psi1 a f r -> FixA a f -> m r
 > paraMA' psi = dseq1 `liftM` lazyParaMA psi
 
-\end{section}
+By creating a new paramorphism function that forces the result before returning
+we get a traversal that is lazy internally but is strict on the outside. As we
+will see later when dealing with structures annotated with the persistent
+annotations, this evaluation semantics is essential.
 
-\todo{review till here -------------------------------------------------------------}
+\end{section}
 
 \end{chapter}
 
