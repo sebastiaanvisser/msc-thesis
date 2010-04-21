@@ -45,6 +45,7 @@
 %endif
 
 \begin{chapter}{Annotated fixed points}
+\label{chap:fixpoints}
 
 \todo{intro}
 
@@ -61,6 +62,14 @@ in the branch constructor, empty trees are indicated by a leaf.
 
 > data Tree_1 = Leaf_1 | Branch_1 Int Tree_1 Tree_1
 
+In figure \ref{fig:binarytree} we see an example of binary tree with four values.
+
+\begin{figure}[h]
+\label{fig:binarytree}
+\includegraphics[scale=0.25]{./img/binarytree.png}
+\caption{An example of a binary tree.}
+\end{figure}
+
 To gain more control over the recursive positions of the datatype we can
 parametrize the binary tree with an additional type parameter used at the
 recursive positions. Not the tree datatype itself, but the users of the
@@ -74,7 +83,7 @@ To get back a binary tree that is isomorphic to our original binary tree, in
 that it stores actual sub-trees at the recursive points, we can use an explicit
 fixed point combinator at the type level. This combinator, conventionally
 called |Fix_1|, takes a type constructor of kind |* -> *| and parametrizes this
-type with its own fixed point. \docite{fixpoint combinator}
+type with its own fixed point.
 
 > newtype Fix_1 (f :: * -> *) = In_1 { out_1 :: f (Fix_1 f) }
 
@@ -140,6 +149,7 @@ programming.
 % -----------------------------------------------------------------------------
 
 \begin{section}{Annotations}
+\label{sec:fixann}
 
 In the previous section we worked out some basic building blocks that can be
 useful when working with container datatypes which are explicitly parametrized
@@ -174,6 +184,15 @@ It is now very easy to define a fully annotated binary tree by applying the
 annotated fixed point combinator to the tree functor.
 
 > type TreeA a = FixA a Tree_f
+
+In figure \ref{fig:binarytree-ann} we see an example of binary tree that uses
+an annotated fixed point to tie the recursive knot.
+
+\begin{figure}[h]
+\label{fig:binarytree-ann}
+\includegraphics[scale=0.25]{./img/binarytree-ann.png}
+\caption{An example of an annotated binary tree.}
+\end{figure}
 
 We now introduce the identity annotation, called |Id|, that stores no
 additional information but just encapsulates the underlying container type.

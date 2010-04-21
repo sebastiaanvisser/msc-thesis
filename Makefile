@@ -6,7 +6,21 @@ all: ${DOC}.pdf thesis.fmt haskell.fmt higherorder.fmt
 ${DOC}.pdf: \
 	${DOC}.tex
 
-%.tex: %.lhs
+${DOC}.tex: \
+	${DOC}.lhs \
+	Abstract.lhs \
+	Motivation.lhs \
+	Overview.lhs \
+	Introduction.lhs \
+	Fixpoints.lhs \
+	Morphisms.lhs \
+	Heap.lhs \
+	Storage.lhs \
+	HigherOrder.lhs \
+	FingerTree.lhs \
+	RelatedWork.lhs \
+	Conclusion.lhs \
+	FutureWork.lhs
 	lhs2TeX -o $@ $<
 
 %.pdf: %.tex
@@ -34,19 +48,4 @@ clean: .
 	*.toc
 
 new: clean all
-
-#	Abstract.tex \
-#	Motivation.tex \
-#	Overview.tex \
-#	Introduction.tex \
-#	Fixpoints.tex \
-#	Morphisms.tex \
-#	Example.tex \
-#	Heap.tex \
-#	Storage.tex \
-#  HigherOrder.tex \
-#  FingerTree.tex \
-#	RelatedWork.tex \
-#	Conclusion.tex \
-#	FutureWork.tex \
 

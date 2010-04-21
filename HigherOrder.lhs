@@ -47,8 +47,8 @@ examples of non-regular datatypes.
 \item
 \emph{Mutually recursive datatypes}, or \emph{indirect recursive datatypes},
 are types in which the recursive positions refer to other datatypes that
-directly or indirectly refer back to the original. In \citet{multirec}
-Rodriguez et al. show an interesting example of a mutual recursive datatype.
+directly or indirectly refer back to the original.  Rodriguez et
+al.\cite{multirec} show an interesting example of a mutual recursive datatype.
 They present a syntax tree containing both expressions and declarations.
 
 > data Expr =
@@ -96,7 +96,7 @@ type level are typeset as true numbers.
 
 Just like Haskell lists, the |Vector| type has two constructors: |Nil| and
 |Cons|. The |Nil| can be used to construct an empty |Vector| with index 0, the
-|Cons| can be used to append one value to a |Vector| increasing its length
+|Cons| can be used to prepend one value to a |Vector| increasing its length
 with one.
 
 > data Vector i a where
@@ -135,12 +135,12 @@ datatypes in Haskell, all nested datatypes can be written down as a GADT. By
 making the nested behaviour of nested datatypes explicit using a type variable
 in a GADT our framework should also be applicable to other nested datatypes.
 
-In the paper \citet{multirec} Rodriguez et al. show how to encode a family of
-mutually recursive datatypes as an indexed GADT in order to perform generic
-programming over this family. This observation indicates that the persistence
-framework for indexed datatypes we are about to introduce will also work for
-families of mutually recursive datatypes. However, the families of datatypes
-have to be written down in a slightly different encoding.
+Rodriguez et al.\citet{multirec} show how to encode a family of mutually
+recursive datatypes as an indexed GADT in order to perform generic programming
+over this family. This observation indicates that the persistence framework for
+indexed datatypes we are about to introduce will also work for families of
+mutually recursive datatypes. However, the families of datatypes have to be
+written down in a slightly different encoding.
 
 \section{Higher order fixed points}
 
@@ -160,24 +160,40 @@ are dealing with the higher order variant of the type or function.
 >
 >   |  HInF  { houtf  ::    f (HFixA a f) ix }
 
+Now recall the original annotated fixed point combinator:
+
+\begin{spec}
+data FixA a f
+
+  =  InA  { outa  :: a  f (FixA a f) }
+
+  |  InF  { outf  ::    f (FixA a f) }
+\end{spec}
+
 At first sight, this higher order version looks very similar to the regular
 fixed combinator, the only obvious addition is the index parameter |ix|. But
 because of to this index the kinds of the other type variables become more
 complicated. Assuming a kind |*| for |ix|, the type kind of variable |f|
-changes so that every |*| is replace with an |* -> *|.
+changes so that every |*| is replaced with an |* -> *|.
 
+\begin{figure}[h]
 \begin{spec}
-from  :    *        -> *
-to    : (  * -> *)  -> * -> *
+   *        -> *     
+(  * -> *)  -> * -> *
 \end{spec}
+\caption{Kind of |ix| for |FixA| vs. kind of |ix| for |HFixA|.}
+\end{figure}
 
 Because the kind of |f| grows, the kind of the type variable |a| grows with it.
 Again, every |*| is replaced by a |* -> *|.
 
+\begin{figure}[h]
 \begin{spec}
-from  : (     *        -> *       )  ->    *        -> *
-to    : (  (  * -> *)  -> * -> *  )  -> (  * -> *)  -> * -> *
+(     *        -> *       )  ->    *        -> *
+(  (  * -> *)  -> * -> *  )  -> (  * -> *)  -> * -> *
 \end{spec}
+\caption{Kind of |f| for |FixA| vs. kind of |ix| for |HFixA|.}
+\end{figure}
 
 This change in kinds has a lot of impact on the rest of our framework.
 Introducing one additional type index forces us to changes almost all the
@@ -188,7 +204,7 @@ types in our system. We start by defining the indexed identity annotation.
 As the type shows, the identity annotation also takes the additional type index
 |ix| and uses this to parametrize the indexed functor |f|. Although this
 annotation is very similar to the regular identity annotation defined in
-section \todo{ref}, it is very clear why we cannot reuse the original type.  
+section \ref{sec:fixann}, it is very clear why we cannot reuse the original type.  
 
 Now we can create a annotation free fixed point combinator again by
 parametrizing the annotated fixed point with the identity annotation.
@@ -200,14 +216,13 @@ parametrizing the annotated fixed point with the identity annotation.
 To illustrate the usage of the higher order fixed point combinator we will now
 model a finger tree data type as a indexed GADT. The finger tree is a purely
 functional data structure that can be used to model an abstract sequence with
-very interesting runtime behaviour. In the paper \emph{Finger trees: a simple
-general-purpose data structure}\cite{fingertree} Hinze and Paterson show how to
-implement a finger tree in Haskell using a nested datatype. The datatypes the
-authors describe looks more or less\footnote{In their paper Hinze and Paterson
-use a slightly less constraint type in which they encode the digit as a Haskell
-list datatype, with the implicit invariant this list has length greater than or
-equal to 1 and less than or equal to 4. We use the |Digit| datatype with four
-constructors to be a bit more explicit.} like the following:
+very interesting runtime behaviour. Hinze and Paterson\cite{fingertree} show
+how to implement a finger tree in Haskell using a nested datatype. The
+datatypes the authors describe looks more or less\footnote{In their paper Hinze
+and Paterson use a slightly less constraint type in which they encode the digit
+as a Haskell list datatype, with the implicit invariant this list has length
+greater than or equal to 1 and less than or equal to 4. We use the |Digit|
+datatype with four constructors to be a bit more explicit.} like the following:
 
 \begin{spec}
 data Node  a = Node2 a a  | Node3 a a a
@@ -244,13 +259,14 @@ important invariants about the structure in its type. Before we will try to
 encode the same structure as an indexed GADT we will extract an explicit
 specification from the nested datatype definition above.
 
-\todo{make a picture to illustrate the structure of a finger tree}
-
-We identify five important structural properties of finger trees:
+After identifying these structural properties we create a specification for the
+definition of finger trees. We will use this specification to encode finger
+trees as a GADT.
 
 \begin{enumerate}
 
-\item A finger tree contains spine nodes, digit nodes, 2-3 nodes and values.
+\item A finger tree contains \emph{spine nodes}, \emph{digit nodes}, \emph{2-3
+nodes} and \emph{values}.
 
 \item 
 A spine node is either an |Empty| node, a |Single| node containing one
@@ -342,6 +358,13 @@ their sub trees.  A value is special kind of node that always has index zero.
 It contains a value of type |b| which is the value type parameter of the finger
 tree datatype.  
 
+\begin{figure}[h]
+\includegraphics[scale=0.244]{./img/fingertree.png}
+\caption{Example finger tree. This image shows the structure of finger trees
+and the positioning of spine nodes, digits, 2-3 nodes and value. The black
+boxes at the bottom of each node show the type level index.}
+\end{figure}
+
 This indexed GADT encodes all the properties from our specification into a
 single structure. We can now use the higher order fixed point combinator to tie
 the knot and create a recursive data structure again by filling in the |f| type
@@ -372,10 +395,8 @@ higher order variant of these three type classes.
 
 \subsection{Functor type class} 
 
-In their paper \emph{Initial Algebra Semantics is Enough!}\cite{initial} Ghani
-and Johann describe how to create a type class for higher order functors. These
-functors work on indexed datatypes and define a natural transformation on the
-type variable that must work for all type indices.
+Ghani and Johann\cite{initial} describe how to create a type class for higher
+order functors. The functorial map function works on indexed datatypes.
 
 > class HFunctor h where
 >   hfmap :: (forall ix. a ix -> b ix) -> forall ix. h a ix -> h b ix 
@@ -389,7 +410,18 @@ not for all type indices, but for an explicitly limited set.
 >   pfmap  :: (  forall ix. phi ix ->    a ix ->    b ix)
 >          ->    forall ix. phi ix -> h  a ix -> h  b ix
 
-\docite{cite someone who has shown this technique before. e.g. \cite{multirec}}
+When we compare both the |hfmap| and the |pfmap| signatures with the original
+|fmap| signature we clearly see the pattern:
+
+\begin{spec}
+fmap   :: (                      a     -> b     ) ->                       f  a     -> f  b
+hfmap  :: (forall ix.            a ix  -> b ix  ) -> forall ix.            h  a ix  -> h  b ix 
+pfmap  :: (forall ix. phi ix ->  a ix  -> b ix  ) -> forall ix. phi ix ->  h  a ix  -> h  b ix 
+\end{spec}
+
+In the next section we will show how to create an finger tree instances for the
+|PFunctor| type class and see how the proof object can be used to limit the set
+of possible indices.
 
 \subsection{Finger tree functor instance} 
 
@@ -433,23 +465,38 @@ The |PFunctor| instance for finger trees becomes:
 >   pfmap f phi h =
 >     case (phi, h) of
 >       (SpPrf  _,          Empty)           -> Empty
->       (SpPrf  p,          Single a)        -> Single (f (DgPrf p) a)
->       (SpPrf  p,          Deep a c b)      -> Deep   (f (DgPrf p) a) (f (SpPrf (SuccP p)) c) (f (DgPrf p) b)
->       (DgPrf  (SuccP p),  Digit1 a)        -> Digit1 (f (NdPrf p) a)
->       (DgPrf  (SuccP p),  Digit2 a b)      -> Digit2 (f (NdPrf p) a) (f (NdPrf p) b)
->       (DgPrf  (SuccP p),  Digit3 a b c)    -> Digit3 (f (NdPrf p) a) (f (NdPrf p) b) (f (NdPrf p) c)
->       (DgPrf  (SuccP p),  Digit4 a b c d)  -> Digit4 (f (NdPrf p) a) (f (NdPrf p) b) (f (NdPrf p) c) (f (NdPrf p) d)
->       (NdPrf  (SuccP p),  Node2 a b)       -> Node2  (f (NdPrf p) a) (f (NdPrf p) b)
->       (NdPrf  (SuccP p),  Node3 a b c)     -> Node3  (f (NdPrf p) a) (f (NdPrf p) b) (f (NdPrf p) c)
->       (DgPrf  ZeroP,      Digit1 a)        -> Digit1 (f NdZPrf a)
->       (DgPrf  ZeroP,      Digit2 a b)      -> Digit2 (f NdZPrf a) (f NdZPrf b)
->       (DgPrf  ZeroP,      Digit3 a b c)    -> Digit3 (f NdZPrf a) (f NdZPrf b) (f NdZPrf c)
->       (DgPrf  ZeroP,      Digit4 a b c d)  -> Digit4 (f NdZPrf a) (f NdZPrf b) (f NdZPrf c) (f NdZPrf d)
->       (NdZPrf,            Value0 a)        -> Value0 a
+>       (SpPrf  p,          Single a)        -> Single  (f (DgPrf p) a)
+>       (SpPrf  p,          Deep a c b)      -> Deep    (f (DgPrf p) a)
+>                                                       (f (SpPrf (SuccP p)) c)
+>                                                       (f (DgPrf p) b)
+>       (DgPrf  (SuccP p),  Digit1 a)        -> Digit1  (f (NdPrf p) a)
+>       (DgPrf  (SuccP p),  Digit2 a b)      -> Digit2  (f (NdPrf p) a)
+>                                                       (f (NdPrf p) b)
+>       (DgPrf  (SuccP p),  Digit3 a b c)    -> Digit3  (f (NdPrf p) a)
+>                                                       (f (NdPrf p) b)
+>                                                       (f (NdPrf p) c)
+>       (DgPrf  (SuccP p),  Digit4 a b c d)  -> Digit4  (f (NdPrf p) a) 
+>                                                       (f (NdPrf p) b)
+>                                                       (f (NdPrf p) c) 
+>                                                       (f (NdPrf p) d)
+>       (NdPrf  (SuccP p),  Node2 a b)       -> Node2   (f (NdPrf p) a) 
+>                                                       (f (NdPrf p) b)
+>       (NdPrf  (SuccP p),  Node3 a b c)     -> Node3   (f (NdPrf p) a) 
+>                                                       (f (NdPrf p) b)
+>                                                       (f (NdPrf p) c)
+>       (DgPrf  ZeroP,      Digit1 a)        -> Digit1  (f NdZPrf a)
+>       (DgPrf  ZeroP,      Digit2 a b)      -> Digit2  (f NdZPrf a) 
+>                                                       (f NdZPrf b)
+>       (DgPrf  ZeroP,      Digit3 a b c)    -> Digit3  (f NdZPrf a) 
+>                                                       (f NdZPrf b) 
+>                                                       (f NdZPrf c)
+>       (DgPrf  ZeroP,      Digit4 a b c d)  -> Digit4  (f NdZPrf a) 
+>                                                       (f NdZPrf b)
+>                                                       (f NdZPrf c) 
+>                                                       (f NdZPrf d)
+>       (NdZPrf,            Value0 a)        -> Value0  a
 
 \end{small} 
-
-\todo{reformat somehow}
 
 To allow the |pfmap| function for this instance to apply the map function |f|
 to all the sub trees, we need to construct an appropriate proof again. We can do
@@ -492,26 +539,40 @@ is similar to the |PFunctor| instance.
 > instance PTraversable TreePhi (Tree a) where
 >   ptraverse f phi h =
 >     case (phi, h) of
->       (SpPrf _,          Empty)           -> (| Empty                                                                      |)
->       (SpPrf p,          Single a)        -> (| Single (f (DgPrf p)  a)                                                    |)
->       (SpPrf p,          Deep   a c b)    -> (| Deep   (f (DgPrf p)  a) (f (SpPrf (SuccP p)) c)           (f (DgPrf p) b)  |)
->       (DgPrf (SuccP p),  Digit1 a)        -> (| Digit1 (f (NdPrf p)  a)                                                    |)
->       (DgPrf (SuccP p),  Digit2 a b)      -> (| Digit2 (f (NdPrf p)  a) (f (NdPrf p) b)                                    |)
->       (DgPrf (SuccP p),  Digit3 a b c)    -> (| Digit3 (f (NdPrf p)  a) (f (NdPrf p) b)  (f (NdPrf p) c)                   |)
->       (DgPrf (SuccP p),  Digit4 a b c d)  -> (| Digit4 (f (NdPrf p)  a) (f (NdPrf p) b)  (f (NdPrf p) c)  (f (NdPrf p) d)  |)
->       (NdPrf (SuccP p),  Node2  a b)      -> (| Node2  (f (NdPrf p)  a) (f (NdPrf p) b)                                    |)
->       (NdPrf (SuccP p),  Node3  a b c)    -> (| Node3  (f (NdPrf p)  a) (f (NdPrf p) b)  (f (NdPrf p) c)                   |)
->       (DgPrf ZeroP,      Digit1 a)        -> (| Digit1 (f NdZPrf     a)                                                    |)
->       (DgPrf ZeroP,      Digit2 a b)      -> (| Digit2 (f NdZPrf     a) (f NdZPrf    b)                                    |)
->       (DgPrf ZeroP,      Digit3 a b c)    -> (| Digit3 (f NdZPrf     a) (f NdZPrf    b)  (f NdZPrf c)                      |)
->       (DgPrf ZeroP,      Digit4 a b c d)  -> (| Digit4 (f NdZPrf     a) (f NdZPrf    b)  (f NdZPrf c)     (f NdZPrf d)     |)
->       (NdZPrf,           Value0 a)        -> (| (Value0 a)                                                                 |)
+>       (SpPrf _,          Empty)           -> pure Empty
+>       (SpPrf p,          Single a)        -> pure Single  <*>  (f (DgPrf p) a)
+>       (SpPrf p,          Deep   a c b)    -> pure Deep    <*>  (f (DgPrf p) a)
+>                                                           <*>  (f (SpPrf (SuccP p)) c) 
+>                                                           <*>  (f (DgPrf p) b)
+>       (DgPrf (SuccP p),  Digit1 a)        -> pure Digit1  <*>  (f (NdPrf p) a)
+>       (DgPrf (SuccP p),  Digit2 a b)      -> pure Digit2  <*>  (f (NdPrf p) a)
+>                                                           <*>  (f (NdPrf p) b)
+>       (DgPrf (SuccP p),  Digit3 a b c)    -> pure Digit3  <*>  (f (NdPrf p) a)
+>                                                           <*>  (f (NdPrf p) b)
+>                                                           <*>  (f (NdPrf p) c)
+>       (DgPrf (SuccP p),  Digit4 a b c d)  -> pure Digit4  <*>  (f (NdPrf p) a)
+>                                                           <*>  (f (NdPrf p) b)
+>                                                           <*>  (f (NdPrf p) c)
+>                                                           <*>  (f (NdPrf p) d)
+>       (NdPrf (SuccP p),  Node2  a b)      -> pure Node2   <*>  (f (NdPrf p) a)
+>                                                           <*>  (f (NdPrf p) b)
+>       (NdPrf (SuccP p),  Node3  a b c)    -> pure Node3   <*>  (f (NdPrf p) a)
+>                                                           <*>  (f (NdPrf p) b)
+>                                                           <*>  (f (NdPrf p) c)
+>       (DgPrf ZeroP,      Digit1 a)        -> pure Digit1  <*>  (f NdZPrf a)
+>       (DgPrf ZeroP,      Digit2 a b)      -> pure Digit2  <*>  (f NdZPrf a)
+>                                                           <*>  (f NdZPrf b)
+>       (DgPrf ZeroP,      Digit3 a b c)    -> pure Digit3  <*>  (f NdZPrf a)
+>                                                           <*>  (f NdZPrf b)
+>                                                           <*>  (f NdZPrf c)
+>       (DgPrf ZeroP,      Digit4 a b c d)  -> pure Digit4  <*>  (f NdZPrf a)
+>                                                           <*>  (f NdZPrf b)
+>                                                           <*>  (f NdZPrf c)
+>                                                           <*>  (f NdZPrf d)  
+>       (NdZPrf,           Value0 a)        -> pure (Value0 a) 
 
 \end{small} 
 
-\todo{reformat somehow}
-
-The instance uses idiom brackets to write down effectful computations. With
 both the higher order |PFunctor| and |PTraversable| instances for our finger
 tree GADT, we can now start writing generic recursive traversals.
 
@@ -523,9 +584,18 @@ unwrapping annotations. We have to do the same for our higher order annotation
 framework, but we cannot use the existing type classes due a clear type
 mismatch. In this chapter we extend the |AnnI| and |AnnO| type classes to
 work with indexed data types and show how make instances for the higher order
-identity annotation. \todo{also debug?} 
+identity annotation.
 
-We first define the three type signatures, for the higher order query, producer
+First, recall the type signatures of the original annotation functions.
+
+\begin{spec}
+type In     a f m  =    f (  FixA a f)  ->  m       (FixA a f   )
+type Out    a f m  =         FixA a f   ->  m (  f  (FixA a f)  )
+type InOut  a f m  = (  f (  FixA a f)  ->       f  (FixA a f)  )
+                   ->        FixA a f   ->  m       (FixA a f   ) 
+\end{spec}
+
+We now define the three type signatures for the higher order query, producer
 and modifier functions. The type signatures already make clear the difference
 between annotation working on indexed types and our previous annotations
 working on regular recursive data structures.
@@ -549,14 +619,7 @@ node with fully annotated sub structures. The modifier function |HInOut| simply
 combines the query and producer functions in one step.  
 
 Now we introduce the three type classes that implement respectively a producer,
-a query and a modifier function. All for some annotation |a|, for some recursive
-structure |h|, for some index family $\phi$ and in some context |m|. These 
-type variables in the type class make it possible to get fine grained control
-over when, which annotation should be applied in what part of a recursive
-structure. However, in this document we will keep both |h| and $\phi$ polymorph
-and will only specialize based on some |a| running in a fixed context |m|.
-
-\todo{refer future work section on specializing annotations for |phi|}
+a query and a modifier function. 
 
 > class (Applicative m, Monad m) => HAnnO a h phi m where
 >   hannO :: HOut a h phi m
@@ -564,12 +627,8 @@ and will only specialize based on some |a| running in a fixed context |m|.
 > class (Applicative m, Monad m) => HAnnI a h phi m where
 >   hannI :: HIn a h phi m 
 
-Besides the additional proof type $\phi$ and the implicit indices, the types in
-these annotation type classes are very similar to the ones for the regular
-recursive data structures.
-  
-Again, we create a modifier type class that has a default
-implementation in terms of the query and producer function.
+Again, we create a modifier type class that has a default implementation in
+terms of the query and producer function.
 
 > class (HAnnO a h phi m, HAnnI a h phi m) => HAnnIO a h phi m where
 >   hannIO :: HInOut a h phi m
@@ -587,10 +646,8 @@ the constructor.
 > 
 > instance (Applicative m, Monad m) => HAnnIO HId h phi m 
 
-And from these type classes we can simply derive the two function to fullly
+And from these type classes we can simply derive the two functions to fullly
 annotate or fully strip all annotations from the top of a tree.
-
-\todo{these functions are not yet introduced in the framework datatypes: do so}
 
 > hfullyIn  ::  (HAnnI a h phi m, PTraversable phi h)
 >           =>  phi ix -> HFixA a h ix -> m (HFixA a h ix)
@@ -611,8 +668,8 @@ implement a paramorphism for indexed datatypes
 \section{Higher order paramorphism}
 
 In this section we introduce paramorphic traversals for higher order datatypes.
-In order to express the algebras we define the higher order sum and product
-types, similar to the Haskell |Either a b| and |(a, b)| (tuple) types, but with an
+In order to express the algebras we define the lifted sum and product types,
+similar to the Haskell |Either a b| and |(a, b)| (tuple) types, but with an
 additional type index.
 
 %if False
@@ -622,13 +679,8 @@ additional type index.
 
 %endif
 
-The indexed sum type:
-
-> data (f :+: g) ix = L (f ix) | R (g ix)
-
-The indexed product type:
-
-> data (f :*: g) ix = (:*:) { hfst :: f ix, hsnd :: g ix }
+> data (f :+:  g) ix =  L (f ix) | R (g ix)
+> data (f :*:  g) ix =  (:*:) { hfst :: f ix, hsnd :: g ix }
 
 Using the product type we can construct a higher order paramorphic algebra.
 Like the algebra for regular datatypes, this algebra should be able to
@@ -709,9 +761,9 @@ The |Monoid| type class allows us to be generic in the type we want to fold. By
 specializing the value type to |Int| and the output type to |Sum Int| or
 |Product Int| \footnote{The |Sum| and |Product| newtypes can be found in
 Haskell's |Data.Moinoid| package. They are used to specialize the way the
-|`mappend`| operators combines two numeric values, either with |+| or with
-|*|.}, we can create two algebras that respectively compute the sum and the
-product of a sequence containing integers.
+|`mappend`| operators combines two numeric values, either with addition or with
+multiplication.}, we can create two algebras that respectively compute the sum
+and the product of a sequence containing integers.
 
 > sumAlg :: HPsiA a phi (Tree Int) (K1 (Sum Int))
 > sumAlg = foldmAlg Sum
@@ -738,66 +790,51 @@ These four algebras can now be lifted to true annotated traversals using the
 supply an index proof to the paramorphism. This proof object contains the same index
 as the root of our finger tree, which is |SpPrf ZeroP|. After computing the
 result we unpack it from the constant functor |K| and from the monoid wrapper
-when needed.
-
-The |sum| function on annotated finger trees:
+when needed. The derived functions are shown below.
 
 > sum  ::  HAnnO a (Tree Int) TreePhi m
 >      =>  FingerTreeA a Int -> m Int
 >
 > sum h = (| (getSum . unK) (hparaMA sumAlg (SpPrf ZeroP) h) |)
 
-The |product| function on annotated finger trees:
-
 > product  ::  HAnnO a (Tree Int) TreePhi m
 >          =>  FingerTreeA a Int -> m Int
 >
 > product h = (| (getProduct . unK) (hparaMA productAlg (SpPrf ZeroP) h) |)
-
-The |concat| function on annotated finger trees:
 
 > concat  ::  HAnnO a (Tree String) TreePhi m
 >         =>  FingerTreeA a String -> m String
 >
 > concat h = (| unK (hparaMA concatAlg (SpPrf ZeroP) h) |)
 
-The |contains| function on annotated finger trees:
-
 > contains  ::  (Eq b, HAnnO a (Tree b) TreePhi m)
 >           =>  b -> FingerTreeA a b -> m Bool
 >
 > contains v h = (| (getAny . unK) (hparaMA (containsAlg v) (SpPrf ZeroP) h) |)
 
-These four algebras show that it does take that much to implement simple
+These four algebras show that it does not take that much to implement simple
 catamorphisms, that compute values of simple Haskell types, over indexed data
 structures. In the next section we show a more complex example, the |cons|
 function that appends one item to the beginning of the finger tree sequence.
 
-\section{Append algebra}
+\section{Prepend algebra}
 
 Two of the basic operations on finger trees as described in the paper by Hinze
-and Paterson are the |cons| and the |snoc| functions. These functions append or
-prepend one item to the sequence. Two seemingly simple functions. However, both
+and Paterson are the |cons| and the |snoc| functions. These functions prepend or
+append one item to the sequence. Two seemingly simple functions. However, both
 functions are a bit involved because they have to preserve the nested structure
 of the finger tree. In this section we briefly show what is needed to write a
-paramorphic algebra for the |cons| function on our finger tree GADT. We will
-only give the type signature and not the actual implementation.
-
-We will not discuss the |snoc| function, which prepends an element to the end
-of the sequence. Because finger trees are symmetric to are the |cons| and
-|snoc| functions. Therefor, we will not discuss the |snoc| function.
-
-\todo{make clear why the types are interesting, the implementation is not}
+paramorphic algebra for the |cons| function on our finger tree GADT.
 
 It takes some work to work out the type correct type signature for the algebra
 of the |cons| function.  We need to construct a paramorphism that takes as
 input the original annotated finger tree and computes a function that takes the
-node to append and results in the new finger tree. We do need a lot of type
-level helpers to ensure the paramorphism resulting in an append function
+node to prepend and results in the new finger tree. We do need a lot of type
+level helpers to ensure the paramorphism resulting in an prepend function
 conforms all the type level invariants encoded in the GADT.
 
-First we define two type families to compute the first and the second type level
-component from our indexed product type. Both type level families simply
+First we define two type families to compute the first and the second type
+level component from our indexed product type. Both type level families simply
 project the left or right component and apply the original index to the result.
 
 > type family Fst a :: *
@@ -806,8 +843,8 @@ project the left or right component and apply the original index to the result.
 > type family Snd a :: *
 > type instance Snd ((a :*: b) ix) = b ix
 
-The append function that is computed by the paramorphic |cons| algebra needs itself to
-reason about the index types. We need a higher order function type
+The prepend function that is computed by the paramorphic |cons| algebra needs
+itself to reason about the index types. We need a higher order function type
 that distributes an index to both the co- and contra variant positions.
 
 > infixr 1 :->
@@ -877,8 +914,9 @@ Both the input and overflow part of the output of the computed functions are
 nodes, because only values can be inserted inserted into a finger tree and only
 2-3 trees can overflow to a deeper level. The |N| type also encodes the
 optionality using the |Maybe| type, this allows the algebra to stop the
-insertion when no node overflows. Hinze and Paterson proof that overflowing
-happens rarely and the amortized time for appending a value is still $O(1)$.
+insertion when no node overflows. Hinze and Paterson\cite{fingertree} prove
+that overflowing happens rarely and the amortized time for appending a value is
+still $O(1)$.
 
 One of the constraints of the |consAlg| is that we can only insert nodes with a
 depth index one less than the tree it gets appended to. At the top level a
@@ -889,19 +927,21 @@ only |Value0| nodes have index zero. The |D1| type family can only be applied to
 non-zero indices. To proof to the compiler our input finger tree always has a
 non-zero index we parametrize the algebra with our |TreePhi| proof object.
 
-\subsection{Append function}
+\subsection{Prepend function}
+\label{sec:prepend}
 
 Now that we have shown the type signature of the |consAlg| function, we can
-lift it using the |hparaMA| function to a true append function. Hinze and
-Paterson name this left-biased append function with the left pointing triangle:
-$\triangleleft$
+lift it using the |hparaMA| function to a true prepend function. Hinze and
+Paterson name this left-biased prepend function with the left pointing
+triangle: $\triangleleft$
 
-The append function takes a value |x| and appends this to the existing sequence
-|xs|. The output of running the algebra against the |xs| is not a simple value
-but a \emph{function}. This function takes the original finger tree to the result finger tree.
-We apply this function to the value |x| to get back the result finger tree.
-But, because we are working with annotations, we have to manually
-annotate the new parts of this result sequence with the |hfullyIn| function.
+The prepend function takes a value |x| and appends this to the existing
+sequence |xs|. The output of running the algebra against the |xs| is not a
+simple value but a \emph{function}. This function takes the original finger
+tree to the result finger tree.  We apply this function to the value |x| to get
+back the result finger tree.  But, because we are working with annotations, we
+have to manually annotate the new parts of this result sequence with the
+|hfullyIn| function.
 
 > (<|)  ::  HAnnIO a (Tree b) TreePhi m
 >       =>  b -> FingerTreeA a b -> m (FingerTreeA a b)
@@ -935,9 +975,9 @@ boilerplate code which makes it harder to write.
 %endif
 
 In order to serialize indexed datatypes to disk we need to make the |Pointer|
-type \todo{from section x.x} an instance of our higher order annotation type classes. All the types and
-type classes involved need to be lifted to the indexed level, meaning we can
-not reuse any code of our previous framework.
+type \ref{sec:heaplayout} an instance of our higher order annotation type
+classes. All the types and type classes involved need to be lifted to the
+indexed level, meaning we can not reuse any code of our previous framework.
 
 For example, we cannot use the regular |Binary| type class, because this class
 only works for non-indexed types.  So we create a higher order |HBinary| class
@@ -1019,9 +1059,10 @@ The |pempty| function will be used to produce an empty persistent finger tree.
 > pempty :: HeapW IntStore
 > pempty = hannI (SpPrf ZeroP) Empty
 
-By only specializing the type we lift the append function ($\triangleleft$) from section
-\todo{TODO} to work on persistent finger trees. We see that the type signatures
-of our generic functions become simpler the more we specialize them.
+By only specializing the type we lift the prepend function ($\triangleleft$)
+from section \ref{sec:prepend} to work on persistent finger trees. We see that the
+type signatures of our generic functions become simpler the more we specialize
+them.
 
 > pcons :: Int -> IntStore -> HeapW IntStore
 > pcons = (<|)

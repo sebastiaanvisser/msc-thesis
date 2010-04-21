@@ -64,25 +64,25 @@
 \newcommand\Keyword[1]{\textcolor{Keyword}{\textbf{#1}}}
 
 % Module identifier
-\newcommand\ModId[1]{\mathord{\textcolor{ModId}{#1}}}
+\newcommand\ModId[1]{\mathord{\textcolor{ModId}{\mathit{#1}}}}
 
 % Variable identifier and symbol
-\newcommand\VarId[1]{\mathord{\textcolor{VarId}{#1}}}
+\newcommand\VarId[1]{\mathord{\textcolor{VarId}{\mathit{#1}}}}
 \let\Varid\VarId
-\newcommand\VarSym[1]{\mathbin{\textcolor{VarSym}{#1}}}
+\newcommand\VarSym[1]{\mathbin{\textcolor{VarSym}{\mathit{#1}}}}
 
 % Data constructor identifier and symbol
-\newcommand\ConId[1]{\mathord{\textcolor{ConId}{#1}}}
+\newcommand\ConId[1]{\mathord{\textcolor{ConId}{\mathit{#1}}}}
 \let\Conid\ConId
-\newcommand\ConSym[1]{\mathbin{\textcolor{ConSym}{#1}}}
+\newcommand\ConSym[1]{\mathbin{\textcolor{ConSym}{\mathit{#1}}}}
 
 % Type variable identifier
-\newcommand\TVarId[1]{\mathord{\textcolor{TVarId}{#1}}}
+\newcommand\TVarId[1]{\mathord{\textcolor{TVarId}{\mathit{#1}}}}
 
 % Type constructor identifier
-\newcommand\TConId[1]{\mathord{\textcolor{TConId}{#1}}}
+\newcommand\TConId[1]{\mathord{\textcolor{TConId}{\mathit{#1}}}}
 % \newcommand\TConSym[1]{\mathbin{#1}}
-\newcommand\TConSym[1]{\mathbin{\textcolor{TConSym}{#1}}}
+\newcommand\TConSym[1]{\mathbin{\textcolor{TConSym}{\mathit{#1}}}}
 
 % Type class identifier
 \newcommand\TClassId[1]{\mathord{\textcolor{TClassId}{\textit{#1}}}}

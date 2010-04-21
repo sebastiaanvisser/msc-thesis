@@ -28,7 +28,7 @@
 %format `mappend`                  = "\oplus "
 %format fmap' a                    = "\widehat{" a "}"
 %format <*>                        = "\circledast "
-%format <=<                        = "\diamond "
+%format <=<                        = "\bullet "
 %format >>=                        = "\rightarrowtail "
 %format =<<                        = "\leftarrowtail "
 %format fixp                       = "fix"
@@ -42,10 +42,10 @@
 % FIXPOINTS 
 % -----------------------------------------------------------------------------
 
-%format Branch_1                   = "Branch"
-%format Branch_2                   = "Branch"
-%format Leaf_1                     = "Leaf"
-%format Leaf_2                     = "Leaf"
+%format Branch_1                   = "\mathit{Branch}"
+%format Branch_2                   = "\mathit{Branch}"
+%format Leaf_1                     = "\mathit{Leaf}"
+%format Leaf_2                     = "\mathit{Leaf}"
 %format TreeA                      = "\TConId{Tree_\alpha}"
 %format Tree_1                     = "\TConId{Tree}"
 %format Tree_2                     = "\TConId{Tree}"
@@ -157,6 +157,7 @@
 %format repAlg                     = "rep_{alg}"
 %format minAlg                     = "min_{alg}"
 %format repminAlg                  = "repmin_{alg}"
+%format repminMA                   = "repmin^m_{\alpha}"
 
 %format Lazy                       = "\TClassId{Lazy}"
 %format P                          = "Pointer_{\alpha}"
@@ -164,6 +165,18 @@
 %format dseq1                      = "gdseq"
 %format lazyParaMA                 = "lazyPara^m_{\alpha}"
 %format seq1                       = "seq"
+
+
+
+
+%format pfromList                  = "fromList_P"
+%format pcontains                  = "contains_P"
+%format pinsert                    = "insert_P"
+%format prepmin                    = "repmin_P"
+
+
+
+
 
 % -----------------------------------------------------------------------------
 % HIGHER ORDER
@@ -239,6 +252,7 @@
 %format K1                      = "\TConId{K}"
 %format HeapW                   = "\TConId{Heap_W}"
 %format HeapR                   = "\TConId{Heap_R}"
+%format HeapA                   = "\TConId{Heap_A}"
 %format Pointer                 = "\TConId{Pointer}"
 %format PointerA                = "\TConId{PointerA}"
 %format HP                      = "\TConId{Pointer_\alpha^h}"
@@ -254,9 +268,9 @@
 %format HAnnI                   = "\TClassId{$Ann_{In}^h$}"
 %format HAnnO                   = "\TClassId{$Ann_{Out}^h$}"
 %format HAnnIO                  = "\TClassId{$Ann_{IO}^h$}"
-%format HIn                     = "\TClassId{$In^h$}"
-%format HOut                    = "\TClassId{$Out^h$}"
-%format HInOut                  = "\TClassId{$InOut^h$}"
+%format HIn                     = "\TConId{In^h}"
+%format HOut                    = "\TConId{Out^h}"
+%format HInOut                  = "\TConId{InOut^h}"
 %format hannI                   = "ann_{In}^h"
 %format hannO                   = "ann_{Out}^h"
 %format hannIO                  = "ann_{IO}^h"

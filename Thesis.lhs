@@ -21,7 +21,7 @@
 \setlength{\parskip}{0.1in} % \baselineskip}
 
 
-% \pagestyle{fancy}
+\pagestyle{fancy}
 \renewcommand{\sectionmark}[1]{\markright{\thesection.\ #1}}
 \renewcommand{\chaptermark}[1]{\markboth{\ #1}{}}   % \thechapter
 %\lhead{Generic persistence of Haskell data types}
@@ -61,22 +61,21 @@
 \begin{document}
 
 \maketitle
-%include Abstract.lh.lhs
+% %include Abstract.lhs
 
 \tableofcontents
 
-%include Introduction.lhs
-%include Motivation.lhs
-%include Overview.lhs
-%include Fixpoints.lhs
-%include Morphisms.lhs
-%include Heap.lhs
+% %include Introduction.lhs
+% %include Motivation.lhs
+% %include Overview.lhs
+% %include Fixpoints.lhs
+% %include Morphisms.lhs
+% %include Heap.lhs
 %include Storage.lhs
-%include Example.lhs
-%include HigherOrder.lhs
-%include RelatedWork.lhs
-%include Conclusion.lhs
-%include FutureWork.lhs
+% %include HigherOrder.lhs
+% %include RelatedWork.lhs
+% %include Conclusion.lhs
+% %include FutureWork.lhs
 
 \bibliographystyle{plain}
 \bibliography{thesis}

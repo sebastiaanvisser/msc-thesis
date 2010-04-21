@@ -17,6 +17,7 @@
 %endif
 
 \chapter{Persistent heap}
+\label{chap:heap}
 
 The previous chapter explained how to use generic programming with annotated
 fixed points to associate custom functionality to traversals over recursive
@@ -49,6 +50,7 @@ differentiate between read-only and read-write parts of the heap. We now first
 explain the internal layout and basic operations.
 
 \section{Heap layout}
+\label{sec:heaplayout}
 
 On disk the heap consist out of one linear contiguous list of blocks. A block
 is a single atomic storage unit that can contains an arbitrarily large string
@@ -74,6 +76,7 @@ an |Integer|.
 >   deriving Binary
 
 \section{Reading}
+\label{sec:heapread}
 
 Reading from a storage block can be done with the |read| operation. The read
 operation takes a pointer to a storage block and tries to return a value of the
@@ -100,6 +103,7 @@ access the file handle of the heap.
 >   deriving (Functor, Applicative, Monad, MonadIO)
 
 \section{Allocation and Freeing}
+\label{sec:heapalloc}
 
 Allocating new blocks is done in memory by manipulation of an allocation map.
 The allocation map stores mapping from blocks offsets to payload sizes for
@@ -152,6 +156,7 @@ just adding a newly freed block to the allocation map.
 %endif
 
 \section{Writing}
+\label{sec:heapwrite}
 
 The third, and top most, heap context is the writing context |HeapW| that
 allows write access to the heap structure. The |HeapW| context wraps the
@@ -193,6 +198,7 @@ will return a pointer to the allocated block.
 %endif
 
 \section{Running}
+\label{sec:runheap}
 
 Now that we have defined three different heap contexts together with some basic
 operations for reading, writing, allocating and freeing blocks of data we can

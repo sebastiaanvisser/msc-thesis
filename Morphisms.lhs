@@ -24,7 +24,8 @@
 %endif
 
 \begin{chapter}{Annotated Generic Traversals}
-
+\label{chap:morphisms}
+ 
 In the previous chapter we have seen how to associate functionality with
 annotations. In this chapter will show how to write operations over annotated
 recursive data structures. We make sure that all operations we write are
@@ -199,6 +200,7 @@ structures from a seed value.
 \end{section}
 
 \begin{section}{Apomorphisms}
+\label{sec:apomorphisms}
 
 Dual to the paramorphism is the \emph{apomorphism}\cite{apomorphisms}. Where the paramorphism
 abstract away from recursion, the apomorphisms abstracts away from corecursion.
@@ -515,17 +517,17 @@ Combining the endomorphic apomorphism with the endomorphic coalgbera for binary
 tree insertion gives us back a true |insert| function on annotated binary
 trees.
 
-> insert :: AnnIO a Tree_f m => Int -> FixA a Tree_f -> m (FixA a Tree_f)
-> insert v = coendoMA (insertCoalg v)
+> insertMA :: AnnIO a Tree_f m => Int -> FixA a Tree_f -> m (TreeA a)
+> insertMA v = coendoMA (insertCoalg v)
 
-We can test the |insert| function by inserting the value |0| into the example
+We can test the |insertMA| function by inserting the value |0| into the example
 tree binary tree produced before with the |fromList [1, 2]|. The debug trace
 shows the traversal that is being performed while inserting a new element into
 the binary tree.
 
 \begin{small}
 \begin{verbatim}
-ghci> insert 0 it
+ghci> insertMA 0 it
 annO: Branch 1 <D Leaf> <D (Branch 3 <D Leaf> <D Leaf>)>
 annO: Leaf
 annI: Leaf
@@ -758,8 +760,8 @@ function produces the new binary tree given some input value.
 Now we can write the |repmin| function by using the |endoMApp| function on the
 applicative composition of the |repAlg| and the |minAlg|.
 
-> repmin :: AnnIO a Tree_f m => TreeA a -> m (TreeA a)
-> repmin = endoMApp (repAlg <*> minAlg)
+> repminMA :: AnnIO a Tree_f m => TreeA a -> m (TreeA a)
+> repminMA = endoMApp (repAlg <*> minAlg)
 
 In this chapter we have seen how to combine multiple algebras into one using the
 Haskell |Applicative| type class. Writing more complicated operations as a

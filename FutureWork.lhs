@@ -3,6 +3,9 @@
 
 \begin{chapter}{Future Work}  
 
+In this document we have seen how to use generic programming for recursive data
+type to build a persistent storage framework in Haskell. 
+
 Because it is hard to predict how much time it will take to implement an
 initial basic framework and the additional possibilities are near infinite,
 here is a list of additional work that can be done.
@@ -18,7 +21,7 @@ enforce this.
 Guaranteeing type safety in between session is much harder to achieve. This
 problem can be solved by storing a simple cryptographic hash of the type of the
 data together with the data itself. When reading the data back in this hash can
-be used to verify whether the data is what is to be expected. A similar
+be used to verify whether the data is what is to be expected. A similarZZ
 technique for the programming language Clean has been described in
 \cite{clean}.
 
