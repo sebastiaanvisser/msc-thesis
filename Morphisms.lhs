@@ -364,7 +364,7 @@ algbera that returns either an existing fully annotated structure or produces a
 new fully annotated structure.
 
 > endoMA :: AnnIO a f m => Endo a f -> FixA a f -> m (FixA a f)
-> endoMA psi = fullyIn . psi <=< mapM (group (endoMA psi)) <=< annO
+> endoMA psi = annIO (mapM fullyIn . outf . psi <=< mapM (group (endoMA psi)))
 >   where group f c = fmap ((,) c) (f c)
 
 The only real difference between the |paraMA| and the |endoMA| function is that

@@ -7,7 +7,7 @@
 > module Heap where
 
 > import Data.Binary
-> import Data.IntMap
+> import Data.IntMap hiding (update)
 > import Control.Monad.Reader
 > import Control.Applicative hiding (liftA)
 > import Control.Monad.State
@@ -60,7 +60,9 @@ representing the byte size of the payload and the payload itself which is
 n-byte stream of data. 
 
 \begin{figure}[h]
+\begin{center}
 \includegraphics[scale=0.25]{./img/heap+map.png}
+\end{center}
 \caption{Storage heap with 2 occupied and 2 free blocks.}
 \end{figure}
 
@@ -155,6 +157,15 @@ just adding a newly freed block to the allocation map.
 
 %endif
 
+It can be useful to read a block from the heap and to immediately free it,
+because it is guaranteed not to be read again. We define a function |fetch|
+that is a combination of a |read| and a |free|.
+
+> fetch :: Binary a => Pointer a -> HeapW a
+> fetch p = do  r <- liftR (read p)
+>               liftA (free p)
+>               return r
+
 \section{Writing}
 \label{sec:heapwrite}
 
@@ -170,7 +181,7 @@ The first function that runs inside the |HeapW| context is the update function
 that takes a value of some datatype for which there is a binary instance
 available and pointer to a block and updates the payload of that block.
 
-> update :: Binary a => a -> Pointer a -> HeapW ()
+> update :: Binary a => Pointer a -> a -> HeapW ()
 
 %if False
 
@@ -196,6 +207,48 @@ will return a pointer to the allocated block.
 > write = undefined
 
 %endif
+
+\section{Root node}
+\label{sec:rootnode}
+
+The storage heap layout does not force any structure on the data one might
+save. The only requirement is that the storage is block based, but no relations
+between separate blocks is required. As we will see in chapter
+\ref{chap:storage}, we will eventually reuse the structure of recursive
+datatypes to guide the way we relate individual blocks together. 
+
+Every data structure has at least one root node and for every operation we need
+this root node. To make this root node accessible, we make the first storage
+block special and dedicate this to store the root of our data structure. We
+call this block, at offset 0, the \emph{null block}. We define three helper
+functions for working with the assumption the null block stores a pointer to
+the root of the data structure root.
+
+The |query| function asks a read-only heap action that takes as input the root
+of the data structure. Altough the action will be lifted to the root heap
+context, the |HeapW|, the action itself is not allowed to perform write
+actions.
+
+> query :: (Pointer f -> HeapR c) -> HeapW c
+> query c = liftR (read (Ptr 0) >>= c)
+
+The |produce| function is used to create new structures from scratch. After the
+producer function has built up the data structure, a pointer to the structure
+root will be stored in the null block.
+
+> produce :: HeapW (Pointer f) -> HeapW ()
+> produce c = c >>= update (Ptr 0)
+
+The |modify| function takes a computation that transforms an existing structure
+into a new structure. The original structure is read from the null block, a
+pointer to the newly created structure will be stored at the null block again.
+
+> modify :: (Pointer f -> HeapW (Pointer f)) -> HeapW ()
+> modify c = liftR (read (Ptr 0)) >>= c >>= update (Ptr 0)
+
+These functions are rather useless when manually storing blocks of data in the
+storage heap, but will be come useful when the heap is used to store true data
+structures. We will see this in action in section \ref{sec:persistenttree}.
 
 \section{Running}
 \label{sec:runheap}
@@ -253,8 +306,6 @@ will contain one additional block containing the second string.
 >       liftIO (putStrLn str)
 >       liftA (free p0)
 >       return ()
-
-\todo{storeRoot, getRoot, withRoot...}
 
 In this section we have described a very basic file based heap structure with a
 simple interface that allows us to allocate and write new blocks of

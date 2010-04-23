@@ -25,6 +25,7 @@
 %endif
 
 \begin{chapter}{Generic storage}
+\label{chap:storage}
 
 In chapter \ref{chap:fixpoints} and \ref{chap:morphisms} we have built a
 framework for generic traversals over annotated recursive data structures. In
@@ -71,7 +72,9 @@ annotation.
 
 \begin{figure}[h]
 \label{fig:treepers}
+\begin{center}
 \includegraphics[angle=90,scale=0.35]{./img/binarytree-pers.png}
+\end{center}
 \caption{This image shows the same binary tree as in figure
 \ref{fig:binarytree} and figure \ref{fig:binarytree-ann}, but this time
 annotated with the |Pointer| annotation and laid out on the storage heap. Every
@@ -133,14 +136,15 @@ teh |read| operation to the read-write context.
 >   annO (InF     f   ) = return f
 
 Because we now both have an |AnnO| and an |AnnI| instance for the |Pointer|
-type inside the |HeapW| context we can create an instance for the |AnnIO| typeclass.
-We can imagine giving a more specific efficient instance in the future, but for
-now we just derive the instance automatically.
-
-\todo{What about removing first?}
+type inside the |HeapW| context we can create an instance for the |AnnIO|
+typeclass. The |AnnIO| instance assumes the value that gets modified will not
+be needed again in its original form. We will use the |fetch| function to
+remove the original block from disk.
 
 > instance  (Traversable f, Binary (f (FixA P f)))
 >       =>  AnnIO P f HeapW where
+>   annIO f (InA (P  h)  ) = fmap (InA . P) (write =<< f =<< fetch h)
+>   annIO f (InF     h   ) = fmap (InA . P) (write =<< f h)
 
 In order to store the recursive structures on disk we also need a |Binary|
 instance for the annotated fixed point operator type itself. This is a partial
@@ -161,6 +165,7 @@ true binary tree on disk.
 \end{section}
 
 \begin{section}{Persistent binary tree}
+\label{sec:persistenttree}
 
 In chapter \ref{chap:morphisms} we have implemented some example algebras and
 coalgebras working on binary trees. These functions could be lifted to true
@@ -207,16 +212,6 @@ generic enough to work for all annotations that have an instance for the
 lifted to the |HeapR| context, while the read-write functions are lifted to the
 |HeapW| context.
 
-%if False
-
-> getRoot :: HeapR (FixA P f)
-> getRoot = undefined
-
-> storeRoot :: FixA P f -> HeapW ()
-> storeRoot = undefined
-
-%endif
-
 These persistent operations can now be applied against the storage heap. We
 define an example function that opens a heap file, builds an initial tree from
 a list, inserts one item to the list and then replaces all the value with the
@@ -224,10 +219,16 @@ minimum value of the tree.
 
 > buildTree :: FilePath -> IO ()
 > buildTree file = run file $
->   do  p  <- pfromList [5, 3, 2, 4, 1]
->       q  <- pinsert 4 p
->       r  <- prepmin q
->       storeRoot r
+>   produceP $  pfromList [5, 3, 2, 4, 1] >>=
+>               pinsert 4 >>=
+>               prepmin
+
+The |produceP| function is a simple wrapper around |produce| (from section
+\ref{sec:rootnode}) that works for the |PersistentTree| type, instead of the
+|Pointer| type directly.
+
+> produceP :: HeapW (FixA P f) -> HeapW ()
+> produceP c = produce (liftM (unP . outa) c)
 
 And, as a second example, we define a function that opens a heap file and
 checks whether the tree stored on the heap contains the value 1. The boolean
@@ -235,9 +236,15 @@ result will be printed to the standard output.
 
 > inspectTree :: FilePath -> Int -> IO ()
 > inspectTree file i = run file $
->   do  o  <- liftR getRoot
->       j  <- liftR (pcontains i o)
+>   do  j <- queryP (pcontains i)
 >       liftIO (print j)
+
+The |queryP| function is a simple wrapper around |query| (also from section
+\ref{sec:rootnode}) that works for the |PersistentTree| type, instead of the
+|Pointer| type directly.
+
+> queryP :: (FixA P f -> HeapR c) -> HeapW c
+> queryP c = query (c . InA . P)
 
 Now we can run these operations consecutively and see the expected result: the
 tree written to disk contains the value 1 (which was the minimum when we
@@ -274,13 +281,13 @@ for the allocation of new blocks and freeing of existing blocks of binary data.
 
 \item
 After reading the allocation map the |run| function starts the actual heap
-operation. Our operations is a monadic sequencing of four operations, so the
-|HeapW| computation naturally starts with the first, the |pfromList [5, 3, 2,
-4, 1]|. Recall from section \ref{sec:heapwrite} that the |HeapW| context
-internally wraps both the |HeapA| context from section \ref{sec:heapalloc} and
-the |HeapR| context from section \ref{sec:heapread}. This monad transformer
-stack internally provides the allocation map and heap file handle to all
-operations.
+operation inside the wrapped |produce| function. Our operations is a monadic
+sequencing of four operations, so the |HeapW| computation naturally starts with
+the first, the |pfromList [5, 3, 2, 4, 1]|. Recall from section
+\ref{sec:heapwrite} that the |HeapW| context internally wraps both the |HeapA|
+context from section \ref{sec:heapalloc} and the |HeapR| context from section
+\ref{sec:heapread}. This monad transformer stack internally provides the
+allocation map and heap file handle to all operations.
 
 \item
 The |pfromList| function is built up from the |fromListCoalg|, which is lifted
@@ -323,25 +330,22 @@ lifted to a true function using the endomorphic apomorphism |coendoMA|.
 
 The implementation of |coendoMA| (see section \ref{sec:endoapo}) differs from
 the implementation of |apoMA|, the |coendoMA| traversal uses an existing binary
-tree as the input seed. This difference becomes clear from the definition, this
+tree as the input seed. This difference becomes clear from the definition, the
 function uses the |annIO| modifier function. 
-
-Recall the definition of |annIO| for the |P| instance.
-
-\todo{correct impl of AnnIO, including delete}
 
 So the traversal gets as input an annotated structure, in our case a |FixA P
 Tree_f|, and uses the pointer to read the actual node from disk. This node will
 be passed to the endomorphic coalgebra which produces either a new seed or a
 new sub structure. When the coalgebra finishes the |AnnIO| will make sure the
 result is stored to disk again. The usage of the |AnnIO| function forces every
-node that gets touch to be read from and saved to disk\footnote{See section
-\todo{TODO} for a possible optimization.}. This behaviour is very similar to
-what happens in regular in-memory update functions: inserting a node into a
-binary tree requires a \emph{copy} of the entire path up to the place where the
-new nodes gets inserted. All sub-trees that are not needed for the inserting
-will not be touched. This makes the asymptotic running time of the persistent
-algorithms equal to that of the regular in-memory variants.
+node that gets touched to be fetched (and also removed) from and saved to
+disk\footnote{See section \todo{TODO} for a possible optimization.}. This
+behaviour is very similar to what happens in regular in-memory update
+functions: inserting a node into a binary tree requires a \emph{copy} of the
+entire path up to the place where the new nodes gets inserted. All sub-trees
+that are not needed for the inserting will not be touched. This makes the
+asymptotic running time of the persistent algorithms equal to that of the
+regular in-memory variants.
 
 So, when the |pinsert| function finishes it has inserted a new node into the
 existing tree on disk. When doing this the entire path to this node has been
@@ -353,29 +357,68 @@ tree.
 The next step is the |prepmin| function, which is also a modifier function. The
 |prepmin| function uses more or less the same techniques as the |pinsert|
 function, however |prepmin| is a combination of algebra (|minAlg|) and an
-endomorphic algebra (|repAlg|). \todo{finish this description}
+endomorphic algebra (|repAlg|). After running the |prepmin| algorithm the tree
+on disk will no only contain six times the number 1.
 
 \item
 When the previous operations are finished the root pointer of the final binary
-tree is saved in the variable |r|. This variable is stored as the root node of
-the structure using the |storeRoot| function from section \ref{sec:runheap}.
-This saved the root in the first block of the heap so consecutive invocation
-always know where to top of the structure can be found.
+tree is saved in the variable |r|. This variable is stored as the root of the
+structure inside the null block by the surrounding |produce| function section
+\ref{sec:rootnode}.
 
 Now the run function terminates and the heap file will be closed. The heap will
 contains a sliced binary serialization of a binary tree containing 6 times the
 value 1.
 
 \item
-\todo{Now we run second op. same tricks, reads root and...}
+Now we run the second example |inspectTree|, which performs a read-only
+operation inside the |query| function. The |query| function (from section
+\ref{sec:rootnode}) read the root of the data structure from the null block and
+supplies this to the specified operation. The |pcontains| function is used to
+check for the existence of a value 1 inside the persistent binary tree.  The
+paramorphic operation performs a traversal over the persistent binary tree and
+soon figures out the value 1 is indeed stored inside the tree.  Assuming the
+|containsAlg| here is lifted using the paramorphism resulting from section
+\ref{sec:laziness} the traversal will be lazy.
+
+Both the |buildTree| and the |inspectTree| are two distinct functions that
+individually open up the heap file and perform their operations. This means
+that both function can be compiled to different programs that run consecutively
+without any shared state except the storage heap.
 
 \end{itemize}
 
+\end{section}
 
+\begin{section}{Overview}
 
-\todo{This section show how awesome. Next higher order. Future work will say
-something about sharing/garbage collection/optimizations.}
+In this chapter we have seen how to connect the low level interface of our
+storage heap to our generic annotation framework. By creating annotation type
+class instances for the |PointerA| annotation, we were able to derive a generic
+storage framework. All generic operations, in our example for binary trees,
+that are specialized to work for the |PointerA| annotation will out of the box
+work for persistent data structures. 
 
+The original algebraic operations for our binary trees are annotation-unaware,
+only when they are lifted and specialized they can be used to manage data
+structures stored on disk.
+
+Generically annotating algebraically defined operations to work in a persistent
+computational context is the main achievement of this project. This achievement
+makes it possible to write purely functional algorithms on purely function data
+structures, but still be able to use them in a non-pure environment.
+
+The framework defined here allows for a wide range of extensions, most of which
+are not yet implemented or even described in this report. In chapter
+\ref{chap:futurework} we will describe some limitation of this system and
+possible future extensions.
+
+The current framework is generic because it works for all regular recursive
+datatypes. Most, but not all, common functional data structures are regular
+recursive datatypes. In the next chapter we will show some example of recursive
+data structures that cannot be used in our current framework. The next chapter
+will show what is needed to extend the framework to also be usable for indexed
+datatypes like GADTs.
 
 \end{section}
 

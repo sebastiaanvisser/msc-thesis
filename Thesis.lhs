@@ -61,21 +61,21 @@
 \begin{document}
 
 \maketitle
-% %include Abstract.lhs
+%include Abstract.lhs
 
 \tableofcontents
 
-% %include Introduction.lhs
-% %include Motivation.lhs
-% %include Overview.lhs
-% %include Fixpoints.lhs
-% %include Morphisms.lhs
-% %include Heap.lhs
+%include Introduction.lhs
+%include Motivation.lhs
+%include Overview.lhs
+%include Fixpoints.lhs
+%include Morphisms.lhs
+%include Heap.lhs
 %include Storage.lhs
-% %include HigherOrder.lhs
-% %include RelatedWork.lhs
-% %include Conclusion.lhs
-% %include FutureWork.lhs
+%include HigherOrder.lhs
+%include RelatedWork.lhs
+%include Conclusion.lhs
+%include FutureWork.lhs
 
 \bibliographystyle{plain}
 \bibliography{thesis}

@@ -11,6 +11,7 @@
 %format Reader                     = "\TConId{Reader}"
 %format State                      = "\TConId{State}"
 %format ReaderT                    = "\TConId{ReaderT}"
+%format FilePath                   = "\TConId{FilePath}"
 
 %format MonadIO                    = "\TClassId{MonadIO}"
 %format Monad                      = "\TClassId{Monad}"

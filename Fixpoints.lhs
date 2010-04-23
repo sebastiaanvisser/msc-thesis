@@ -66,7 +66,9 @@ In figure \ref{fig:binarytree} we see an example of binary tree with four values
 
 \begin{figure}[h]
 \label{fig:binarytree}
+\begin{center}
 \includegraphics[scale=0.25]{./img/binarytree.png}
+\end{center}
 \caption{An example of a binary tree.}
 \end{figure}
 
@@ -190,7 +192,9 @@ an annotated fixed point to tie the recursive knot.
 
 \begin{figure}[h]
 \label{fig:binarytree-ann}
+\begin{center}
 \includegraphics[scale=0.25]{./img/binarytree-ann.png}
+\end{center}
 \caption{An example of an annotated binary tree.}
 \end{figure}
 
@@ -307,8 +311,9 @@ within a fully annotated structure.  There is a default implementation
 available which is just the Kleisli composition (denoted by |<=<|) of the
 query, the function, and the producer.
 
-> type InOut a f m = (f (FixA a f) -> m (f (FixA a f))) -> (FixA a f -> m (FixA a f))
->
+> type InOut a f m  =   (f (  FixA a f)  -> m (f (  FixA a f)))
+>                   ->  (     FixA a f   -> m (     FixA a f))
+
 > class (AnnO a f m, AnnI a f m) => AnnIO a f m where
 >   annIO :: InOut a f m
 >   annIO f = annI <=< f <=< annO

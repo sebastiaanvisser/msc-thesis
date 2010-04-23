@@ -2,6 +2,7 @@
 %include thesis.fmt
 
 \begin{chapter}{Future Work}  
+\label{chap:futurework}
 
 In this document we have seen how to use generic programming for recursive data
 type to build a persistent storage framework in Haskell. 
