@@ -65,9 +65,7 @@
 
 \tableofcontents
 
-%include Introduction.lhs
 %include Motivation.lhs
-%include Overview.lhs
 %include Fixpoints.lhs
 %include Morphisms.lhs
 %include Heap.lhs

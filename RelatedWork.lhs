@@ -37,6 +37,7 @@ improving the type safety of our Haskell framework.
 \end{section}
 
 \begin{section}{Relational Database Management Systems}
+\label{sec:relrdbms}
 
 There are several connectors available for Haskell to existing relational
 database management systems. These connectors allow developers to directly
@@ -46,11 +47,18 @@ etc. Examples of packages for connecting to database management systems are the
 general Haskell Database Connection\cite{hdbc} and the binding to the SQLite
 database system\cite{sqlite}.
 
-Others libraries build on top of these RDBMS bindings and allow marshalling of
+Other libraries build on top of these RDBMS bindings and allow marshalling of
 Haskell data generically. Using generic programming libraries these connectors
 allow mapping values of arbitrary Haskell types to database rows and vice
 versa. These system really add some power, because developers do not have to
 write the marshalling code manually.
+
+\end{section}
+
+\begin{section}{Key/Value stores}
+\label{sec:relkeyval}
+
+\todo{TODO}
 
 \end{section}
 
