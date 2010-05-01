@@ -11,6 +11,7 @@
 %format Reader                     = "\TConId{Reader}"
 %format State                      = "\TConId{State}"
 %format ReaderT                    = "\TConId{ReaderT}"
+%format StateT                     = "\TConId{ReaderT}"
 %format FilePath                   = "\TConId{FilePath}"
 
 %format MonadIO                    = "\TClassId{MonadIO}"
@@ -174,6 +175,8 @@
 %format pcontains                  = "contains_P"
 %format pinsert                    = "insert_P"
 %format prepmin                    = "repmin_P"
+
+%format AllocationMap              = "\TConId{AllocationMap}"
 
 
 
