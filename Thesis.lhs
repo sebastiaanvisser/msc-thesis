@@ -66,14 +66,14 @@
 \tableofcontents
 
 %include Motivation.lhs
-%include Fixpoints.lhs
-%include Morphisms.lhs
-%include Heap.lhs
-%include Storage.lhs
-%include HigherOrder.lhs
-%include RelatedWork.lhs
-%include Conclusion.lhs
-%include FutureWork.lhs
+% %include Fixpoints.lhs
+% %include Morphisms.lhs
+% %include Heap.lhs
+% %include Storage.lhs
+% %include HigherOrder.lhs
+% %include RelatedWork.lhs
+% %include Conclusion.lhs
+% %include FutureWork.lhs
 
 \bibliographystyle{plain}
 \bibliography{thesis}
