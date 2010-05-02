@@ -296,7 +296,7 @@ To illustrate the usage of the |fromListMA| function we construct a simple
 binary tree from a two-element lists. Again we constrain the context to |IO|
 and the annotation to |Debug|. The annotation nicely prints out all the
 sub-structures that are being produced before the final result tree is
-returned.
+returned
 
 \begin{small}
 \begin{verbatim}
@@ -340,6 +340,7 @@ will allow us to write modification functions on our annotated structures, like
 \end{section}
 
 \begin{section}{Endomorphic paramorphism}
+\label{sec:endopara}
 
 Both the paramorphisms and the apomorphisms working on annotated structures had
 enough information to know when to use the |annO| or |annI| functions to
@@ -559,6 +560,7 @@ query the structure out of the annotation before using it as the seed.
 \end{section}
 
 \begin{section}{Applicative paramorphisms}
+\label{sec:paraapp}
 
 In section \ref{sec:para} we have seen how to write some simple paramorphic
 algebras. Writing more complicated algebras can be quite hard, mainly because
@@ -812,7 +814,7 @@ passing them into the algebra. This changes the running time for the
 To solve the problem described above we introduce a type class |Lazy| that will
 allow us to explicitly turn strict monads into lazy ones when this is possible.
 The only class method is the function |lazy| that gets a monadic computation
-and turns it into an lazy variant of this computation. Off course this will not
+and turns it into an lazy variant of this computation. Of course this will not
 be possible in the most general case for all monads.
 
 > class AM m => Lazy m where

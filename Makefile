@@ -9,8 +9,6 @@ ${DOC}.pdf: \
 ${DOC}.tex: \
 	${DOC}.lhs \
 	Abstract.lhs \
-	Motivation.lhs \
-	Overview.lhs \
 	Introduction.lhs \
 	Fixpoints.lhs \
 	Morphisms.lhs \

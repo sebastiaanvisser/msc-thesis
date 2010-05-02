@@ -212,6 +212,7 @@ parametrizing the annotated fixed point with the identity annotation.
 > type HFix f ix = HFixA HId f ix
 
 \section{Finger tree as GADT} 
+\label{sec:fingertree}
 
 To illustrate the usage of the higher order fixed point combinator we will now
 model a finger tree data type as a indexed GADT. The finger tree is a purely

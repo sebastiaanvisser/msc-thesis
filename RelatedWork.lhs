@@ -2,6 +2,7 @@
 %include thesis.fmt
 
 \begin{chapter}{Related work}
+\label{chap:relatedwork}
 
 \begin{section}{Clean}
 

@@ -246,6 +246,7 @@ modified.
 % -----------------------------------------------------------------------------
 
 \begin{section}{Annotation associated functionality}
+\label{sec:annfun}
 
 In the previous section we have shown how to store arbitrary pieces of
 information at the recursive positions of a datatype. In this section we will
