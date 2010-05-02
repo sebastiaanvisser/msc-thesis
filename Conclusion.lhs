@@ -6,5 +6,10 @@
 
 \end{chapter}
 
+\begin{chapter}{Acknowledgements}
+\label{chap:acknowledgements}
+
+\end{chapter}
+
 
 

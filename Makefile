@@ -8,6 +8,7 @@ ${DOC}.pdf: \
 
 ${DOC}.tex: \
 	${DOC}.lhs \
+	Titlepage.lhs \
 	Abstract.lhs \
 	Introduction.lhs \
 	Fixpoints.lhs \

@@ -1,13 +1,13 @@
 %\documentclass{article}
 %\documentclass[12pt]{scrartcl}
 %\documentclass[a4wide,10pt]{article}
-\documentclass[twosided, 12pt, a4paper]{report}
+\documentclass[11pt, twoside, a4paper, openright]{report}
 
 
+%\usepackage[disable]{todonotes}
 \usepackage[pdftex]{graphicx}
 \usepackage{xcolor}
 \usepackage{amsmath}
-%\usepackage[disable]{todonotes}
 \usepackage{url}
 \usepackage{draft}
 \usepackage{fancyhdr}
@@ -51,32 +51,22 @@
 
 %endif
 
-\title{A GENERIC APPROACH TO DATATYPE PERSISTENCY IN HASKELL}
-\author{Sebastiaan Visser\\
-\small{Utrecht University}\\
-\small{\texttt{s@@fvisser.nl}}
-}
-\date{\today}
-
 \begin{document}
 
-\maketitle
-%include Abstract.lhs
-
-\tableofcontents
-
-%include Introduction.lhs
-%include Fixpoints.lhs
-%include Morphisms.lhs
-%include Heap.lhs
-%include Storage.lhs
-%include HigherOrder.lhs
-%include RelatedWork.lhs
-%include Conclusion.lhs
-%include FutureWork.lhs
-
-\bibliographystyle{plain}
-\bibliography{thesis}
+  %include Titlepage.lhs
+  %include Abstract.lhs
+  \tableofcontents
+  %include Introduction.lhs
+  %include Fixpoints.lhs
+  %include Morphisms.lhs
+  %include Heap.lhs
+  %include Storage.lhs
+  %include HigherOrder.lhs
+  %include RelatedWork.lhs
+  %include Conclusion.lhs
+  %include FutureWork.lhs
+  \bibliographystyle{plain}
+  \bibliography{thesis}
 
 \end{document}
 

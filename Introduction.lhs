@@ -340,8 +340,6 @@ framework. Lots of functionality can be added and lots of design decisions can
 be reconsidered. This chapter states the most obvious of topics for possible
 future work. In chapter \ref{chap:conclusion} we wrap up with a conclusion.
 
-
-
 \end{section}
 
 \end{chapter}
