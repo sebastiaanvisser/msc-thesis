@@ -1,7 +1,7 @@
 DOC=Thesis
 
 all: ${DOC}.pdf thesis.fmt haskell.fmt higherorder.fmt
-	open *.pdf
+	open ${DOC}.pdf
 
 ${DOC}.pdf: \
 	${DOC}.tex
@@ -32,6 +32,7 @@ ${DOC}.tex: \
 
 clean: .
 	rm -f \
+	Thesis.pdf \
 	*.aux \
 	*.aux.bak \
 	*.bbl \
@@ -39,7 +40,6 @@ clean: .
 	*.dvi \
 	*.fdb_latexmk \
 	*.log \
-	*.pdf \
 	*.ptb \
 	*.tex \
 	*.out \

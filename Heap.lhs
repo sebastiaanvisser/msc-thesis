@@ -82,7 +82,7 @@ stored in the block header.
 
 \begin{figure}[h]
 \begin{center}
-\includegraphics[scale=0.25]{./img/heap+map.png}
+\includegraphics[scale=0.25]{./heap+map.png}
 \end{center}
 \caption{Storage heap with 2 occupied and 2 free blocks.}
 \end{figure}

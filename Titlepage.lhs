@@ -7,7 +7,7 @@
   \large \today\\[0.5cm]
   \text{INF/XXX-XX-XX}\\[0.5cm]
   \vfill
-  \includegraphics[scale=1.1]{img/uulogo}\\[1cm]
+  \includegraphics[scale=1.1]{uulogo}\\[1cm]
 \end{center}
 
 \begin{minipage}{0.7\textwidth}

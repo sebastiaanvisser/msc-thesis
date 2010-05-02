@@ -67,7 +67,7 @@ In figure \ref{fig:binarytree} we see an example of binary tree with four values
 \begin{figure}[h]
 \label{fig:binarytree}
 \begin{center}
-\includegraphics[scale=0.25]{./img/binarytree.png}
+\includegraphics[scale=0.25]{./binarytree.png}
 \end{center}
 \caption{An example of a binary tree.}
 \end{figure}
@@ -193,7 +193,7 @@ an annotated fixed point to tie the recursive knot.
 \begin{figure}[h]
 \label{fig:binarytree-ann}
 \begin{center}
-\includegraphics[scale=0.25]{./img/binarytree-ann.png}
+\includegraphics[scale=0.25]{./binarytree-ann.png}
 \end{center}
 \caption{An example of an annotated binary tree.}
 \end{figure}

@@ -5,8 +5,8 @@
 *.blg
 *.fdb_latexmk
 *.log
-*.pdf
 *.ptb
 *.toc
 *.hers
 *.out
+Thesis.pdf

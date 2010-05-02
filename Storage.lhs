@@ -73,7 +73,7 @@ annotation.
 \begin{figure}[h]
 \label{fig:treepers}
 \begin{center}
-\includegraphics[angle=90,scale=0.35]{./img/binarytree-pers.png}
+\includegraphics[angle=90,scale=0.35]{./binarytree-pers.png}
 \end{center}
 \caption{This image shows the same binary tree as in figure
 \ref{fig:binarytree} and figure \ref{fig:binarytree-ann}, but this time
