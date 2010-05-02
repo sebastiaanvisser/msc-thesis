@@ -308,7 +308,7 @@ starting point. In \ref{sec:runheap} we show how to run heap operations against
 a binary file. All heap operations work inside a heap context, a monadic
 computational context that abstracts all low level I/O operations.
 
-Chapter \ref{chap:storage} we show how we can make the pointer type from the
+In chapter \ref{chap:storage} we show how we can make the pointer type from the
 storage heap from chapter \ref{chap:heap} an instance of the annotation type
 classes from chapter \ref{chap:fixpoints}. Wrapping a pointer annotation
 represents writing a single node of a recursive data structure to the heap.
