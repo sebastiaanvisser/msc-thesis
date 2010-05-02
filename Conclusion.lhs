@@ -6,10 +6,7 @@
 
 \end{chapter}
 
-\begin{chapter}{Acknowledgements}
+\chapter*{Acknowledgements}
 \label{chap:acknowledgements}
-
-\end{chapter}
-
 
 

@@ -1,7 +1,7 @@
 %\documentclass{article}
 %\documentclass[12pt]{scrartcl}
 %\documentclass[a4wide,10pt]{article}
-\documentclass[11pt, twoside, a4paper, openright]{report}
+\documentclass[12pt,twoside,a4paper,openright]{report}
 
 
 %\usepackage[disable]{todonotes}
@@ -63,8 +63,8 @@
   %include Storage.lhs
   %include HigherOrder.lhs
   %include RelatedWork.lhs
-  %include Conclusion.lhs
   %include FutureWork.lhs
+  %include Conclusion.lhs
   \bibliographystyle{plain}
   \bibliography{thesis}
 
