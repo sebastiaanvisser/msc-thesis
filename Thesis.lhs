@@ -23,7 +23,7 @@
 % \addtolength{\hoffset}{-0.5in}
 % \addtolength{\textwidth}{1.0in}
 
-\pagestyle{fancy}
+%\pagestyle{fancy}
 \renewcommand{\sectionmark}[1]{\markright{\thesection.\ #1}}
 \renewcommand{\chaptermark}[1]{\markboth{\ #1}{}}   % \thechapter
 

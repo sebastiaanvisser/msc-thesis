@@ -4,15 +4,15 @@
 \begin{chapter}{Introduction}
 
 Management of long-lived data is an essential ingredient of a large amount of
-modern computer programs. Over the past decades of software technology plenty
-of tools have been developed to store information outside the process space of
+modern computer programs. Over the past decades of software technology, plenty
+of systems have been developed to store information outside the process space of
 a running application. Examples of such systems are structured file systems,
 relational databases management systems\cite{rdbms} (RDBMSs), XML document
 stores, key/value databases, and many more. All of these tools allow for some
 form of structuring the data. For example, file systems allow for a
 hierarchical view on data using directories and files, relational database
 management systems use a tabular layout in which data can be structured using
-rows and columns, and key/value stores build up finite mappings. Giving
+-- rows and columns, and key/value stores build up finite mappings. Giving
 structure to data greatly helps efficiently manipulating data. Unfortunately,
 the data structures used by such systems do not always match the data
 structures used inside the computer program that uses the data. The result of

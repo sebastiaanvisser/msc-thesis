@@ -5,11 +5,9 @@
 \label{chap:futurework}
 
 In this document we have seen how to use generic programming for recursive data
-type to build a persistent storage framework in Haskell. 
-
-Because it is hard to predict how much time it will take to implement an
-initial basic framework and the additional possibilities are near infinite,
-here is a list of additional work that can be done.
+type to build a persistent storage framework in Haskell. There are plenty of
+opportunities for extension of the framework. This chapter gives a quick
+enumeration of topics that can be used to extend or improve this project.
 
 \begin{section}{Encoding type hashes into serialized data}
 

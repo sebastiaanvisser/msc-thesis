@@ -1,7 +1,7 @@
 \begin{titlepage}
 
 \begin{center}
-  \text{\LARGE A Haskell Storage Framework}\\[1.5cm]
+  \text{\LARGE A Solid State Solution for Haskell}\\[1.5cm]
   \text{\Large Sebastiaan Visser}\\[0.5cm]
   \text{\Large MSc Thesis}\\[0.5cm]
   \large \today\\[0.5cm]
