@@ -1,7 +1,7 @@
 %include polycode.fmt
 %include thesis.fmt
 
-\begin{abstract}
+\chapter*{Abstract}
 
 Algebraic data types (ADTs) are a powerful way to structure data in Haskell
 programs, functions can be used to process values of these ADTs.  When dealing
@@ -22,5 +22,3 @@ the data types and the algorithms working on these data types to a persistent
 storage.  By not using any external database tools the system remains
 lightweight and does not compromise the functional paradigm.
 
-\end{abstract}
- 

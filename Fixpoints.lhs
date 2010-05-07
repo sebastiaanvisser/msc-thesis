@@ -47,18 +47,23 @@
 \begin{chapter}{Annotated fixed points}
 \label{chap:fixpoints}
 
-\todo{intro}
-
-\todo{status: reviewed}
+In Haskell datatypes can be recursive. Recursive datatypes have one or more
+references back to the original datatype in the fields of their constructors.
+Recursion in datatypes allows for building data structure that store multiple
+elements. Example of recursive data structures are linked lists, binary trees,
+sequences etc. This chapter explains a technique that allows us to store
+annotations inside the recursive positions of recursive datatypes. These
+annotations can be used to associate custom functionality to the construction
+and destruction of recursive data structures.
 
 % -----------------------------------------------------------------------------
 
 \begin{section}{Fixed points}
 
 Most container datatypes in Haskell are written down with explicit recursion.
-An example of a container type using explicit recursion is the following binary
-tree datatype. This binary tree stores both a value and two explicit sub-trees
-in the branch constructor, empty trees are indicated by a leaf.
+An example of a container type using explicit recursion is the binary tree
+datatype. This binary tree stores both a value and two explicit sub-trees in
+the branch constructor, empty trees are indicated by a leaf.
 
 > data Tree_1 = Leaf_1 | Branch_1 Int Tree_1 Tree_1
 

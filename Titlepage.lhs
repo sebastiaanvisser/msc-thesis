@@ -1,8 +1,9 @@
 \begin{titlepage}
 
 \begin{center}
-  \text{\LARGE A Solid State Solution for Haskell}\\[1.5cm]
-  \text{\Large Sebastiaan Visser}\\[0.5cm]
+  \text{\Huge \sc{A Generic Approach to}}\\[0.5CM]
+  \text{\Huge \sc{Datatype Persistency in Haskell}}\\[2.5CM]
+  \text{\huge \sc{Sebastiaan Visser}}\\[0.5cm]
   \text{\Large MSc Thesis}\\[0.5cm]
   \large \today\\[0.5cm]
   \text{INF/SCR-09-60}\\[0.5cm]

@@ -3,8 +3,8 @@
 %\documentclass[a4wide,10pt]{article}
 \documentclass[11pt,twoside,a4paper,openright]{report}
 
-
 %\usepackage[disable]{todonotes}
+%\usepackage{a4wide}
 \usepackage[pdftex]{graphicx}
 \usepackage{xcolor}
 \usepackage{amsmath}
@@ -23,7 +23,7 @@
 % \addtolength{\hoffset}{-0.5in}
 % \addtolength{\textwidth}{1.0in}
 
-%\pagestyle{fancy}
+\pagestyle{fancy}
 \renewcommand{\sectionmark}[1]{\markright{\thesection.\ #1}}
 \renewcommand{\chaptermark}[1]{\markboth{\ #1}{}}   % \thechapter
 
