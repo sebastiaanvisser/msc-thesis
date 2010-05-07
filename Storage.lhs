@@ -70,10 +70,10 @@ indirect. All connections between |Branch| nodes to other |Branch| nodes or
 \ref{fig:treepers} we see an example of an binary annotated with the |P|
 annotation.
 
-\begin{figure}[h]
+\begin{figure}[bp]
 \label{fig:treepers}
 \begin{center}
-\includegraphics[angle=90,scale=0.35]{./binarytree-pers.png}
+\includegraphics[angle=90,scale=0.35]{./binarytree-pers.pdf}
 \end{center}
 \caption{This image shows the same binary tree as in figure
 \ref{fig:binarytree} and figure \ref{fig:binarytree-ann}, but this time

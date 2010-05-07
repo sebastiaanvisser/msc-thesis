@@ -69,10 +69,10 @@ the branch constructor, empty trees are indicated by a leaf.
 
 In figure \ref{fig:binarytree} we see an example of binary tree with four values.
 
-\begin{figure}[h]
+\begin{figure}[hp]
 \label{fig:binarytree}
 \begin{center}
-\includegraphics[scale=0.25]{./binarytree.png}
+\includegraphics[scale=0.8]{./binarytree.pdf}
 \end{center}
 \caption{An example of a binary tree.}
 \end{figure}
@@ -101,6 +101,17 @@ binary tree again, with real sub-trees at the recursive positions.
 
 We will call datatypes that abstract away from recursion using an additional
 type parameter \emph{open recursive datatypes}.
+
+In figure \ref{fig:binarytree-fix} we see an example of a binary tree that uses
+a fixed point combinator at the recursive positions.
+
+\begin{figure}[tp]
+\label{fig:binarytree-fix}
+\begin{center}
+\includegraphics[scale=0.8]{./binarytree-fix.pdf}
+\end{center}
+\caption{An example of a binary tree.}
+\end{figure}
 
 To make it easier to deal with the recursive structure of the binary tree we
 can make the tree functor an instance of Haskell's |Functor| type class. The
@@ -195,10 +206,10 @@ annotated fixed point combinator to the tree functor.
 In figure \ref{fig:binarytree-ann} we see an example of binary tree that uses
 an annotated fixed point to tie the recursive knot.
 
-\begin{figure}[h]
+\begin{figure}[tp]
 \label{fig:binarytree-ann}
 \begin{center}
-\includegraphics[scale=0.25]{./binarytree-ann.png}
+\includegraphics[scale=0.8]{./binarytree-ann.pdf}
 \end{center}
 \caption{An example of an annotated binary tree.}
 \end{figure}

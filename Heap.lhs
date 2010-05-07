@@ -80,11 +80,13 @@ representing the byte size of the payload and the payload itself which is
 a stream of bytes. The size of the payload is always equal to the byte size
 stored in the block header.
 
-\begin{figure}[h]
+\begin{figure}[hp]
 \begin{center}
-\includegraphics[scale=0.25]{./heap+map.png}
+\includegraphics[scale=0.4]{./heap.pdf}
 \end{center}
-\caption{Storage heap with 2 occupied and 2 free blocks.}
+\caption{Storage heap with 2 occupied and 2 free blocks. The top bar represents
+the actual heap on disk, the bottom bar represents the in-memory allocation map
+pointing to the offsets of the free blocks.}
 \end{figure}
 
 The Haskell code uses a |Pointer| datatype to refer to these storage blocks.
