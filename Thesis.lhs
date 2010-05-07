@@ -1,7 +1,10 @@
 %\documentclass{article}
 %\documentclass[12pt]{scrartcl}
 %\documentclass[a4wide,10pt]{article}
-\documentclass[11pt,twoside,a4paper,openright,DIV9,BCOR=1.5cm]{scrreprt}
+%\documentclass[11pt,twoside,a4paper,openright,DIV9,BCOR=1.5cm]{scrreprt}
+\documentclass[11pt,twoside,a4paper,openright]{report}
+% \setkomafont{sectioning}{\bfseries}
+
 
 %\usepackage[disable]{todonotes}
 %\usepackage{a4wide}
@@ -15,8 +18,6 @@
 \usepackage[authoryear,sort,square]{natbib}
 \definecolor{linkblue}{RGB}{6,55,206}
 \usepackage[colorlinks=true,linkcolor=linkblue]{hyperref} %m must be last \usepackage
-
-\setkomafont{sectioning}{\bfseries}
 
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{0.1in} % \baselineskip}
@@ -50,19 +51,19 @@
 
 \begin{document}
 
-%  %include Titlepage.lhs
-%  %include Abstract.lhs
-%  \tableofcontents
-%  %include Introduction.lhs
-%  %include Fixpoints.lhs
-%  %include Morphisms.lhs
-   %include Heap.lhs
-%  %include Storage.lhs
-%  %include HigherOrder.lhs
-%  %include RelatedWork.lhs
-%  %include FutureWork.lhs
-%  %include Conclusion.lhs
-%  \bibliographystyle{plain}
-%  \bibliography{thesis}
+  %include Titlepage.lhs
+  %include Abstract.lhs
+  \tableofcontents
+  %include Introduction.lhs
+  %include Fixpoints.lhs
+  %include Morphisms.lhs
+  %include Heap.lhs
+  %include Storage.lhs
+  %include HigherOrder.lhs
+  %include RelatedWork.lhs
+  %include FutureWork.lhs
+  %include Conclusion.lhs
+  \bibliographystyle{plain}
+  \bibliography{thesis}
 
 \end{document}

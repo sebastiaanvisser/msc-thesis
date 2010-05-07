@@ -16,7 +16,6 @@ ${DOC}.tex: \
 	Heap.lhs \
 	Storage.lhs \
 	HigherOrder.lhs \
-	FingerTree.lhs \
 	RelatedWork.lhs \
 	Conclusion.lhs \
 	FutureWork.lhs

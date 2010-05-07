@@ -360,9 +360,7 @@ It contains a value of type |b| which is the value type parameter of the finger
 tree datatype.  
 
 \begin{figure}[hp]
-\begin{center}
-\includegraphics[scale=0.3]{./fingertree.pdf}
-\end{center}
+\hspace{-5.0cm}\includegraphics[scale=0.45]{./fingertree.pdf}
 \caption{Example finger tree. This image shows the structure of finger trees
 and the positioning of spine nodes, digits, 2-3 nodes and value. The black
 boxes at the bottom of each node show the type level index.}

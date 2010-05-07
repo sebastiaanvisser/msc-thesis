@@ -20,7 +20,7 @@
 \colorlet{Numeral}{green!45!black}
 
 % Keyword
-\colorlet{Keyword}{blue!55!black}
+\colorlet{Keyword}{blue!45!black}
 
 % Module identifier
 \colorlet{ModId}{Char}
@@ -41,7 +41,7 @@
 \colorlet{TConSym}{TConId}
 
 % Type class identifier
-\colorlet{TClassId}{red!60!blue}
+\colorlet{TClassId}{red!80!black}
 
 % Comment
 \colorlet{Comment}{black!45!black}

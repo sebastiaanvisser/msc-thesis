@@ -51,7 +51,7 @@ able to differentiate between the possible types of actions.  As we will see in
 the next chapter \todo{xxx} this separation is essential for gaining control
 over the laziness of our storage framework.
 
-In this chapter we introduce zeven basic heap operations, some of which we
+In this chapter we introduce seven basic heap operations, some of which we
 will be using in the next chapters, some of which will only be used internally.
 
 \begin{spec}
@@ -82,7 +82,7 @@ stored in the block header.
 
 \begin{figure}[hp]
 \begin{center}
-\includegraphics[scale=0.4]{./heap.pdf}
+\includegraphics[angle=90,scale=0.6]{./heap.pdf}
 \end{center}
 \caption{Storage heap with 2 occupied and 2 free blocks. The top bar represents
 the actual heap on disk, the bottom bar represents the in-memory allocation map
