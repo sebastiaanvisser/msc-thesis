@@ -137,6 +137,14 @@ disk access is significantly slower compared to memory access. Incremental
 access is an important feature for writing programs that scale well to large
 data sets.
 
+\item \textbf{Mutable.}
+The persistent data structures on disk are used as mutable data. This means
+that all update operations modify the existing data structure in-place and no
+sharing will happen. By using a mutable data structure the system acts like a
+true database which makes the behaviour of the system predictable.
+\footnote{The possible extension of the system to allow sharing and
+immutability are discussed in the chapters on related work and future work.}
+
 \item \textbf{Layered.}
 The framework can conceptually be separated in three different layers of
 functionality.
@@ -179,8 +187,8 @@ the framework to transparently convert the operations to work on the heap.
 
 \end{itemize}
 
-With these six properties we have implemented a Haskell storage framework that
-is both lightweight, fast, easy to extend and easy to use. 
+With these seven properties we have implemented a Haskell storage framework
+that is both lightweight, fast, easy to extend and easy to use. 
 
 \end{section}
 

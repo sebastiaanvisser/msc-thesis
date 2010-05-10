@@ -4,14 +4,20 @@
 \begin{chapter}{Related work}
 \label{chap:relatedwork}
 
+Lots of work has been done related to this project. There are many libraries
+and frameworks available for Haskell that allow some sort of datatype
+persistency. Also many projects exists that solve parts of the problems solved
+in this project, or are somehow otherwise related. This section gives a brief
+overview of work related to this project.
+
 \begin{section}{Clean}
 
 In their paper \emph{Efficient and Type-Safe Generic Data Storage} Smetsers,
 Van Weelden and Plasmeijer\cite{clean} describe a library for generic storage
-for the programming language Clean. Like the framework proposed in the
-document, they also aim at generically mapping pure and functional algebraic
-data structures to a persistent data storage on disk.  Using something similar
-as our storage heap -- they call this \emph{Chunks} -- they are able to persist
+for the programming language Clean. Like the framework proposed in this
+document, they also aim at generically mapping pure and functional data
+structures to a persistent storage on disk.  Using something similar to our
+storage heap -- they call this \emph{Chunks} -- they are able to persist
 individual parts of the data structures on disk without reading or writing the
 entire collection.
 
@@ -26,13 +32,13 @@ this the \emph{Root chunk} --- has to be read in and written back as a whole.
 
 Because of the different method of slicing the data they do not pose the same
 problems in lifting the pure structures to a persistent variant. Most container
-data type definitions already are polymorphic in the element values they store.
-This significantly simplifies their implementation while making the system less
-flexible.
+datatypes already are polymorphic in the element values they store.  This
+significantly simplifies their implementation while making the system less
+scalable.
 
-To improve type safety of their framework these Clean developers include a type
-hash inside their chunks. When reading data back in this type will be checked
-for validity. This is a very interesting technique that might also be used for
+To improve type safety of their framework the Clean developers include a type
+hash inside their chunks. When reading data back in this type is checked for
+validity. This is a very interesting technique that might also be used for
 improving the type safety of our Haskell framework.
 
 \end{section}
@@ -45,14 +51,22 @@ database management systems. These connectors allow developers to directly
 query relational databases using the SQL query language. This gives developers
 the complete power of databases, like fast querying, indexing, transactions
 etc. Examples of packages for connecting to database management systems are the
-general Haskell Database Connection\cite{hdbc} and the binding to the SQLite
-database system\cite{sqlite}.
+general Haskell Database Connection\cite{hdbc}, the binding to the SQLite
+database system\cite{sqlite} and the Sirenial database library by Martijn van
+Steenbergen.
 
 Other libraries build on top of these RDBMS bindings and allow marshalling of
 Haskell data generically. Using generic programming libraries these connectors
 allow mapping values of arbitrary Haskell types to database rows and vice
 versa. These system really add some power, because developers do not have to
 write the marshalling code manually.
+
+\end{section}
+
+\begin{section}{Happstack State}
+\label{sec:relkeyval}
+
+\todo{TODO}
 
 \end{section}
 
@@ -66,30 +80,33 @@ write the marshalling code manually.
 \begin{section}{Binary serialization}
 
 \emph{Data.Binary}\cite{databinary}, developed by Don Stewart, is a Haskell
-library that enables generic serialization of values of arbitrary data types to
+library that enables generic serialization of values of arbitrary datatypes to
 binary streams. The library uses type classes to be polymorphic in the values
 to be serialized/deserialized. Out of the box the library forces users to write
-the type class instances for their data types by hand, but luckily there are
+the type class instances for their datatypes by hand, but luckily there are
 several ways this can be done generically.
 
 The Haskell \emph{derive}\cite{derive} package can be used to derive
-Data.Binary (and more) instances automatically for custom data types. The
+Data.Binary (and more) instances automatically for custom datatypes. The
 package uses (GHC only) Template Haskell for the derivation process but
 produces portable Haskell 98 code that can be linked manually into your
 project.
 
 Using generic programming libraries like \emph{EMGM}\cite{emgm},
-\emph{SYB}\cite{syb} and \emph{MultiRec}\cite{multirec} it should possible to
-generically derive instances as well. The advantage is that this can be used as
-a library and does not require external inclusion into your project.  It might
-be interesting to note that using the above mentioned generic programming
-libraries -- of which there are quite a few \cite{compgen} -- it should be
-fairly easy to skip the Data.Binary library entirely and write the functions
-from scratch, as described in \cite{printparse} and \cite{clean}.
+\emph{SYB}\cite{syb}, \emph{Regular}\cite{jpm} and
+\emph{MultiRec}\cite{multirec} it should possible to generically derive
+instances as well. The advantage is that this can be used as a library and does
+not require external inclusion into your project.  It might be interesting to
+note that using the above mentioned generic programming libraries -- of which
+there are quite a few \cite{compgen}
+-- it should be fairly easy to skip the Data.Binary library entirely and write
+the functions from scratch, as described in \cite{printparse} and \cite{clean}.
 
-Binary serialization will be an essential part of our persistence framework
-should ideally be done generically for all possible data types. The libraries
-explained above can be used to take care of this.
+Because the \emph{Binary} library only allows us to serialize and deserialize
+entire value at once is not a sufficient solution when we need incremental
+access to a data store. Binary serialization is an essential part of our
+storage framework and is done generically for all possible datatypes using the
+\emph{regular-binary} library.
 
 \end{section}
 
@@ -98,19 +115,19 @@ explained above can be used to take care of this.
 In their paper \emph{Functional Programming with Bananas, Lenses, Envelopes and
 Barbed Wire} Meijer, Fokkinga and Paterson\cite{bananas} show how certain
 morphisms from category theory can be used to manipulate values of recursive
-data types without explicitly going into recursion. By using algebras and
+datatypes without explicitly going into recursion. By using algebras and
 coalgebras to describe what actions to perform at certain points in the
 algorithm, they only need a few basic function to handle the actual recursion.
-Morphisms like catamorphisms and paramorphisms can be used to destruct a data
-type into a new value and can be seen as consumer functions.  Anamorphisms can
-be used to create values of a data type and can be used to create producer
+Morphisms like catamorphisms and paramorphisms can be used to destruct a
+datatype into a new value and can be seen as consumer functions.  Anamorphisms
+can be used to create values of a datatype and can be used to create producer
 functions. By combining or restricting these morphisms most if not
 all\cite{paramorphisms} algorithms working on functional data structures can be
 written without explicit recursion.
 
-This is a very well explored and common trick in functional programming that
-will also be extensively used in this project. By writing algebras for data
-type specific folds, the container data remain open for annotation.
+This is a very well explored and common trick in functional programming that is
+extensively used in this project. By writing algebras for datatype specific
+folds, the container data remain open for annotation.
 
 \end{section}
 
@@ -142,18 +159,24 @@ like functions for high-performance, incremental IO without the property that
 the evaluation of pure code cause side effects. A library for iteratee based IO
 is now available for Haskell\cite{iteratee}.
 
-The ideas from his work can be used to avoid the same pitfall in this project.
-We should make sure that processing values originating from our storage heap in
+We also make sure that processing values originating from our storage heap in
 pure functions does not cause any effects.
 
 \end{section}
 
 \begin{section}{Sharing / Garbage Collection}
+\label{sec:sharing}
+
+The storage framework described in this document use mutable persistent data
+structures and does not allow sharing. Because of this property all data that
+is no longer needed can explicitly be freed for possible future reuse. When we
+might want to extend the framework to allow sharing and immutability there will
+be a need for garbage collection of unused data.
 
 Lots of research and work \cite{gengc,pargc} has been done in the field of
 garbage collection for pure and lazy functional programming languages like
-Haskell.  Lots of these techniques should be applicable to storage heaps
-outside the conventional computer memory, but located on disk.
+Haskell.  Lots of these techniques are applicable to storage heaps outside the
+conventional computer memory, but located on disk.
 
 \end{section}
 

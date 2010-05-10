@@ -17,7 +17,7 @@
 \usepackage{pxfonts}
 \usepackage[authoryear,sort,square]{natbib}
 \definecolor{linkblue}{RGB}{6,55,206}
-\usepackage[colorlinks=true,linkcolor=linkblue]{hyperref} %m must be last \usepackage
+\usepackage[colorlinks=true,citecolor=linkblue,linkcolor=linkblue]{hyperref} %m must be last \usepackage
 
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{0.1in} % \baselineskip}
@@ -31,6 +31,7 @@
 \renewcommand{\chaptermark}[1]{\markboth{\ #1}{}}   % \thechapter
 
 \bibliographystyle{alpha}
+%\bibliographystyle{plain}
 
 %include polycode.fmt
 %include thesis.fmt
@@ -51,19 +52,18 @@
 
 \begin{document}
 
-  %include Titlepage.lhs
-  %include Abstract.lhs
-  \tableofcontents
+%  %include Titlepage.lhs
+%  %include Abstract.lhs
+%  \tableofcontents
   %include Introduction.lhs
-  %include Fixpoints.lhs
-  %include Morphisms.lhs
-  %include Heap.lhs
-  %include Storage.lhs
-  %include HigherOrder.lhs
+%  %include Fixpoints.lhs
+%  %include Morphisms.lhs
+%  %include Heap.lhs
+%  %include Storage.lhs
+%  %include HigherOrder.lhs
   %include RelatedWork.lhs
   %include FutureWork.lhs
   %include Conclusion.lhs
-  \bibliographystyle{plain}
   \bibliography{thesis}
 
 \end{document}

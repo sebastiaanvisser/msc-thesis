@@ -4,9 +4,9 @@
 \begin{chapter}{Future Work}  
 \label{chap:futurework}
 
-In this document we have seen how to use generic programming for recursive data
-type to build a persistent storage framework in Haskell. There are plenty of
-opportunities for extension of the framework. This chapter gives a quick
+In this document we have seen how to use generic programming for recursive
+datatype to build a persistent storage framework in Haskell. There are plenty
+of opportunities for extension of the framework. This chapter gives a quick
 enumeration of topics that can be used to extend or improve this project.
 
 \begin{section}{Encoding type hashes into serialized data}
@@ -39,8 +39,6 @@ See \cite{initial}.
 
 \begin{section}{Incremental folds}
 
-\docite{sean on his work}
-
 Catamorphisms, or the more general paramorphisms, can be used to describe
 operations over recursive data structures.  Techniques exist to cache
 intermediate results of these operations as an annotation at the recursive
@@ -48,8 +46,8 @@ positions of the data structure.  This prevents these algorithms form having to
 recompute a new value for the entire data structure when only certain parts of
 the structure change.
 
-These caching operations are called incremental folds and could easily
-projected to the persistent data structures and saved together with
+These caching operations are called incremental folds\cite{incr} and could
+easily projected to the persistent data structures and saved together with
 non-recursive nodes. This would allow users to have very efficient queries over
 long-lived and incrementally changing data structures.
 
