@@ -3,22 +3,15 @@
 
 \chapter*{Abstract}
 
-Algebraic data types (ADTs) are a powerful way to structure data in Haskell
-programs, functions can be used to process values of these ADTs.  When dealing
-with a large collection of data that does not fit into computer memory at once,
-tricks have to be used to make the data persistent on external storage devices.
-There are two important properties that frameworks for data persistence at
-least should have.  First of all it should allow incremental access to parts of
-the data. By not requiring the entire data structure to be read from and
-written to disk at once the tool will scale well to large amounts of data.  The
-second important property is that users of the system should not be bothered
-with the fact that the actual storage is located outside the application
-memory. A system that is truly transparent to the user will better fit the
-functional paradigm and therefore more easily be adapted. These two properties
-are essential for a persistence framework in order to be useful in practice.
-This document proposes a new persistence framework for Haskell that uses purely
-functional data structures to manage long lived data on disk.  It projects both
-the data types and the algorithms working on these data types to a persistent
-storage.  By not using any external database tools the system remains
-lightweight and does not compromise the functional paradigm.
-
+Algebraic datatypes in Haskell are a powerful tool to structure application data.
+Unfortunately, Haskell datatypes can only be used in-memory.
+When information is too large to fit in application memory or has to survive the running time of a single process, the information has to be marshalled to and from a persistent storage.
+The current solutions for persistent storage in Haskell have some drawbacks.
+Either the structure of these storage systems does not fit the algebraic datatypes of Haskell well or the systems only allow to access the persistent storage as a whole.
+In this document we describe a new storage framework for Haskell that uses generic programming to allow the persistent storage of arbitrary functional data structures.
+The system allows incremental access to individual non-recursive nodes in a recursive data structure.
+Incremental access allows the operations on the persistent data structures to run with the same asymptotic running time as their in-memory counterparts.
+The framework uses a generic annotation system to automatically lift operations on recursive data structure to work on a block based storage heap on disk.
+The annotation system helps to keep a strict separation between I/O code and the pure operations on functional data structures.
+The system we introduce enables the use of both general purpose and domain specific functional data structures as a persistent storage for application data.
+A clean distinction between the low-level physical storage and the high-level functional data structures makes sure the interface to the user remains purely functional.  
