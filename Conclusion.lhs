@@ -65,6 +65,15 @@ contribution to the list of storage solution for Haskell.
 \chapter*{Acknowledgements}
 \label{chap:acknowledgements}
 
-I would like to thank people.
+First of all I want to thank my supervisor Andres L\"oh for helping me with
+this project.  I want to thank Johan Jeuring, Sean Leather, Jos\'e Pedro
+Magalh\~aes and Martijn van Steenbergen for the interessting discussion at the
+Generic Programming meetings. Many thanks to Chris Eidhof, Erik Hesselink, Tom
+Lokhorst and Sjoerd Visscher for all the suggestions, critical notes, and
+discussions about either my work or all the other totally unrelated functional
+programming topics. Special thanks to Matthijs Swint for motivating me to set
+myself a deadline and actually finishing the project. Thanks to Jurriaan Hage
+for his bi-daily distraction sessions. Last but not least, many thanks to my
+girlfriend Chris-Marije and my family for their love and support.
 
 
