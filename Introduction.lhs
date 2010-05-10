@@ -12,7 +12,7 @@ stores, key/value databases, and many more. All of these tools allow for some
 form of structuring the data. For example, file systems allow for a
 hierarchical view on data using directories and files, relational database
 management systems use a tabular layout in which data can be structured using
--- rows and columns, and key/value stores build up finite mappings. Giving
+rows and columns, and key/value stores build up finite mappings. Giving
 structure to data greatly helps efficiently manipulating data. Unfortunately,
 the data structures used by such systems do not always match the data
 structures used inside the computer program that uses the data. The result of
@@ -43,7 +43,7 @@ explain the limitations of these approaches.
 There are several packages available for Haskell that use connections to
 existing relational database management systems to store values outside of
 application memory. Either using manually written conversions functions or via
-a generically derived conversion, values of arbitrary types will be mapped to
+a generically derived conversion, values of arbitrary types are mapped to
 database rows.  In the related work section \ref{sec:relrdbms} some examples
 can be found of database connectors for Haskell.
 
@@ -93,9 +93,9 @@ well when dealing with very large amount of data.
 
 So there are several ways in Haskell to save the application data on a
 persistent storage like a hard disk. Unfortunately, all of these approaches
-have limitations. In this document we will describe the design and
-implementation a new framework for data persistency in Haskell.  The storage
-framework this document describes has the following properties.
+have limitations. In this document we describe the design and implementation fo
+a new framework for data persistency in Haskell.  The storage framework this
+document describes has the following properties.
 
 \begin{itemize}
 
@@ -112,9 +112,10 @@ interface to the end-users.
 \item \textbf{File based.} The system uses a technique for binary serialization
 to convert Haskell values to a stream of bytes. This stream of bytes is stored
 in a file based storage heap on disk. The file based heap can contain multiple
-blocks of binary data and can grow and shrink on demand.
+blocks of binary data and can grow and shrink on demand. When the program
+terminates the data is still available at disk for any consecutive runs.
 
-\item \textbf{Generality.}
+\item \textbf{Generic.}
 The framework can be used to store values of arbitrary Haskell datatypes. This
 includes container data structures like lists, binary trees, finger trees,
 abstract syntax trees, etc, but it also includes values of simpler types like
@@ -122,7 +123,7 @@ integers, strings, |Maybe|s or values of any other algebraic datatype. Generic
 programming techniques are used to automatically derive code for binary
 serialization and deserialization of Haskell values.
 
-\item \textbf{Incrementality.}
+\item \textbf{Incremental.}
 The storage framework allows incremental access to the persistent data stored
 in the file based heap. Operations on a persistent data set -- like updates,
 insertions and queries -- can be performed without reading the entire data
@@ -136,27 +137,31 @@ disk access is significantly slower compared to memory access. Incremental
 access is an important feature for writing programs that scale well to large
 data sets.
 
-\item \textbf{Three layer.}
+\item \textbf{Layered.}
 The framework can conceptually be separated in three different layers of
 functionality.
   \begin{enumerate}
+
   \item The lowest layer is the \emph{persistence layer} that allows values of
   Haskell datatypes to be stored on disk. The persistence layer makes sure
   recursive datatypes are sliced into pieces and stored in separate blocks on
   the storage heap.
+
   \item The second layer is the \emph{data layer} and contains the persistent
   versions of the recursive container data structures. The recursive data
   structures are written in a special way that makes sure the \emph{persistent
-  layer} is able to lift them to the storage layer.
+  layer} is able to lift them to the storage layer automatically.
+
   \item The third and top-most layer is the \emph{user layer}. This layer is
   the interface to the developer of the application requiring a persistent data
   store. The developer can choose a data structure that fits her needs and use
   high level operations to manipulate the data.
+
   \end{enumerate}
 
-\item \textbf{Transparency.}
+\item \textbf{Transparent.}
 The framework is transparent to both the developer and the designer of the data
-structures that will be made persistent. 
+structures that are made persistent. 
 
 When writing a persistent version of a data structure, no knowledge of the
 inner workings of the persistence framework is needed. The recursive datatypes
@@ -206,10 +211,10 @@ correspond to the library exactly.
 
 The advantage of relational databases is the generality when it comes to
 storing data. Using (or misusing) the generic table based layout of an RDMS
-will almost always ensure that your application data can be saved in
-\emph{some} structure.  Unfortunately it is not always easy to perform fast
-queries over data when the structure of information in the table based layout
-does not fit the algebraic layout of the original algebraic datatype well.
+almost always ensures that your application data can be saved in \emph{some}
+structure.  Unfortunately it is not always easy to perform fast queries over
+data when the structure of information in the table based layout does not fit
+the algebraic layout of the original algebraic datatype well.
 
 To illustrate this disadvantage, consider an example application that stores a
 mapping from two-dimensional geometrical coordinates to business relations.
@@ -240,11 +245,11 @@ accompanying storage libraries.
 The framework described in this document solves the problem of persistent
 domain specific data structures by separating the concerns of persistent
 storage and that specialized data structures. By projecting the internal
-structure of container datatypes to an isomorphic variant on disk specialized
-algorithms will still be applicable with the same time and space complexities.
-The framework enables developers of container libraries to focus on the
-internal structure and allows for writing efficient algorithms without worrying
-about the internals of the storage layer.
+structure of container datatypes to an isomorphic variant on disk, specialized
+algorithms are still applicable with the same time and space complexities.  The
+framework enables developers of container libraries to focus on the internal
+structure and allows for writing efficient algorithms without worrying about
+the internals of the storage layer.
 
 \end{section}
 
@@ -256,11 +261,11 @@ In chapter \ref{chap:fixpoints} we explain how to use an fixed point combinator
 to obtain control over the recursive positions of recursive data structures. By
 parametrizing recursive datatypes with a type parameter that is used at the
 recursive positions, the users of the datatype are allowed to change the values
-stored at these positions. The fixed point takes a datatype with a type
-parameter for the recursion and instantiates this parameter with its own fixed
-point, making the datatype truly recursive again. By replacing the regular
-fixed point combinator with an annotated fixed point combinator we are able to
-store additional information in the recursive positions of a recursive
+stored at these positions. The fixed point combinator takes a datatype with a
+type parameter for the recursion and instantiates this parameter with its own
+fixed point, making the datatype truly recursive again. By replacing the
+regular fixed point combinator with an annotated fixed point combinator, we are
+able to store additional information in the recursive positions of a recursive
 datatype. As an example, in section \ref{sec:fixann} we show how to use an
 annotated fixed point combinator to build an annotated binary tree datatype. We
 show that using an identity annotation at the recursive positions gives us back
@@ -277,7 +282,7 @@ operations working on the datatypes need to wrap and unwrap the annotations
 every time a recursive positions is touched. In chapter \ref{chap:morphisms} we
 solve this problem by writing operations that abstract away from recursion. We
 show how to write operations on recursive data structures as algebras and
-coalgebras, the (co)algebras can be interpreted generic traversal functions.
+coalgebras. The (co)algebras can be interpreted by generic traversal functions.
 In section \ref{sec:para} and \ref{sec:apomorphisms} we both define an
 annotated paramorphism and apomorphism function. The paramorphism uses an
 algebra to destruct an annotated data structure to some result value, thereby
@@ -287,21 +292,24 @@ structure from some seed value, thereby using the annotation type classes to
 wrap the recursive values in new annotations. Paramorphisms and apomorphisms
 can be used to respectively destruct and construct recursive data structures.
 In section \ref{sec:endopara} and \ref{sec:endoapo} we define both annotated
-endomorphic paramorphisms and endomorphic apomorphisms that allow us to
-modify existing recursive data structures. In section \ref{sec:paraapp} we show
-how to compose multiple algebras into one using the Haskell |Applicative| type
-class. Composing algebras can simply building algebraic operations. The
-traversals described in this chapter all work on annotated structures, when the
-wrap and unwrap functions associated with the annotation requires a strict
-computational context the running time of the operations can be negatively
-influenced. In section \ref{sec:laziness} we solve the strictness problem by
-enforcing the traversals to be as lazy as possible.
+endomorphic paramorphisms and endomorphic apomorphisms that allow us to modify
+existing recursive data structures.
 
-In chapter \ref{chap:heap} we show the file based heap that forms the low level
-storage system of the framework. Section \ref{sec:heaplayout} describes the
-block based layout of the heap and how we can use offset pointers to refer to
-blocks of data. We describe the basic operations of the heap: reading data from
-a block, writing data to a block, allocation a new block, and freeing an
+In section \ref{sec:paraapp} we show how to compose multiple algebras into one
+using the Haskell |Applicative| type class.  Composing algebras can simplify
+building algebraic operations.
+
+The traversals described in this chapter all work on annotated structures. When
+the wrap and unwrap functions associated with the annotation requires a strict
+computational context, like |IO|, the running time of the operations can be
+negatively influenced. In section \ref{sec:laziness} we solve the strictness
+problem by enforcing the traversals to be as lazy as possible.
+
+In chapter \ref{chap:heap} we introduce a file based heap that forms the low
+level storage layer of the framework. Section \ref{sec:heaplayout} describes
+the block based layout of the heap and how we can use offset pointers to refer
+to blocks of data. We describe the basic operations of the heap: reading data
+from a block, writing data to a block, allocation a new block, and freeing an
 existing block. In section \ref{sec:rootnode} we build three functions that
 help use to perform heap operations that require a fixed root node as a
 starting point. In \ref{sec:runheap} we show how to run heap operations against
