@@ -338,9 +338,8 @@ Tree_f|, and uses the pointer to read the actual node from disk. This node will
 be passed to the endomorphic coalgebra which produces either a new seed or a
 new sub structure. When the coalgebra finishes the |AnnIO| will make sure the
 result is stored to disk again. The usage of the |AnnIO| function forces every
-node that gets touched to be fetched (and also removed) from and saved to
-disk\footnote{See section \todo{TODO} for a possible optimization.}. This
-behaviour is very similar to what happens in regular in-memory update
+node that gets touched to be fetched (and also removed) from and saved to disk.
+This behaviour is very similar to what happens in regular in-memory update
 functions: inserting a node into a binary tree requires a \emph{copy} of the
 entire path up to the place where the new nodes gets inserted. All sub-trees
 that are not needed for the inserting will not be touched. This makes the

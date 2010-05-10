@@ -48,7 +48,7 @@ read-write context |HeapW| and the allocation context |HeapA|. The top context
 is the |HeapW|, which internally uses the |HeapA| context, which on its turn
 uses the |HeapR| on the inside. This separation of context is introduced to be
 able to differentiate between the possible types of actions.  As we will see in
-the next chapter \todo{xxx} this separation is essential for gaining control
+the chapter \ref{chap:storage} this separation is essential for gaining control
 over the laziness of our storage framework.
 
 In this chapter we introduce seven basic heap operations, some of which we

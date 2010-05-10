@@ -709,8 +709,6 @@ effecful context |m|.
 > hparaMA psi phi = return . psi phi <=<
 >   ptraverse (\p x -> (| (x :*:) (hparaMA psi p x) |)) phi <=< hannO phi
 
-\todo{not laziness, not applicative, future work}
-
 \section{Sum, product, concat, and contains algebras}
 
 To illustrate the usage of the higher order paramorphism we will define four

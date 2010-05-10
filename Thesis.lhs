@@ -6,18 +6,16 @@
 % \setkomafont{sectioning}{\bfseries}
 
 
-%\usepackage[disable]{todonotes}
-%\usepackage{a4wide}
 \usepackage[pdftex]{graphicx}
 \usepackage{xcolor}
 \usepackage{amsmath}
 \usepackage{url}
-\usepackage{draft}
 \usepackage{fancyhdr}
 \usepackage{pxfonts}
 \usepackage[authoryear,sort,square]{natbib}
 \definecolor{linkblue}{RGB}{6,55,206}
 \usepackage[colorlinks=true,citecolor=linkblue,linkcolor=linkblue]{hyperref} %m must be last \usepackage
+\usepackage{todonotes}
 
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{0.1in} % \baselineskip}

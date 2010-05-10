@@ -385,9 +385,9 @@ will be unannotated. When we assume the invariant that all sub trees of an
 annotated node are fully annotated, |fullyIn| makes sure the entire structure
 will be annotated.
 
-In the chapter \todo{XXX} about generic annotated traversals we will see that
-the |fullyIn| function will simplify writing algebras for both endomorphic
-paramorphisms and endomorphic apomorphisms.
+In the chapter \ref{chap:morphisms} about generic annotated traversals we will
+see that the |fullyIn| function will simplify writing algebras for both
+endomorphic paramorphisms and endomorphic apomorphisms.
 
 \end{section}
 
@@ -454,7 +454,7 @@ constructor by surrounding recursive structures with triangular brackets.
 In the next chapters we will see how we can use the |Debug| annotation to print
 out debug traces of generic traversals over annotated structures. Printing out
 debug traces is just one example of what you can do with the annotation type
-classes. In section \todo{ref to section} we will show how to use the same
+classes. In chapter \ref{chap:storage} we will show how to use the same
 annotation type classes to store and retrieve annotated structures to and from
 disk.
 
