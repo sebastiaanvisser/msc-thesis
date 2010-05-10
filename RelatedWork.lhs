@@ -64,16 +64,25 @@ write the marshalling code manually.
 \end{section}
 
 \begin{section}{Happstack State}
-\label{sec:relkeyval}
 
-\todo{TODO}
+The \emph{Happstack}\cite{happsstate} project aims to write a Haskell
+application server stack, including a web server and a state framework. The
+state framework, called \emph{Happstack-State} is a generic storage framework
+for Haskell. It uses a record-based system in which users can add, delete,
+modify and retrieve records of data. This framework uses meta-programming using
+Template Haskell to automatically derive storage operations for custom
+datatypes.
 
 \end{section}
 
 \begin{section}{Key/Value stores}
 \label{sec:relkeyval}
 
-\todo{TODO}
+There are several packages available for Haskell that allow persistent storage
+of key/value mappings. Examples of such packages are
+\emph{io-storage}\cite{iostorage}, \emph{berkeleydb}\cite{berkeleydb},
+\emph{BerkeleyDB}\cite{BerkeleyDB1} and
+\emph{persistent-map}\cite{persistentmap}.
 
 \end{section}
 
@@ -122,8 +131,8 @@ Morphisms like catamorphisms and paramorphisms can be used to destruct a
 datatype into a new value and can be seen as consumer functions.  Anamorphisms
 can be used to create values of a datatype and can be used to create producer
 functions. By combining or restricting these morphisms most if not
-all\cite{paramorphisms} algorithms working on functional data structures can be
-written without explicit recursion.
+all\cite{paras} algorithms working on functional data structures can be written
+without explicit recursion.
 
 This is a very well explored and common trick in functional programming that is
 extensively used in this project. By writing algebras for datatype specific

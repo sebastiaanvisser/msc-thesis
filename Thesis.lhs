@@ -3,8 +3,6 @@
 %\documentclass[a4wide,10pt]{article}
 %\documentclass[11pt,twoside,a4paper,openright,DIV9,BCOR=1.5cm]{scrreprt}
 \documentclass[11pt,twoside,a4paper,openright]{report}
-% \setkomafont{sectioning}{\bfseries}
-
 
 \usepackage[pdftex]{graphicx}
 \usepackage{xcolor}
@@ -14,7 +12,7 @@
 \usepackage{pxfonts}
 \usepackage[authoryear,sort,square]{natbib}
 \definecolor{linkblue}{RGB}{6,55,206}
-\usepackage[colorlinks=true,citecolor=linkblue,linkcolor=linkblue]{hyperref} %m must be last \usepackage
+\usepackage[colorlinks=true,citecolor=linkblue,linkcolor=linkblue]{hyperref}
 \usepackage{todonotes}
 
 \setlength{\parindent}{0pt}
@@ -65,3 +63,4 @@
   \bibliography{thesis}
 
 \end{document}
+

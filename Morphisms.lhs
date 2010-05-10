@@ -58,7 +58,7 @@ in a strict context on the running time of the operations.
 \begin{section}{Paramorphisms}
 \label{sec:para}
 
-We start out by implementing a \emph{paramorphism}\cite{Paramorphisms}, a
+We start out by implementing a \emph{paramorphism}\cite{paras}, a
 bottom up traversal that can fold a recursive structure into a single value.  A
 paramorphism is a generalization of the more commonly known
 \emph{catamorphism}\cite{bananas}. The standard Haskell function |foldr|, which
