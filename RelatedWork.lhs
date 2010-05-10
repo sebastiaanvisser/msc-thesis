@@ -181,6 +181,7 @@ conventional computer memory, but located on disk.
 \end{section}
 
 \begin{section}{Software Transactional Memory}
+\label{sec:tcache}
 
 Software Transactional Memory, STM, is a technique that is used to allow
 transactional access to shared memory. In their paper \emph{Composable Memory
