@@ -111,7 +111,7 @@ monadic context |m| and performs a traversal over some annotated structure
 From now on the $(_{\alpha}^m)$ postfix is used to indicate that a
 function requires a context and works on annotated structures.
 
-The implementation of this generic paramorphism might seem a bit cryptic at
+The implementation of this generic paramorphism can seem a bit cryptic at
 first sight, this is due to its generic behaviour. Quickly summarized this
 function performs a bottom-up traversal over a recursive structure like our
 binary tree. As input it receives a fully annotated structure and it uses the
@@ -348,7 +348,7 @@ wrap and unwrap annotations. The paramorphism starts out with querying the
 value from the annotation before applying the algebra. The apomorphism produces
 an annotation returned by the coalgebra. The algebras as defined in the
 previous sections are general in the sense that they can return a value of
-any result type |r|. Some paramorphisms might choose to produce a value with a
+any result type |r|. Some paramorphisms can choose to produce a value with a
 type equal to the input type. 
 
 We create two new type synonyms that describe \emph{endomorphic paramorphisms}.
@@ -883,7 +883,7 @@ characters of the string are inspected. This behaviour can have a strange
 outcome in practice, evaluation of pure code can have real world side effects.
 The same is the case for our lazy traversals, the debug annotations only kicks
 in when the result is inspected. While this behaviour is probably safe for the
-debug annotation this might not be the case in general. There is a really good
+debug annotation this is not the case in general. There is a really good
 reason the |unsafeInterleaveIO| function starts with the word `unsafe', there
 are a lot of problems associated with lazy IO\cite{lazyioharmful}.
 

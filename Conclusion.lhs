@@ -50,7 +50,7 @@ Although generic programming for higher order datatypes has been well covered
 in literature is not always easy. Especially the combination of higher order
 algebras with annotated recursive operations is far more involved than working
 with the regular recursive datatypes. The implementations of higher order
-operations might require additional boilerplate code for proof terms and data
+operations can require additional boilerplate code for proof terms and data
 constructors for type level functions, fuzzing the core idea of the functions.
 Although the implementation of the data structures becomes much harder, the
 interface to the end-user does not change accordingly. We believe the benefits

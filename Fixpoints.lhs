@@ -253,7 +253,7 @@ recursive positions of a recursive structure. To illustrate this using
 something more interesting than the identity annotation we annotate a binary
 tree with local modification times. In the following example every
 sub-structure is surrounded with an annotation that stores a Haskell
-|LocalTime|, which might be filled in with the last time a sub-structure was
+|LocalTime|, which can be filled in with the last time a sub-structure was
 modified.
 
 > data TimeAnn f a = TA LocalTime (f a)
@@ -280,7 +280,7 @@ function a producer function and a |Out| function a query function.
 
 As the type signature shows, a producer takes a node with fully annotated
 sub-structures and introduces a new annotation for this node making it a fully
-annotated structure again.  The function might run in some -- possibly monadic
+annotated structure again.  The function can run in some -- possibly monadic
 -- context |m| when this is required for the annotation.  The type signature
 for queries shows that it takes a fully annotated structure and uses
 the annotation to give back an unannotated node with the sub-structures still

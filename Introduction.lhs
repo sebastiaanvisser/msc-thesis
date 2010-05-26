@@ -143,7 +143,7 @@ access is an important feature for writing programs that scale well to large
 data sets.
 
 In order to slice up recursive datatypes the operations on these types have to abstract away from recursion.
-Abstracting away from recursion when writing operations might be a bit more difficult than writing plain recursive operations.
+Abstracting away from recursion when writing operations can be more difficult than writing plain recursive operations.
 
 \item \textbf{Mutable.}
 The persistent data structures on disk are used as mutable data. This means
