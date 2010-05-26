@@ -126,7 +126,7 @@ context.
 Sometimes, when working inside the read-write heap context |HeapW|, we also
 want to be able to perform read-only actions, so we also give an |AnnO|
 instance for the |Pointer| type inside the |HeapW| context. The implementation
-is very similar to the one for the read-only |HeapR| context, except we no lift
+is similar to the one for the read-only |HeapR| context, except we no lift
 teh |read| operation to the read-write context.
 
 > instance  (Traversable f, Binary (f (FixA P f)))
@@ -261,7 +261,7 @@ False
 So we have specialized some generic operations working on annotated binary
 trees to work for the |P| annotation in the heap contexts and were able to run
 the operations with the |run| function from our storage heap. Although the
-example invocations look very simple and produce the expected result, in the
+example invocations look simple and produce the expected result, in the
 background a lot is going on. Let us try to explain what happens when running
 these operations.
 
@@ -336,10 +336,10 @@ function uses the |annIO| modifier function.
 So the traversal gets as input an annotated structure, in our case a |FixA P
 Tree_f|, and uses the pointer to read the actual node from disk. This node is
 passed to the endomorphic coalgebra which produces either a new seed or a
-new sub structure. When the coalgebra finishes the |AnnIO| makes sure the
+new sub structure. When the coalgebra finishes the |AnnIO| ensures the
 result is stored to disk again. The usage of the |AnnIO| function forces every
 node that gets touched to be fetched (and also removed) from and saved to disk.
-This behaviour is very similar to what happens in regular in-memory update
+This behaviour is similar to what happens in regular in-memory update
 functions: inserting a node into a binary tree requires a \emph{copy} of the
 entire path up to the place where the new nodes gets inserted. All sub-trees
 that are not needed for the inserting are not touched. This makes the

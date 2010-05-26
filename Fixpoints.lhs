@@ -126,7 +126,7 @@ the sub-structures of the binary tree.
 Besides |Functor| Haskell has two additional type classes that help with
 generic traversals over container datatypes. These are the |Foldable| and
 |Traversable| type classes\footnote{Note that these type class instances are
-very simple and mechanically derivable. The GHC Haskell compiler version 6.12.1
+simple and mechanically derivable. The GHC Haskell compiler version 6.12.1
 and above is able to derive the instances for |Functor|, |Foldable| and
 |Traversable| for you automatically.}. The |Foldable| type class allows us to
 reduce an entire structure into a single value using some |Monoid| operation. 
@@ -147,14 +147,14 @@ applicative programming.
 >   traverse _  Leaf            = (| Leaf |)
 >   traverse f  (Branch v l r)  = (| (Branch v) (f l) (f r) |)
 
-Having instances of the |Traversable| class around is very useful, because it
+Having instances of the |Traversable| class around is useful, because it
 allows us to use the generic version of the Prelude's |mapM| function. This
 function enables us to |fmap| a monadic action over a structure and transpose
 the result.
 
 > mapM1 :: (Traversable f, AM m) => (a -> m b) -> f a -> m (f b)
 
-The |mapM1| function can be used to perform a very lightweight form of generic
+The |mapM1| function can be used to perform a lightweight form of generic
 programming. The function allows us to apply computations against the recursive
 values of any data structure that has a |Traversable| instance.
 
@@ -200,7 +200,7 @@ original container type |f| which has kind |* -> *|. Because the annotation
 itself applied to the container type |f| needs to have the same kind as |f|,
 the variable |a| has kind |(* -> *) -> (* -> *)|.
 
-It is now very easy to define a fully annotated binary tree by applying the
+It is now easy to define a fully annotated binary tree by applying the
 annotated fixed point combinator to the tree functor.
 
 > type TreeA a = FixA a Tree_f
@@ -382,9 +382,9 @@ that is already annotated it stops.
 > fullyIn (InA a)  = return (InA a)
 
 When we assume the invariant that all the sub trees of an unannotated node do
-not contain any annotations, |fullOut| makes sure the entire structure 
+not contain any annotations, |fullOut| ensures the entire structure 
 is unannotated. When we assume the invariant that all sub trees of an
-annotated node are fully annotated, |fullyIn| makes sure the entire structure
+annotated node are fully annotated, |fullyIn| ensures the entire structure
 is annotated.
 
 In the chapter \ref{chap:morphisms} about generic annotated traversals we

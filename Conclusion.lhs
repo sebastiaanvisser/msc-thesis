@@ -13,7 +13,7 @@ data structures. We have seen that using an identity annotation yields a data
 structures that runs in-memory. Switching the identity annotation with a
 pointer annotation yields a data structure that runs on a storage heap on disk. 
 
-Haskell's powerful type system has allowed us to create a very clean separation
+Haskell's powerful type system has allowed us to create a clean separation
 between the storage layer and the persistent data structures. By writing
 operations on recursive data structures as algebras that abstract away from
 recursion, we were able to plug-in custom actions. This technique allows us to
@@ -27,11 +27,11 @@ literature, writing algebraic computations in practice can be hard. It requires
 a slight paradigm shift to abstract away from recursion, but we think this
 abstraction is worth the benefit.
 
-The final interface to the user is very natural and comes close to what one
+The final interface to the user is natural and comes close to what one
 might expect from working with in-memory data structures. The only drawback is
 that all operations are lifted to work in a monadic context. This context
 forces us to write composition of operations using monadic combinators instead
-of regular function composition. This limitation is very common when
+of regular function composition. This limitation is common when
 generically lifting functionality to different computational contexts in
 Haskell. 
 

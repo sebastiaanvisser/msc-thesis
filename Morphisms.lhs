@@ -30,7 +30,7 @@ In the previous chapter we have seen how to associate functionality with
 annotations. In this chapter we show how to write operations over annotated
 recursive data structures. We make sure that all operations we write are
 annotation unaware, which means we use an existential annotation variable
-in the type signature of our operations. This existential makes sure the
+in the type signature of our operations. This existential ensures the
 operations can be used in combination with all possible annotations.
 
 Writing annotation-generic operations can only be done when the functions
@@ -112,7 +112,7 @@ From now on the $(_{\alpha}^m)$ postfix is used to indicate that a
 function requires a context and works on annotated structures.
 
 The implementation of this generic paramorphism might seem a bit cryptic at
-first sight, this is due to its very generic behaviour. Quickly summarized this
+first sight, this is due to its generic behaviour. Quickly summarized this
 function performs a bottom-up traversal over a recursive structure like our
 binary tree. As input it receives a fully annotated structure and it uses the
 |annO| function to unwrap a single node out of the annotation.  The
@@ -148,7 +148,7 @@ annI: Branch 3 <D Leaf> <D Leaf>
 \end{verbatim}
 \end{small}
 
-Now we can apply the |containsMA| function to the resulting binary tree and
+Now we can apply the |containsMA| function to the resulting binary tree\footnote{The \texttt{it} keyword in GHCi refers back to the result of the previous command.} and
 check for the existence of a |Branch| with value |3|. While running this
 function the debug annotation prints out a trace of all sub-structures being
 queried.
@@ -347,7 +347,7 @@ enough information to know when to use the |annO| or |annI| functions to
 wrap and unwrap annotations. The paramorphism starts out with querying the
 value from the annotation before applying the algebra. The apomorphism produces
 an annotation returned by the coalgebra. The algebras as defined in the
-previous sections are very general in the sense that they can return a value of
+previous sections are general in the sense that they can return a value of
 any result type |r|. Some paramorphisms might choose to produce a value with a
 type equal to the input type. 
 
@@ -473,7 +473,7 @@ apomorphisms take coalgberas.
 
 The |coendoMA| morphism applies the coalgbera |phi| to the annotated input
 structure throught the use of the |annIO| function from the |AnnIO| type class.
-The |annIO| function makes sure the input structure is queried from the root
+The |annIO| function ensures the input structure is queried from the root
 annotation and are supplied a new annotation after applying the specified
 function. After applying the coalgbera |phi| a case analysis is done on
 the result. Either a new seed is produced or an existing structure is reused,
@@ -695,7 +695,7 @@ which can easily be made in terms of the |Applicative| type class.
 The |Applicative| instance allows us to easily compose multiple algebras into
 one, this grouped operation can now be applied to an input structure in one
 traversal. This composability can help us to create more complicated algebras
-without creating very big tuples representing all the components at once.
+without creating big tuples representing all the components at once.
 
 Because the algebra type |Psi| has become more complicated the |paraMA| should
 be adapted to be able to produce both |Alg| and |Prj| constructors.
@@ -718,7 +718,7 @@ be adapted to be able to produce both |Alg| and |Prj| constructors.
 > paraMA (Alg  psi) = return . psi <=< mapM (g (paraMA (Alg psi))) <=< annO
 >   where g f c = fmap ((,) c) (f c)
 
-The implementation of this projection aware |paraMA| is not very different from
+The implementation of this projection aware |paraMA| is not different from
 our original |paraMA|. The only difference is that this new version unpacks the
 projection and applies the inner algebra. After applying only the result value,
 the third component of the grouped triple, is returned. The endomorphic

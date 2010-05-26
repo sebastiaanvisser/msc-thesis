@@ -30,7 +30,7 @@ storage structure that allows us to freely read and write data to disk.
 
 In this chapter we introduce a storage heap that uses generic binary
 serialization for values of arbitrary Haskell datatypes on disk. The structure
-of this heap is very similar to the structure of in-memory heaps used by most
+of this heap is similar to the structure of in-memory heaps used by most
 programming language implementations to store pointer data. The heap allows the
 basic operations of allocating new data blocks, freeing existing data blocks,
 reading from and writing to data blocks. The current implementation of the heap
@@ -144,7 +144,7 @@ Right 'a'
 \end{verbatim}
 
 From the example |Binary| instance for the |Either a b| type we can see that
-|Binary| instances are built very systematically. Using the generic programming
+|Binary| instances are built systematically. Using the generic programming
 library |Regular| we have created two generic functions to automatically derive
 the |get| and |put| methods for arbitrary Haskell types.\footnote{The code for
 this package can be found at:\\
@@ -305,7 +305,7 @@ update ptr bs =
 
 \end{spec}
 
-This update function is very useful but unsafe, when the payload of the input
+This update function is useful but unsafe, when the payload of the input
 block is not large enough to hold the string of bytes this function cannot
 write the value to disk. When there is not enough data available in the block
 the function throws an exception.
@@ -373,7 +373,7 @@ pointer to the newly created structure is stored at the null block again.
 > modify c = liftR (read (Ptr 0)) >>= c >>= update (Ptr 0)
 
 These functions are rather useless when manually storing blocks of data in the
-storage heap, but become very useful when the heap is used to store true data
+storage heap, but become useful when the heap is used to store true data
 structures. We see this in action in section \ref{sec:persistenttree}.
 
 \section{Running the heap operations}
@@ -429,7 +429,7 @@ invoke this mini-program several times consecutively. Each time the function
 runs, a new block is left on the heap containing the value \texttt{"Second
 Block"}.
 
-In this section we have described a very basic file based heap structure with a
+In this section we have described a basic file based heap structure with a
 simple interface that allows us to allocate and write new blocks of
 information, to read from existing blocks of information and to free blocks
 that are no longer of any use. The heap manages allocation and reuse of blocks

@@ -38,7 +38,7 @@ parts of the structure change.
 Operations caching intermediate results are called incremental
 folds\cite{incr}. Incremental folds can easily be projected to the persistent
 data structures from our framework and saved together with non-recursive nodes.
-This would allow users to have very efficient queries over long-lived and
+This would allow users to have efficient queries over long-lived and
 incrementally changing data structures.
 
 \end{section}
@@ -48,7 +48,7 @@ incrementally changing data structures.
 The attribute grammar system for Haskell\cite{ag} can be used as a DSL to
 describe algebras for catamorphisms. The current system produces an entire
 application that creates the datatypes, produces the catamorphisms and run the
-algebras using these catamorphisms. It would be very useful if could merely
+algebras using these catamorphisms. It would be useful if could merely
 abstract the algebras from the system and use these to write queries over the
 persistent data structures.
 

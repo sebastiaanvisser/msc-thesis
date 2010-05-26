@@ -38,7 +38,7 @@ scalable.
 
 To improve type safety of their framework the Clean developers include a type
 hash inside their chunks. When reading data back in this type is checked for
-validity. This is a very interesting technique that might also be used for
+validity. This is a interesting technique that might also be used for
 improving the type safety of our Haskell framework.
 
 \end{section}
@@ -134,7 +134,7 @@ functions. By combining or restricting these morphisms most if not
 all\cite{paras} algorithms working on functional data structures can be written
 without explicit recursion.
 
-This is a very well explored and common trick in functional programming that is
+This is a well explored and common trick in functional programming that is
 extensively used in this project. By writing algebras for datatype specific
 folds, the container data remain open for annotation.
 

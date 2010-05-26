@@ -146,7 +146,7 @@ written down in a slightly different encoding.
 
 We start at the same place as we did for the framework for regular recursive
 datatypes: we introduce an annotated fixed point combinator. The higher order
-fixed point combinator is very similar to the regular fixed combinator although
+fixed point combinator is similar to the regular fixed combinator although
 it is parametrized with an additional type index called |ix|. The |ix| is used
 as an additional type variable to the container structure |f|, either directly
 or indirectly through the annotation type |a|. The higher order annotated fixed
@@ -170,7 +170,7 @@ data FixA a f
   |  InF  { outf  ::    f (FixA a f) }
 \end{spec}
 
-At first sight, this higher order version looks very similar to the regular
+At first sight, this higher order version looks similar to the regular
 fixed combinator, the only obvious addition is the index parameter |ix|. But
 because of to this index the kinds of the other type variables become more
 complicated. Assuming a kind |*| for |ix|, the type kind of variable |f|
@@ -203,8 +203,8 @@ types in our system. We start by defining the indexed identity annotation.
 
 As the type shows, the identity annotation also takes the additional type index
 |ix| and uses this to parametrize the indexed functor |f|. Although this
-annotation is very similar to the regular identity annotation defined in
-section \ref{sec:fixann}, it is very clear why we cannot reuse the original type.  
+annotation is similar to the regular identity annotation defined in
+section \ref{sec:fixann}, it is clear why we cannot reuse the original type: all the kinds have changed.
 
 Now we can create a annotation free fixed point combinator again by
 parametrizing the annotated fixed point with the identity annotation.
@@ -217,7 +217,7 @@ parametrizing the annotated fixed point with the identity annotation.
 To illustrate the usage of the higher order fixed point combinator we now
 model a finger tree data type as a indexed GADT. The finger tree is a purely
 functional data structure that can be used to model an abstract sequence with
-very interesting runtime behaviour. Hinze and Paterson\cite{fingertree} show
+interesting runtime behaviour. Hinze and Paterson\cite{fingertree} show
 how to implement a finger tree in Haskell using a nested datatype. The
 datatypes the authors describe looks more or less\footnote{In their paper Hinze
 and Paterson use a slightly less constraint type in which they encode the digit
@@ -440,7 +440,7 @@ types and proof values with a postfix $\phi$.
 
 This proof type can be used to show that for every natural number there is a
 \emph{spine}, \emph{digit} and \emph{node} index for the successor of that
-natural number.  Note that the structure of the |TreePhi| proof indices is very
+natural number.  Note that the structure of the |TreePhi| proof indices is
 similar to the structure of the finger tree indices.  For this proof object we
 also need a natural number proof.
 
@@ -662,7 +662,7 @@ annotate or fully strip all annotations from the top of a tree.
 > hfullyOut phi (HInA f)  = hannO phi (HInA f) >>= fmap HInF . ptraverse hfullyOut phi
 > hfullyOut _   a         = return a 
 
-Although the types have changed, the annotation framework is very similar to the
+Although the types have changed, the annotation framework is similar to the
 one for regular recursive data types. We can now use these type classes to
 implement a paramorphism for indexed datatypes
 
@@ -715,7 +715,7 @@ To illustrate the usage of the higher order paramorphism we define four
 example algebras for our finger tree datatype. All four algebras are defined in
 terms of one generic algebra that converts all value in a finger tree into some
 monoid value and appends these together using the |`mappend`| operator. The
-functionality of this algebra is very similar to the |foldMap| function of the
+functionality of this algebra is similar to the |foldMap| function of the
 |Foldable| type class.
 
 The monoid type we use as the result type is a plain type without any
@@ -957,8 +957,7 @@ indexed datatypes.
 This example shows it is still possible to abstract away from recursion when
 writing more complicated operations over indexed datatypes. Higher order
 algebras can be written that preserve all invariants encoded in a GATD.
-However, we cannot help to conclude that \emph{it is very hard to do so}. Lots
-of helper type level wrappers and functions have to be defined, only to be able
+Lots of helper type level wrappers and functions have to be defined, only to be able
 to express the types. These wrappers force our implementation to include more
 boilerplate code which makes it harder to write.
 
@@ -1118,6 +1117,6 @@ were able to build up persistent higher order structures. When using our
 annotation framework we can use the indices to reason about the position in a
 higher order structure. The results of this chapter allow us to build type safe
 container datatypes that encode structural invariants in their types. Although
-the final result is very pleasing, we must admit that writing operations on
+the final result is pleasing, we must admit that writing operations on
 indexed datatypes in Haskell can be a tedious job. 
 

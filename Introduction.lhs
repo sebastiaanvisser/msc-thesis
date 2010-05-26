@@ -53,16 +53,16 @@ and inefficient. Because the mapping from complex hierarchical Haskell data
 structures to a table based database system is hard, most database connectors
 only support a restricted set of types to be marshalled. This observation leads
 to the conclusion that writing a Haskell data model that describes the
-structure of an existing relational database is often very easy, but
+structure of an existing relational database is often easy, but
 \emph{using a relational database to store the values of the data model of an
 existing Haskell program can be rather hard.}
 
 \item \textbf{Key/value storage.} Similar to the connectors with relational
 databases are the mappers to key/value based storage systems. These systems
 provide an interface similar to the Haskell |Map| datatype, a finite mapping
-from keys to values. This interface can be very useful when managing a large
+from keys to values. This interface can be useful when managing a large
 amount of records that can be easily identified by a single key. Lookup of
-records by key can often be done very efficiently. Example of such key/value
+records by key can often be done efficiently. Example of such key/value
 stores can be found in the related work section \ref{sec:relkeyval}.
 
 While key/value stores can be useful, and are often easy to use, they have a
@@ -79,14 +79,14 @@ The Haskell |Show| and |Read| type classes are primitive examples of such a
 tool. These classes are used to print and parse textual representation of
 Haskell values and can be derived automatically by the compiler for most datatypes.
 More advanced tools exist that use binary serialization to apply the same
-technique more space and time efficient. Some of the libraries are very fast
+technique more space and time efficient. Some of the libraries are fast
 and make use the types of values to prevent creating to much administrative
 overhead when saving the binary data.
 
 \emph{The big disadvantage of these libraries is that values can only be
 written and read at once.} Only single values can be serialized to a textual or binary form. These libraries do not add any structure to the data, no partial structures can be processed without deserializing the entire structure.
 Due to this property, these techniques do not scale 
-well when dealing with very large amount of data. 
+well when dealing with large amounts of data. 
 
 \end{itemize}
 
@@ -162,13 +162,13 @@ functionality.
   \begin{enumerate}
 
   \item The lowest layer is the \emph{persistence layer} that allows values of
-  Haskell datatypes to be stored on disk. The persistence layer makes sure
+  Haskell datatypes to be stored on disk. The persistence layer ensures
   recursive datatypes are sliced into pieces and stored in separate blocks on
   the storage heap.
 
   \item The second layer is the \emph{data layer} and contains the persistent
   versions of the recursive container data structures. The recursive data
-  structures are written in a special way that makes sure the \emph{persistent
+  structures are written in a special way that guarantees the \emph{persistent
   layer} is able to lift them to the storage layer automatically.
 
   \item The third and top-most layer is the \emph{user layer}. This layer is
@@ -186,7 +186,7 @@ When writing a persistent version of a data structure, no knowledge of the
 inner workings of the persistence framework is needed. The recursive datatypes
 and operations on the datatypes are written in pure Haskell code and are
 agnostic of the persistence layer.
-Only very specific kinds of operations can be lifted to the persistent store: operations that abstract away from recursion. When operations are written as algebras for certain morphisms on recursive datatypes,
+Only specific kinds of operations can be lifted to the persistent store: operations that abstract away from recursion. When operations are written as algebras for certain morphisms on recursive datatypes,
 they cab automatically be lifted to work on the block based
 storage heap instead of working in application memory.
 
@@ -236,30 +236,30 @@ the algebraic layout of the original algebraic datatype well.
 
 To illustrate this disadvantage, consider an example application that stores a
 mapping from two-dimensional geometrical coordinates to business relations.
-Storing such a mapping in a database is very simple and does not take a very
+Storing such a mapping in a database is simple and does not take a 
 complicated structure. The problem arises when you want to perform efficient
 spatial queries over the data, like getting the |n| nearest business relations
 to the city center of Utrecht. Efficient SQL queries that perform such specific
-tasks are hard to write. Because spatial indexing is a very common problem the
+tasks are hard to write. Because spatial indexing is a common problem the
 are many solutions available that are built into existing databases. For
 example all of the Oracle, Microsoft SQL Server, MySQL, and PostgreSQL database
 systems have custom support for custom support for spatial queries. Because the
 internal data structures of these RDBMSs were not optimized for spatial
 queries, support for spatial types have been built as a database extension.
 
-There are several data structures very capable of performing
-such spatial queries very efficiently.  A quadtree is a domain specific data
+There are several data structures capable of performing
+such spatial queries efficiently.  A quadtree is a domain specific data
 structure specialized for efficient indexing of spatial information.  Quadtrees
 are specializations of multidimensional search trees\cite{multitree}.  Elements
 inside a quadtree are saved and indexed based on their geometrical coordinates
-which results in very efficient spatial lookups.  Finding the |k| elements
+which results in efficient spatial lookups.  Finding the |k| elements
 nearest to a specific elements using a quadtree can be done in not more than
 $O(k$ log $n)$ time.  Performing the same task with the same asymptotic
-running time using SQL queries on an table based RDBMS is very difficult and
+running time using SQL queries on an table based RDBMS is difficult and
 this is the reason database developers created built-in support for spatial
 queries.
 
-Storing data is something most databases do very well, performing efficient
+Storing data is something most databases do well, performing efficient
 domain specific queries over a collection of elements is best done
 using specialized data structures.  Storing a large collection of data outside
 application memory and still being able to perform specialized queries over the
