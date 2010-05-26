@@ -48,11 +48,11 @@
 
 \begin{document}
 
-  %include Titlepage.lhs
-  %include Abstract.lhs
-  \tableofcontents
-  %include Introduction.lhs
-%  %include Fixpoints.lhs
+%  %include Titlepage.lhs
+%  %include Abstract.lhs
+%  \tableofcontents
+%  %include Introduction.lhs
+  %include Fixpoints.lhs
 %  %include Morphisms.lhs
 %  %include Heap.lhs
 %  %include Storage.lhs

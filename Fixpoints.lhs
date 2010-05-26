@@ -50,10 +50,10 @@
 In Haskell datatypes can be recursive. Recursive datatypes have one or more
 references back to the original datatype in the fields of their constructors.
 Recursion in datatypes allows for building data structure that store multiple
-elements. Example of recursive data structures are linked lists, binary trees,
-sequences etc. This chapter explains a technique that allows us to store
+elements. Examples of recursive data structures are linked lists, binary trees, and
+sequences. This chapter explains a technique that allows us to store
 annotations inside the recursive positions of recursive datatypes. These
-annotations can be used to associate custom functionality to the construction
+annotations are used to associate custom functionality to the construction
 and destruction of recursive data structures.
 
 % -----------------------------------------------------------------------------
@@ -86,35 +86,36 @@ datatype |Tree_f|, the tree functor.
 > data Tree_f f = Leaf | Branch Int f f
 >   deriving Show
 
-To get back a binary tree that is isomorphic to our original binary tree, in
-that it stores actual sub-trees at the recursive points, we can use an explicit
-fixed point combinator at the type level. This combinator, conventionally
+To get back a binary tree that is isomorphic to our original binary tree,  we can use an explicit
+fixed point combinator at the type level. 
+This combinator, conventionally
 called |Fix_1|, takes a type constructor of kind |* -> *| and parametrizes this
 type with its own fixed point.
 
 > newtype Fix_1 (f :: * -> *) = In_1 { out_1 :: f (Fix_1 f) }
 
 By applying the fixed point combinator to the tree functor we get a back a true
-binary tree again, with real sub-trees at the recursive positions.
+binary tree, with real sub-trees at the recursive positions. The sub-trees are wrapped in an |In| constructor.
 
 > type Tree_2 = Fix_1 Tree_f
 
-We will call datatypes that abstract away from recursion using an additional
+We call datatypes that abstract away from recursion using an additional
 type parameter \emph{open recursive datatypes}.
 
-In figure \ref{fig:binarytree-fix} we see an example of a binary tree that uses
+In figure \ref{fig:binarytreefix} we see an example of a binary tree that uses
 a fixed point combinator at the recursive positions.
 
 \begin{figure}[tp]
-\label{fig:binarytree-fix}
+\label{fig:binarytreefix}
 \begin{center}
 \includegraphics[scale=0.8]{./binarytree-fix.pdf}
 \end{center}
-\caption{An example of a binary tree.}
+\caption{An example of a binary tree written as an open recursive datatype. The
+fixed point combinator is used to tie the knots.}
 \end{figure}
 
 To make it easier to deal with the recursive structure of the binary tree we
-can make the tree functor an instance of Haskell's |Functor| type class. The
+can make the |TreeF| type an instance of Haskell's |Functor| type class. We now call |TreeF| the \emph{tree functor}. The
 functorial |fmap| takes the input function and lifts it to be applied against
 the sub-structures of the binary tree.
 
@@ -136,7 +137,7 @@ reduce an entire structure into a single value using some |Monoid| operation.
 
 The |Traversable| type class, which requires |Foldable| as its super class,
 allows a generic traversal over a structure while performing an action for each
-element. The actions performed are |Applicative| or sometimes |Monad|ic
+element. The actions performed are |Applicative| or sometimes monadic
 computations. The |Traversable| instance for our binary tree example is a
 straightforward preorder traversal. The actions are written down using idiom
 brackets. \cite{idioms} show how idiom brackets can be used for effecful
@@ -154,7 +155,8 @@ the result.
 > mapM1 :: (Traversable f, AM m) => (a -> m b) -> f a -> m (f b)
 
 The |mapM1| function can be used to perform a very lightweight form of generic
-programming.
+programming. The function allows us to apply computations against the recursive
+values of any data structure that has a |Traversable| instance.
 
 %if False
 
@@ -171,8 +173,8 @@ programming.
 
 In the previous section we worked out some basic building blocks that can be
 useful when working with container datatypes which are explicitly parametrized
-with the recursive structures.  But why would it be useful to abstract away
-from recursion in the first place? This section will show how we can store
+with the recursive structures.  But why is it useful to abstract away
+from recursion in the first place? This section shows how we can store
 additional information at the recursive positions of open recursive datatypes
 using an annotated fixed point combinator.
 
@@ -184,7 +186,7 @@ the original |Fix| with an annotated structure |(a f)|, yielding the same
 result.  From the usage of the |FixA| it has become clear that expressing the
 more specific fixed point |Fix| in terms of the more general |FixA| helps us to
 more easily reuse functionality later on.} Throughout this document the
-\emph{alpha} postfix will be used to indicate that a type or a function is
+\emph{alpha} postfix is used to indicate that a type or a function is
 annotation aware. The |FixA| combinator has two constructors, one that stores
 an annotation over a structure |f| and one that stores a plain unannotated |f|,
 with possibly annotated sub-structures.
@@ -250,7 +252,7 @@ The annotated fixed points can be used to store arbitrary pieces of data at the
 recursive positions of a recursive structure. To illustrate this using
 something more interesting than the identity annotation we annotate a binary
 tree with local modification times. In the following example every
-sub-structure will be surrounded with an annotation that stores a Haskell
+sub-structure is surrounded with an annotation that stores a Haskell
 |LocalTime|, which might be filled in with the last time a sub-structure was
 modified.
 
@@ -265,9 +267,9 @@ modified.
 \label{sec:annfun}
 
 In the previous section we have shown how to store arbitrary pieces of
-information at the recursive positions of a datatype. In this section we will
+information at the recursive positions of a datatype. In this section we
 show how to associate functionality with these annotations. For every
-annotation type we will describe how to obtain an annotation for a previously
+annotation type we describe how to obtain an annotation for a previously
 unannotated node and how to get a node out of a fully annotated structure.
 We create one type synomym for the process of putting a structure inside an
 annotation an one for getting a structure out of an annotation. We call an |InA|
@@ -276,11 +278,11 @@ function a producer function and a |Out| function a query function.
 > type In   a f m  =  f (  FixA   a f)  -> m (     FixA   a f)
 > type Out  a f m  =       FixA   a f   -> m (f (  FixA   a f))
 
-As the type signature shows, a producer will take a node with fully annotated
+As the type signature shows, a producer takes a node with fully annotated
 sub-structures and introduces a new annotation for this node making it a fully
 annotated structure again.  The function might run in some -- possibly monadic
 -- context |m| when this is required for the annotation.  The type signature
-for queries shows that it will take a fully annotated structure and will use
+for queries shows that it takes a fully annotated structure and uses
 the annotation to give back an unannotated node with the sub-structures still
 fully annotated.  Like the producer, this functions can also run in some
 context |m|.
@@ -356,7 +358,7 @@ to simplify creating annotated binary trees manually.
 \begin{section}{Multi-level annotation}
 
 In the previous chapter we have introduced how to wrap and unwrap a single
-level of a fully annotated structure. In this chapter we will introduce two
+level of a fully annotated structure. In this chapter we introduce two
 additional functions that allows us to perform multi-level wrapping and
 unwrapping of annotations.
 
@@ -381,12 +383,12 @@ that is already annotated it stops.
 
 When we assume the invariant that all the sub trees of an unannotated node do
 not contain any annotations, |fullOut| makes sure the entire structure 
-will be unannotated. When we assume the invariant that all sub trees of an
+is unannotated. When we assume the invariant that all sub trees of an
 annotated node are fully annotated, |fullyIn| makes sure the entire structure
-will be annotated.
+is annotated.
 
 In the chapter \ref{chap:morphisms} about generic annotated traversals we will
-see that the |fullyIn| function will simplify writing algebras for both
+see that the |fullyIn| function simplifies writing algebras for both
 endomorphic paramorphisms and endomorphic apomorphisms.
 
 \end{section}
@@ -398,7 +400,7 @@ endomorphic paramorphisms and endomorphic apomorphisms.
 To more clearly demonstrate the usage of generic traversals over annotated
 structures in the next section we first introduce the |Debug| annotation. In
 contrast to the identity the debug annotation does have associated
-functionality. It will print out a trace of every node that gets |produced| or
+functionality. It prints out a trace of every node that gets |produced| or
 |queried|.
 
 First we define the |Debug| datatype that is just a |newtype| similar to the
