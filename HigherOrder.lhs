@@ -133,7 +133,7 @@ et al.
 Because generalized algebraic datatypes are a generalization of the algebraic
 datatypes in Haskell, all nested datatypes can be written down as a GADT. By
 making the nested behaviour of nested datatypes explicit using a type variable
-in a GADT our framework should also be applicable to other nested datatypes.
+in a GADT our framework can also be applied to other nested datatypes.
 
 Rodriguez et al.\citet{multirec} show how to encode a family of mutually
 recursive datatypes as an indexed GADT in order to perform generic programming
@@ -455,7 +455,7 @@ numbers.
 No we can create a |PFunctor| instance in which we
 can pattern match on both the proof object and the finger tree constructor.
 Because the type signature of |pfmap| parametrizes the proof |TreePhi| and the
-constructor |Tree b| with the same index, the compiler should be able to see
+constructor |Tree b| with the same index, the compiler is able to see
 that there are only a limited set of proof/constructor combinations possible.  
 
 The |PFunctor| instance for finger trees becomes:
@@ -525,7 +525,7 @@ use a proof object $\phi$ to restrict the family of indices.
 
 So if we are provided an effecful computation for the element type |a ix| in
 some |Applicative| -- or possibly monadic -- context |f|, the |ptraverse|
-function should be able to apply this to all elements of the structure
+function is able to apply this to all elements of the structure
 |h a ix|.
  
 \subsection{Finger tree traversable instance} 
@@ -684,7 +684,7 @@ additional type index.
 > data (f :*:  g) ix =  (:*:) { hfst :: f ix, hsnd :: g ix }
 
 Using the product type we can construct a higher order paramorphic algebra.
-Like the algebra for regular datatypes, this algebra should be able to
+Like the algebra for regular datatypes, this algebra is able to
 destruct one node with the recursive results in the recursive positions to a
 some result value. This indexed algebra can use a proof object as a restriction on the
 index family. Both the input structure |f| and the output structure |g| are
@@ -907,7 +907,7 @@ node (sub-tree) is selected to be apppended to a spine node one deeper.  The
 input node always has a depth index one less than depth index of the sub-tree
 being traversed by the algebra, indicated by the |D1| type.  The result tree
 index is unaffected, this makes sense: appending a node to a finger tree
-should return a finger tree with the same index.
+returns a finger tree with the same index.
 
 Both the input and overflow part of the output of the computed functions are
 nodes, because only values can be inserted inserted into a finger tree and only

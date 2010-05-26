@@ -103,12 +103,12 @@ project.
 
 Using generic programming libraries like \emph{EMGM}\cite{emgm},
 \emph{SYB}\cite{syb}, \emph{Regular}\cite{jpm} and
-\emph{MultiRec}\cite{multirec} it should possible to generically derive
+\emph{MultiRec}\cite{multirec} it is possible to generically derive
 instances as well. The advantage is that this can be used as a library and does
 not require external inclusion into your project.  It might be interesting to
 note that using the above mentioned generic programming libraries -- of which
 there are quite a few \cite{compgen}
--- it should be fairly easy to skip the Data.Binary library entirely and write
+-- it is fairly easy to skip the Data.Binary library entirely and write
 the functions from scratch, as described in \cite{printparse} and \cite{clean}.
 
 Because the \emph{Binary} library only allows us to serialize and deserialize

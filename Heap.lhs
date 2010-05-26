@@ -208,8 +208,8 @@ the map stores the total size of the heap.
 >   ,  size  :: Int
 >   }
 
-The |allocate| function takes an integer value indicating the size the new
-block should at least have.  The function returns a |Pointer| to an exact block
+The |allocate| function takes an integer value indicating the size that the new
+block at least must have.  The function returns a |Pointer| to an exact block
 offset. The block pointed to by this offset can now we be used to store
 information. The phantom type of the |Pointer| is still polymorphic because the
 allocation function does not require this information.

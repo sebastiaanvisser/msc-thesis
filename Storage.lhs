@@ -149,7 +149,7 @@ remove the original block from disk.
 In order to store the recursive structures on disk we also need a |Binary|
 instance for the annotated fixed point operator type itself. This is a partial
 instance because we do not allow to store unannotated fixed points. This
-means the structure should first be fully annotated using the |fullyIn|
+means the structure must first be fully annotated using the |fullyIn|
 function.
 
 > instance Binary (a f (FixA a f)) => Binary (FixA a f) where

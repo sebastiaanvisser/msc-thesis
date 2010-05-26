@@ -70,7 +70,7 @@ call this algebra |Psi1|.
 
 > type Psi1 a f r = f (FixA a f :*: r) -> r
 
-This type signature describes an algebra that should be able to produce an
+This type signature describes an algebra that is able to produce a
 value of type |r| from one single node containing both the fully annotated
 sub-structures \emph{and} the recursive results of the paramorphic computation.
 
@@ -384,8 +384,8 @@ single value to all the value positions in a the binary tree.
 > replicateAlg v (  Branch _ (_, l) (_, r))  = InF (Branch v l r)
 
 Because the |replicateAlg| produces a new structure it uses the |Right|
-constructor from the sum-type. The |endoMA| morphism now knows it should
-provide new annotations to the top of the result structure using the |fullyIn|
+constructor from the sum-type. The |endoMA| morphism now knows it must
+provide a new annotations to the top of the result structure using the |fullyIn|
 function.
 
 Combinging the endomorphic paramorphism with the algbera for replication gives
@@ -613,7 +613,7 @@ pure   :: r -> Psi a f r
 (<*>)  :: Psi a f (r -> s) -> Psi c f r -> Psi c f s
 \end{spec}
 
-From the signature for (|<*>|) it is clear that we should use an algebra that
+From the signature for (|<*>|) it is clear that we have to use an algebra that
 produces a function from |a -> b| and an algebra that produces a |a| to build
 an algebra that produces only a |b|. This applicative sequencing function
 throws away any information about |a|. Because both the function and the
@@ -697,7 +697,7 @@ one, this grouped operation can now be applied to an input structure in one
 traversal. This composability can help us to create more complicated algebras
 without creating big tuples representing all the components at once.
 
-Because the algebra type |Psi| has become more complicated the |paraMA| should
+Because the algebra type |Psi| has become more complicated the |paraMA| must
 be adapted to be able to produce both |Alg| and |Prj| constructors.
 
 %if False
@@ -790,8 +790,8 @@ traversal naturally lazy. Some other monads are strict by default requiring all
 computations on the left hand side of the monadic bind to be evaluated strictly
 before the right hand side can be evaluated. Example of these monads are the
 |IO| monad and the |State| monad. The first thing this section shows is how
-we can make paramorphisms more lazy on the inside. Only sub-structures should
-be traversed when the algebra requires them for the computation of the result
+we can make paramorphisms more lazy on the inside. Only sub-structures are
+traversed when the algebra requires them for the computation of the result
 value. The goal is to make the running time of the paramorphic traversals in
 strict contexts equivalent to the running time of pure traversals without any
 context.
