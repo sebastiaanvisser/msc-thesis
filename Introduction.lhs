@@ -33,7 +33,7 @@ Unfortunately, an object-relational mapping is not applicable to functional
 programming languages like Haskell. Haskell uses algebraic datatypes to
 structure data, not objects described by classes.  There are currently several
 ways of making algebraic datatypes in Haskell persistent on an external storage
-devices, but unfortunately all of these methods have some limitations. We will
+devices, but unfortunately all of these methods have some limitations. We 
 now discuss three commonly used techniques for data persistence in Haskell and
 explain the limitations of these approaches.
 
@@ -148,7 +148,7 @@ Abstracting away from recursion when writing operations might be a bit more diff
 \item \textbf{Mutable.}
 The persistent data structures on disk are used as mutable data. This means
 that all update operations modify the existing data structure in-place and no
-sharing will happen. By using a mutable data structure the system acts like a
+sharing happens. By using a mutable data structure the system acts like a
 database which makes the behaviour of the system predictable.
 
 For some applications immutable data structures are a better fit than mutable data structures. Immutability is done quite efficiently by most compilers for functional language by sharing parts of data structures between different uses.

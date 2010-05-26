@@ -48,19 +48,19 @@
 
 \begin{document}
 
-%  %include Titlepage.lhs
-%  %include Abstract.lhs
-%  \tableofcontents
-%  %include Introduction.lhs
+  %include Titlepage.lhs
+  %include Abstract.lhs
+  \tableofcontents
+  %include Introduction.lhs
   %include Fixpoints.lhs
-%  %include Morphisms.lhs
-%  %include Heap.lhs
-%  %include Storage.lhs
-%  %include HigherOrder.lhs
-%  %include RelatedWork.lhs
-%  %include FutureWork.lhs
-%  %include Conclusion.lhs
-%  \bibliography{thesis}
+  %include Morphisms.lhs
+  %include Heap.lhs
+  %include Storage.lhs
+  %include HigherOrder.lhs
+  %include RelatedWork.lhs
+  %include FutureWork.lhs
+  %include Conclusion.lhs
+  \bibliography{thesis}
 
 \end{document}
 

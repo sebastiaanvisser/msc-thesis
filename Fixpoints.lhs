@@ -387,7 +387,7 @@ is unannotated. When we assume the invariant that all sub trees of an
 annotated node are fully annotated, |fullyIn| makes sure the entire structure
 is annotated.
 
-In the chapter \ref{chap:morphisms} about generic annotated traversals we will
+In the chapter \ref{chap:morphisms} about generic annotated traversals we
 see that the |fullyIn| function simplifies writing algebras for both
 endomorphic paramorphisms and endomorphic apomorphisms.
 
@@ -453,10 +453,10 @@ constructor by surrounding recursive structures with triangular brackets.
 > instance Show ((a f) (FixA a f)) => Show (FixA a f) where
 >   show f = "<" ++ show (outa f) ++ ">"
 
-In the next chapters we will see how we can use the |Debug| annotation to print
+In the next chapters we see how we can use the |Debug| annotation to print
 out debug traces of generic traversals over annotated structures. Printing out
 debug traces is just one example of what you can do with the annotation type
-classes. In chapter \ref{chap:storage} we will show how to use the same
+classes. In chapter \ref{chap:storage} we show how to use the same
 annotation type classes to store and retrieve annotated structures to and from
 disk.
 

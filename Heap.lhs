@@ -47,12 +47,12 @@ freeing} new blocks of data. We call the read-only context |HeapR|, the
 read-write context |HeapW| and the allocation context |HeapA|. The top context
 is the |HeapW|, which internally uses the |HeapA| context, which on its turn
 uses the |HeapR| on the inside. This separation of context is introduced to be
-able to differentiate between the possible types of actions.  As we will see in
+able to differentiate between the possible types of actions.  As we see in
 the chapter \ref{chap:storage} this separation is essential for gaining control
 over the laziness of our storage framework.
 
 In this chapter we introduce seven basic heap operations, some of which we
-will be using in the next chapters, some of which will only be used internally.
+use in the next chapters, some of which we only use internally.
 
 \begin{spec}
 allocate  :: Integer                              -> HeapA  (Pointer a)
@@ -65,8 +65,8 @@ write     :: Binary a => a                        -> HeapW  (Pointer a)
 run       :: FilePath                             -> HeapW  a -> IO a
 \end{spec}
 
-The first three operations are potentially unsafe and will only be used as
-building blocks for the four last functions. We will explain these heap
+The first three operations are potentially unsafe and are only used as
+building blocks for the four last functions. We explain these heap
 operations after showing the global layout of the heap file.
 
 \section{Heap layout}
@@ -340,8 +340,8 @@ side with the write function, without first lifting it.
 
 The storage heap layout does not force any structure on the data one might
 save. The only requirement is that the storage is block based, but no relations
-between separate blocks is required. As we will see in chapter
-\ref{chap:storage}, we will eventually reuse the structure of recursive
+between separate blocks is required. As see in chapter
+\ref{chap:storage}, we eventually reuse the structure of recursive
 datatypes to guide the way we make relations between individual blocks.
 
 Every data structure has at least one root node and for every operation we need
@@ -352,7 +352,7 @@ functions for working with the assumption the null block stores a pointer to
 the root of the data structure root.
 
 The |query| function asks a read-only heap action that takes as input the root
-of the data structure. Altough the action will be lifted to the root heap
+of the data structure. Altough the action are lifted to the root heap
 context, the |HeapW|, the action itself is cannot perform write actions.
 
 > query :: (Pointer f -> HeapR c) -> HeapW c
@@ -360,21 +360,21 @@ context, the |HeapW|, the action itself is cannot perform write actions.
 
 The |produce| function is used to create new structures from scratch. After the
 producer function has built up the data structure, a pointer to the structure
-root will be stored in the null block.
+root is stored in the null block.
 
 > produce :: HeapW (Pointer f) -> HeapW ()
 > produce c = c >>= update (Ptr 0)
 
 The |modify| function takes a computation that transforms an existing structure
 into a new structure. The original structure is read from the null block, a
-pointer to the newly created structure will be stored at the null block again.
+pointer to the newly created structure is stored at the null block again.
 
 > modify :: (Pointer f -> HeapW (Pointer f)) -> HeapW ()
 > modify c = liftR (read (Ptr 0)) >>= c >>= update (Ptr 0)
 
 These functions are rather useless when manually storing blocks of data in the
 storage heap, but become very useful when the heap is used to store true data
-structures. We will see this in action in section \ref{sec:persistenttree}.
+structures. We see this in action in section \ref{sec:persistenttree}.
 
 \section{Running the heap operations}
 \label{sec:runheap}

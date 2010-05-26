@@ -35,11 +35,11 @@
 In the previous chapters we have shown how to build a generic storage framework
 for recursive data structures. This framework only works for regular datatypes,
 types in which the recursive positions can only refer to the exact same type
-again. The system will not work for any-non regular datatypes like mutually
+again. The system does not work for any-non regular datatypes like mutually
 recursive datatypes\cite{multirec}, nested datatypes\cite{nested} and
 indexed datatypes like generalized algebraic datatypes or
-GADTs\cite{foundationsfor}. In this section we will show how to extend our
-current system to work with non-regular datatypes. First we will explore some
+GADTs\cite{foundationsfor}. In this section we show how to extend our
+current system to work with non-regular datatypes. First we explore some
 examples of non-regular datatypes.
 
 \begin{itemize}
@@ -117,16 +117,16 @@ These three examples show that regular datatypes are not the only commonly used
 container data types.  Unfortunately, the generic programming techniques
 introduced in the previous chapters do not allow mutually recursive datatypes,
 nested datatypes and indexed datatypes to be used with our storage framework.
-In this chapter we will extend the framework to allow using indexed
+In this chapter we extend the framework to allow using indexed
 datatypes, including indexed GADTs, as the persistent container datatypes.
-The global architecture of the system remains the same, but, as we will
+The global architecture of the system remains the same, but, as we
 see, we have to rewrite almost all individual components to allow the use
 of indexed datatypes.
 
-In this chapter we will only focus on explicitly indexed datatypes using GADTs.
-We will not discuss mutually recursive datatypes and nested datatypes.
-However, we will as an example show how to rewrite a nested finger
-tree\cite{fingertree} datatype to a single indexed GADT. The GADT will have the
+In this chapter we only focus on explicitly indexed datatypes using GADTs.
+We do not discuss mutually recursive datatypes and nested datatypes.
+However we show, as an example, how to rewrite a nested finger
+tree\cite{fingertree} datatype to a single indexed GADT. The GADT has the
 same invariants as the original nested finger tree type as presented by Hinze
 et al.
 
@@ -138,7 +138,7 @@ in a GADT our framework should also be applicable to other nested datatypes.
 Rodriguez et al.\citet{multirec} show how to encode a family of mutually
 recursive datatypes as an indexed GADT in order to perform generic programming
 over this family. This observation indicates that the persistence framework for
-indexed datatypes we are about to introduce will also work for families of
+indexed datatypes we are about to introduce also works for families of
 mutually recursive datatypes. However, the families of datatypes have to be
 written down in a slightly different encoding.
 
@@ -150,7 +150,7 @@ fixed point combinator is very similar to the regular fixed combinator although
 it is parametrized with an additional type index called |ix|. The |ix| is used
 as an additional type variable to the container structure |f|, either directly
 or indirectly through the annotation type |a|. The higher order annotated fixed
-point combinator will be called |HFixA|.  In this chapter we will commonly
+point combinator is called |HFixA|.  In this chapter we commonly
 prefix types and function names with an additional |H| or |h| to make clear we
 are dealing with the higher order variant of the type or function.
 
@@ -214,7 +214,7 @@ parametrizing the annotated fixed point with the identity annotation.
 \section{Finger tree as GADT} 
 \label{sec:fingertree}
 
-To illustrate the usage of the higher order fixed point combinator we will now
+To illustrate the usage of the higher order fixed point combinator we now
 model a finger tree data type as a indexed GADT. The finger tree is a purely
 functional data structure that can be used to model an abstract sequence with
 very interesting runtime behaviour. Hinze and Paterson\cite{fingertree} show
@@ -256,12 +256,12 @@ level. The usage of the |Node| type for the recursion implicitly encodes the
 depth of the 2-3 trees at every level of the spine grows with one.
 
 The paragraph above shows that the nested finger tree datatypes encodes some
-important invariants about the structure in its type. Before we will try to
-encode the same structure as an indexed GADT we will extract an explicit
+important invariants about the structure in its type. Before we try to
+encode the same structure as an indexed GADT we extract an explicit
 specification from the nested datatype definition above.
 
 After identifying these structural properties we create a specification for the
-definition of finger trees. We will use this specification to encode finger
+definition of finger trees. We use this specification to encode finger
 trees as a GADT.
 
 \begin{enumerate}
@@ -293,7 +293,7 @@ of 2-3 tree and can only contain nodes or values.
 \end{enumerate} 
 
 We can now try to capture the specification, including the invariants between
-the different nodes, in an indexed GADT. Our finger tree GADT will contain a
+the different nodes, in an indexed GADT. Our finger tree GADT contains a
 single product type as the index. The product contains two components, one for
 the kind of finger tree node and one for the encoding of the three depths. We
 first define three phantom types for indices to indicate a spine node, a digit
@@ -303,7 +303,7 @@ node and a 2-3 tree node.
 > data Dg
 > data Nd 
 
-The depth encoding will be written down as a subscript type level natural
+The depth encoding is written down as a subscript type level natural
 number, similar to the index of the |Vector| datatype above. The depth index
 forms the second component of the index tuple.
 
@@ -420,7 +420,7 @@ hfmap  :: (forall ix.            a ix  -> b ix  ) -> forall ix.            h  a 
 pfmap  :: (forall ix. phi ix ->  a ix  -> b ix  ) -> forall ix. phi ix ->  h  a ix  -> h  b ix 
 \end{spec}
 
-In the next section we will show how to create an finger tree instances for the
+In the next section we show how to create an finger tree instances for the
 |PFunctor| type class and see how the proof object can be used to limit the set
 of possible indices.
 
@@ -429,7 +429,7 @@ of possible indices.
 The |PFoldable| type class forces us to make explicit the index family we want to reason about,
 before we can create an instance for the finger tree datatype.
 We construct a GADT that serves as a proof object that proves that a certain
-index is actually a possible index for our |Tree| GADT. We will indicate proof
+index is actually a possible index for our |Tree| GADT. We indicate proof
 types and proof values with a postfix $\phi$.
 
 > data TreePhi :: * -> * where
@@ -508,7 +508,7 @@ type follows the same index structure as our finger tree.
 This |PFunctor| instance allows us to map a function over one level of
 recursive positions of the finger tree GADT. We can use the proof object to
 distinguish between different positions in the structure. The |PFunctor|
-instances will form the basis of generic traversals over higher order
+instances forms the basis of generic traversals over higher order
 datatypes with restricted families of indices.
 
 \subsection{Traversable type class} 
@@ -711,14 +711,14 @@ effecful context |m|.
 
 \section{Sum, product, concat, and contains algebras}
 
-To illustrate the usage of the higher order paramorphism we will define four
-example algebras for our finger tree datatype. All four algebras will be defined in
+To illustrate the usage of the higher order paramorphism we define four
+example algebras for our finger tree datatype. All four algebras are defined in
 terms of one generic algebra that converts all value in a finger tree into some
 monoid value and appends these together using the |`mappend`| operator. The
 functionality of this algebra is very similar to the |foldMap| function of the
 |Foldable| type class.
 
-The monoid type we use as the result type will be a plain type without any
+The monoid type we use as the result type is a plain type without any
 indices. Because the algebra forces the result type to have an index as well,
 we have to explicitly ignore the index when dealing with simple Haskell types.
 We do this by introducing the constant functor |K1|, that accepts a value type
@@ -1053,7 +1053,7 @@ annotation at the recursive positions.
 
 > type IntStore = HFixA HP (Tree Int) (SpI One)
 
-The |pempty| function will be used to produce an empty persistent finger tree.
+The |pempty| function is used to produce an empty persistent finger tree.
 
 > pempty :: HeapW IntStore
 > pempty = hannI (SpPrf ZeroP) Empty
@@ -1084,7 +1084,7 @@ together. Because the actions are monadic we composes these with the
 right-to-left monadic bind operator (|=<<|). After producing the tree we store
 the pointer in the root node of the heap.
 
-We will create a second function that reads a finger tree from disk and
+We create a second function that reads a finger tree from disk and
 computes the total sum over all values. First we lift the |sum| function to
 work on persistent finger trees, also by only changing the type.
 

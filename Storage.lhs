@@ -30,14 +30,14 @@
 In chapter \ref{chap:fixpoints} and \ref{chap:morphisms} we have built a
 framework for generic traversals over annotated recursive data structures. In
 chapter \ref{chap:heap} we have shown a disk based a storage heap that can be
-used to store arbitrary blocks of binary data. In this chapter we will show how
+used to store arbitrary blocks of binary data. In this chapter we show how
 to combine our generic annotation framework with the storage heap to derive a
 generic storage framework.
 
-We will use the |Pointer| type to create an annotation that maps non-recursive
+We use the |Pointer| type to create an annotation that maps non-recursive
 nodes to individual storage blocks on the storage heap.  Using these
-annotations we will lift operations working on the recursive datatypes to one
-of the heap contexts. These lifted operation will now no longer operate
+annotations we lift the operations working on the recursive datatypes to one
+of the heap contexts. These lifted operation now no longer operate
 in-memory but read there input, and write back their output, to an on-disk
 representation.
 
@@ -137,8 +137,8 @@ teh |read| operation to the read-write context.
 
 Because we now both have an |AnnO| and an |AnnI| instance for the |Pointer|
 type inside the |HeapW| context we can create an instance for the |AnnIO|
-typeclass. The |AnnIO| instance assumes the value that gets modified will not
-be needed again in its original form. We will use the |fetch| function to
+typeclass. The |AnnIO| instance assumes the value that gets modified is not
+needed again in its original form. We use the |fetch| function to
 remove the original block from disk.
 
 > instance  (Traversable f, Binary (f (FixA P f)))
@@ -148,7 +148,7 @@ remove the original block from disk.
 
 In order to store the recursive structures on disk we also need a |Binary|
 instance for the annotated fixed point operator type itself. This is a partial
-instance because we will not allow to store unannotated fixed points. This
+instance because we do not allow to store unannotated fixed points. This
 means the structure should first be fully annotated using the |fullyIn|
 function.
 
@@ -158,7 +158,7 @@ function.
 >   get = liftM InA get
 
 These instances are the only thing we need to connect our generic annotation
-framework to our storage heap implementation. In the next section we will see
+framework to our storage heap implementation. In the next section we see
 how we can use the building blocks described upto now to build and inspect a
 true binary tree on disk.
 
@@ -232,7 +232,7 @@ The |produceP| function is a simple wrapper around |produce| (from section
 
 And, as a second example, we define a function that opens a heap file and
 checks whether the tree stored on the heap contains the value 1. The boolean
-result will be printed to the standard output.
+result is printed to the standard output.
 
 > inspectTree :: FilePath -> Int -> IO ()
 > inspectTree file i = run file $
@@ -266,17 +266,17 @@ background a lot is going on. Let us try to explain what happens when running
 these operations.
 
 
-When we run the command \texttt{buildTree "tree.db"} the |run| function will
-open up a file containing a storage heap and will apply the given |HeapW|
-operation to this heap. We will now give a step-by-step overview of the
-important steps that will be happen internally.
+When we run the command \texttt{buildTree "tree.db"} the |run| function
+opens up a file containing a storage heap and applies the given |HeapW|
+operation to this heap. We now give a step-by-step overview of the
+important steps that happen internally.
 
 \begin{itemize}
 
 \item
 The |run| function first opens the specified file in read-write mode and
 starts scanning the file. As explained in section \ref{sec:runheap} all blocks
-will be traversed to build up an in-memory allocation map. This map can be used
+are traversed to build up an in-memory allocation map. This map can be used
 for the allocation of new blocks and freeing of existing blocks of binary data.
 
 \item
@@ -292,13 +292,13 @@ allocation map and heap file handle to all operations.
 \item
 The |pfromList| function is built up from the |fromListCoalg|, which is lifted
 to a true function using the apomorphic traversal |apoMA|. The definition of
-|apoMA| in section \ref{sec:apomorphisms} shows it will use the coalgebra to
+|apoMA| in section \ref{sec:apomorphisms} shows it uses the coalgebra to
 corecursively create a new structure. At every step in the recursive generation
-of the structure the individually created nodes will be wrapped inside an
+of the structure the individually created nodes are wrapped inside an
 annotation using the |annI| function.
 
 In our case the annotation type is specialized to the |P| type. This means that
-for every node that the |fromListCoalg| produces, the apomorphisms will use the
+for every node that the |fromListCoalg| produces, the apomorphisms uses the
 |annI| function for the |P| instance to wrap the node inside the |P| annotation.
 
 Now recall the definition of the |AnnIn| instance for |P|.
@@ -310,13 +310,13 @@ annI = fmap (InA . P) . write
 This definition means that wrapping a node inside the |P| annotation means
 writing the binary representation of the node to disk in a freshly allocated
 block and storing the offset to that block in side the |P| constructor. For
-example, the invocation of |annI Leaf| will result in something like |InA (P
+example, the invocation of |annI Leaf| results in something like |InA (P
 (Ptr 234))|. This implies that a value of type |FixA P Tree_f| only contains a
 wrapped offset to a place on disk where the actual node can be found.
 
 So, when the |pfromList| function is finished all the produced |Branch| and
-|Leaf| nodes will be stored in binary form, each on their own block, in the
-storage heap. All |Branch| nodes will have pointers at the recursive positions
+|Leaf| nodes are stored in binary form, each on their own block, in the
+storage heap. All |Branch| nodes have pointers at the recursive positions
 to other heap blocks containing the sub-tree. Figure \ref{fig:treepers} shows
 an example of a persistent binary tree. The result variable |p| now contains a
 pointer to the root of the binary tree.
@@ -334,15 +334,15 @@ tree as the input seed. This difference becomes clear from the definition, the
 function uses the |annIO| modifier function. 
 
 So the traversal gets as input an annotated structure, in our case a |FixA P
-Tree_f|, and uses the pointer to read the actual node from disk. This node will
-be passed to the endomorphic coalgebra which produces either a new seed or a
-new sub structure. When the coalgebra finishes the |AnnIO| will make sure the
+Tree_f|, and uses the pointer to read the actual node from disk. This node is
+passed to the endomorphic coalgebra which produces either a new seed or a
+new sub structure. When the coalgebra finishes the |AnnIO| makes sure the
 result is stored to disk again. The usage of the |AnnIO| function forces every
 node that gets touched to be fetched (and also removed) from and saved to disk.
 This behaviour is very similar to what happens in regular in-memory update
 functions: inserting a node into a binary tree requires a \emph{copy} of the
 entire path up to the place where the new nodes gets inserted. All sub-trees
-that are not needed for the inserting will not be touched. This makes the
+that are not needed for the inserting are not touched. This makes the
 asymptotic running time of the persistent algorithms equal to that of the
 regular in-memory variants.
 
@@ -357,7 +357,7 @@ The next step is the |prepmin| function, which is also a modifier function. The
 |prepmin| function uses more or less the same techniques as the |pinsert|
 function, however |prepmin| is a combination of algebra (|minAlg|) and an
 endomorphic algebra (|repAlg|). After running the |prepmin| algorithm the tree
-on disk will no only contain six times the number 1.
+on disk now only contains six times the number 1.
 
 \item
 When the previous operations are finished the root pointer of the final binary
@@ -365,7 +365,7 @@ tree is saved in the variable |r|. This variable is stored as the root of the
 structure inside the null block by the surrounding |produce| function section
 \ref{sec:rootnode}.
 
-Now the run function terminates and the heap file will be closed. The heap will
+Now the run function terminates and the heap file is closed. The heap
 contains a sliced binary serialization of a binary tree containing 6 times the
 value 1.
 
@@ -378,7 +378,7 @@ check for the existence of a value 1 inside the persistent binary tree.  The
 paramorphic operation performs a traversal over the persistent binary tree and
 soon figures out the value 1 is indeed stored inside the tree.  Assuming the
 |containsAlg| here is lifted using the paramorphism resulting from section
-\ref{sec:laziness} the traversal will be lazy.
+\ref{sec:laziness} the traversal is lazy.
 
 Both the |buildTree| and the |inspectTree| are two distinct functions that
 individually open up the heap file and perform their operations. This means
@@ -395,8 +395,8 @@ In this chapter we have seen how to connect the low level interface of our
 storage heap to our generic annotation framework. By creating annotation type
 class instances for the |PointerA| annotation, we were able to derive a generic
 storage framework. All generic operations, in our example for binary trees,
-that are specialized to work for the |PointerA| annotation will out of the box
-work for persistent data structures. 
+that are specialized to work for the |PointerA| annotation 
+work for persistent data structures out of the box.
 
 The original algebraic operations for our binary trees are annotation-unaware,
 only when they are lifted and specialized they can be used to manage data
@@ -409,14 +409,14 @@ structures, but still be able to use them in a non-pure environment.
 
 The framework defined here allows for a wide range of extensions, most of which
 are not yet implemented or even described in this report. In chapter
-\ref{chap:futurework} we will describe some limitation of this system and
+\ref{chap:futurework} we describe some limitation of this system and
 possible future extensions.
 
 The current framework is generic because it works for all regular recursive
 datatypes. Most, but not all, common functional data structures are regular
-recursive datatypes. In the next chapter we will show some example of recursive
-data structures that cannot be used in our current framework. The next chapter
-will show what is needed to extend the framework to also be usable for indexed
+recursive datatypes. In the next chapter we show some example of recursive
+data structures that cannot be used in our current framework. In the next chapter we also
+show what is needed to extend the framework so it can be used for indexed
 datatypes like GADTs.
 
 \end{section}
