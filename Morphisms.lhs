@@ -27,9 +27,9 @@
 \label{chap:morphisms}
  
 In the previous chapter we have seen how to associate functionality with
-annotations. In this chapter will show how to write operations over annotated
+annotations. In this chapter we show how to write operations over annotated
 recursive data structures. We make sure that all operations we write are
-annotation unaware, which means we will use an existential annotation variable
+annotation unaware, which means we use an existential annotation variable
 in the type signature of our operations. This existential makes sure the
 operations can be used in combination with all possible annotations.
 
@@ -39,20 +39,20 @@ recursive positions contain the annotations. We have to find a way to abstract
 away from recursion when writing our algorithms.
 
 
-In this chapter we will use a well known functional programming technique for
+In this chapter we use a well known functional programming technique for
 working with recursive datatypes. This technique has been explained by Meijer
 et al. in their paper \emph{Functional programming with bananas, lenses,
-envelopes and barbed wire.}\cite{bananas} We will introduce \emph{morphisms} to write
-operations that abstract away from recursion. We will implement both an
+envelopes and barbed wire.}\cite{bananas} We introduce \emph{morphisms} to write
+operations that abstract away from recursion. We implement both an
 annotation aware \emph{paramorphism} and \emph{apomorphism}. By writing
-\emph{algebras} for these morphisms we will be able to destruct and construct
+\emph{algebras} for these morphisms we are able to destruct and construct
 recursive data structures without explicitly touching the recursive positions.
 By creating an endomorphic paramorphism and an endomorphic apomorphism we
-will also be able to update existing recursive structures.
+are also able to update existing recursive structures.
 
 In the last part of this chapter we show how to combine multiple algebras into
-one. This will allow us to perform multiple actions in a single tree traversal.
-We will also investigate the effect of traversals for annotations that work
+one. This allows us to perform multiple actions in a single tree traversal.
+We also investigate the effect of traversals for annotations that work
 in a strict context on the running time of the operations.
 
 \begin{section}{Paramorphisms}
@@ -99,7 +99,7 @@ catamorphisms are paramorphisms this does not invalidate the example.
 
 The paramorphism function performs a bottom up traversal over some
 |Traversable| |Functor| and for every node applies the algebra, the result of
-the algebra will be returned. The most generic version of this paramorphism
+the algebra is returned. The most generic version of this paramorphism
 within our framework is the |paraMA1| function.  This function runs is some
 monadic context |m| and performs a traversal over some annotated structure
 |FixA a f| using the |AnnO| type class to perform annotation specific queries.
@@ -108,7 +108,7 @@ monadic context |m| and performs a traversal over some annotated structure
 > paraMA1 psi = return . psi <=< mapM (group (paraMA1 psi)) <=< annO
 >   where group f c = fmap ((,) c) (f c)
 
-From now on the $(_{\alpha}^m)$ postfix will be used to indicate that a
+From now on the $(_{\alpha}^m)$ postfix is used to indicate that a
 function requires a context and works on annotated structures.
 
 The implementation of this generic paramorphism might seem a bit cryptic at
@@ -119,9 +119,9 @@ binary tree. As input it receives a fully annotated structure and it uses the
 |Traversable| instance, which is an implicit super class of the |AnnO| class,
 allows us to use the |mapM| function to recursively apply the |paraMA1|
 function to the sub-structures. This recursive invocation is used to come up
-with the sub-results.  The sub-results will be grouped together with the
+with the sub-results.  The sub-results are grouped together with the
 original sub-structures that these results are computed from. The original
-input node with these grouped results as the values will be passed into the
+input node with these grouped results as the values are passed into the
 algebra |psi|.  The algebra can now compute the result value for one level of
 the recursive computation, possible using the results of deeper traversals.
 
@@ -166,7 +166,7 @@ True
 Note that the paramorphic traversal is as strict as the context it runs in.
 This means that because the |Debug| annotation requires the |IO| monad the
 |containsMA| function becomes more strict then necessary. In section
-\ref{sec:laziness} we will describe a method to regain laziness for
+\ref{sec:laziness} we describe a method to regain laziness for
 paramorphisms running in strict contexts.
 
 The paramorphism we have defined above is generic in the sense that it works
@@ -193,7 +193,7 @@ In this section we have shown how to build an annotation aware paramorphism,
 which can be applied to annotation-generic algebras. The |paraMA| function is
 generic in both the annotation and the context the annotation requires. By only
 restricting the types we can derive operations that operate over the pure,
-in-memory variants of our data structures. In the next chapter will we do the
+in-memory variants of our data structures. In the next chapter we do the
 same for \emph{apomorphisms} which can be used to construct recursive data
 structures from a seed value.
 
@@ -242,7 +242,7 @@ be done by using the |InF| fixed point constructor.
 receives as input. This can only work when the input is also an annotated
 structure, and this can only be the case when the seed type is exactly |FixA a f|.
 Apomorphisms that have a seed type equal to the result of the corecursion are
-called \emph{endomorphic} apomorphisms, these will be discussed in section
+called \emph{endomorphic} apomorphisms, these are discussed in section
 \ref{sec:endoapo}.
 \item The third options is to wrap an existing annotated structure
 with one or more levels of unannotated nodes. This method is a combination of
@@ -282,7 +282,7 @@ constructor containg a (partially) annotated recursive structure again, we do
 not go further into recusrion. Point 1 and 2 of the enumeration above show us
 we are forced to reannotate the top of this structure. Because the coalgebra
 can possibly create multiple levels of unannotated nodes, we have to use the
-|fullyIn| function. When taken care of the sub-results the result will be
+|fullyIn| function. When taken care of the sub-results the result are
 wrapped inside an annotation using the |annI| function.
 
 Now we can apply the |apoMA| function to our example coalgebra |fromListCoalg|
@@ -334,7 +334,7 @@ constructor functions using an algebraic approach. The seed and result values
 for both the paramorphisms and the apomorphisms were polymorph. The next two
 sections show what happens when we move away from polymorphic result and seed
 types to using annotated data structures as the result and seed types. This
-will allow us to write modification functions on our annotated structures, like
+allows us to write modification functions on our annotated structures, like
 \emph{insert} and \emph{delete}.
 
 \end{section}
@@ -457,10 +457,10 @@ introduce a two endomorphic coalgbera types.
 > type CoendoA  f = forall a. Coendo a f 
 
 The |Coendo| type signature fixes the input seed to the type of the structure
-that will be produced. The additional type |CoendoA| hides the annotation
+that is produced. The additional type |CoendoA| hides the annotation
 variable inside an existential quantification.
 
-We will now write the |coendoMA| function, that takes a endomorphic coalgbera
+We now write the |coendoMA| function, that takes a endomorphic coalgbera
 and an fully annotated input structure and produces an fully annotated output
 structure. Note that both the endomorphic paramorphism and the endomorphic
 apomorphism modify an input structure to an output structure of the same type.
@@ -474,20 +474,20 @@ apomorphisms take coalgberas.
 The |coendoMA| morphism applies the coalgbera |phi| to the annotated input
 structure throught the use of the |annIO| function from the |AnnIO| type class.
 The |annIO| function makes sure the input structure is queried from the root
-annotation and will be supplied a new annotation after applying the specified
-function. After applying the coalgbera |phi| a case analysis will be done on
+annotation and are supplied a new annotation after applying the specified
+function. After applying the coalgbera |phi| a case analysis is done on
 the result. Either a new seed is produced or an existing structure is reused,
 similar to the regular apomorphisms. A new seed triggers a new recursive step,
-an existing structure will be fully annotated.
+an existing structure is fully annotated.
 
-As an example we will create an endomorphic coalgbera that describes the
+As an example we create an endomorphic coalgbera that describes the
 insertion of one value into a binary tree. The seed value for this coalgbera is
 an annotated binary tree of which the top level node is guaranteed not to have
 an annotation\footnote{The fact that this node is always wrapped inside an
 |InF| constructor and never in an |InA| constructor follows from the
 implementation of the |coendoMA|, but is not encoded in the type.
 Unfortunately, we cannot change the seed type to |f (FixA a f)| to encode this
-invariant in the type, because this will also change the type of the seed we
+invariant in the type, because this also changes the type of the seed we
 have to produce.}. When the input is a |Leaf| we produce a singleton binary
 tree with the specified input value. Because we use the |Right| constructor in
 the recursive positions of the result, the traversals stops. When the input
@@ -575,8 +575,8 @@ instance of Haskell's |Applicative| type class.
 
 First we change the type for the algebra |Psi| from a type synonym into a real
 datatype. We change the algebra into a real datatype, because this allows us to
-add an additional constructor. As we will later see, this extra constructor is
-needed for the |Applicative| instance.  The new |Psi| datatype will be a
+add an additional constructor. This extra constructor is
+needed for the |Applicative| instance.  The new |Psi| datatype is a
 generalized algebraic datatypes, or GADT, because we need an existentially
 quantified type parameter later on.
 
@@ -721,8 +721,8 @@ be adapted to be able to produce both |Alg| and |Prj| constructors.
 The implementation of this projection aware |paraMA| is not very different from
 our original |paraMA|. The only difference is that this new version unpacks the
 projection and applies the inner algebra. After applying only the result value,
-the third component of the grouped triple, will be returned. The endomorphic
-variant |endoMA| can be extended in the same trivial way, so we will not show
+the third component of the grouped triple, is returned. The endomorphic
+variant |endoMA| can be extended in the same trivial way, so we do not show
 the implementation here.
 
 %if False
@@ -736,7 +736,7 @@ the implementation here.
 
 We can now illustrate the applicative paramorphisms using a well known example,
 the |repmin| problem. The |repmin| problem describes a single traversal in
-which every value in a structure, for example our binary tree, will be replaced
+which every value in a structure, for example our binary tree, is replaced
 with the minimum value already in the structure. Our |Applicative| algebra
 instance allows us to write the two aspects of this operation separately and
 join them together using the sequencing operator |(<*>)|.
@@ -779,7 +779,7 @@ The paramorphism function working on annotated structures is as strict as the
 context associated with the annotation. For example, the debug annotation works
 in the |IO| monad, which makes all computations strict. This strictness can
 have severe implications on the running time of the algorithms. In a strict
-context all the sub results of the recursive computation will be computed, even
+context all the sub results of the recursive computation are computed, even
 when the algebra discards them immediately. This is the reason that the debug
 annotation in example \ref{sec:para} prints out far more sub-trees
 than one would expect from a lazy traversal.
@@ -789,7 +789,7 @@ monad. Using these lazy monads as the annotation context would make the
 traversal naturally lazy. Some other monads are strict by default requiring all
 computations on the left hand side of the monadic bind to be evaluated strictly
 before the right hand side can be evaluated. Example of these monads are the
-|IO| monad and the |State| monad. The first thing this section will show is how
+|IO| monad and the |State| monad. The first thing this section shows is how
 we can make paramorphisms more lazy on the inside. Only sub-structures should
 be traversed when the algebra requires them for the computation of the result
 value. The goal is to make the running time of the paramorphic traversals in
@@ -799,23 +799,23 @@ context.
 The decision about what sub-structures are needed for a certain computation is
 up to the algebra and not to the paramorphism function itself. The algebra is a
 pure description that is unaware of the annotation or associated context.
-Because the paramorphism function does not know what information will be used by
+Because the paramorphism function does not know what information is used by
 the algebra it has to pass in all the recursive sub-results. To clarify this we
 can look at the |containsAlg| for binary trees. As input this algebra get a
 single structure with two booleans in the sub-structures. These booleans are
 the indication whether the value is contained in one of the sub-structures.
 Because we are dealing with a lazy language these sub-results are ideally not
-computed yet, and will only be used when the algebras desires so. Running the
+computed yet, and is only used when the algebras desires so. Running the
 paramorphic traversal inside a strict context, like |IO| for our debug
-annotation, will actually strictly precompute the recursive results before
+annotation, actually strictly precomputes the recursive results before
 passing them into the algebra. This changes the running time for the
 |containsMA| function from the expected |O(log n)| to an unacceptable |O(n)|.
 
-To solve the problem described above we introduce a type class |Lazy| that will
-allow us to explicitly turn strict monads into lazy ones when this is possible.
+To solve the problem described above we introduce a type class |Lazy| that
+allows us to explicitly turn strict monads into lazy ones when this is possible.
 The only class method is the function |lazy| that gets a monadic computation
-and turns it into an lazy variant of this computation. Of course this will not
-be possible in the most general case for all monads.
+and turns it into an lazy variant of this computation. Of course this is not
+possible in the most general case for all monads.
 
 > class AM m => Lazy m where
 >   lazy :: m a -> m a
@@ -833,7 +833,7 @@ cases that it transforms another lazy monad.
 
 Most interesting of all, we can also make |IO| an instance of the |Lazy| class
 by using the |unsafeInterleaveIO| function. This function takes an |IO|
-computation and produces an |IO| computation that will only be performed when
+computation and produces an |IO| computation that is only performed when
 the result value is needed. This breaks the strict semantics of the |IO| monad,
 which can become useful for our case.
 
@@ -872,13 +872,13 @@ True
 The GHCi debugger by default prints out the value the user requests at the
 prompt, this is the only reason the expression |containsMA2 2 tree| is even
 evaluated at all. The traversal has become become lazy on the inside, no
-unneeded traversals will be performed, but also lazy on the outside, nothing
-at all will happen until the answer is forced. This behaviour can be compared
+unneeded traversals are performed, but also lazy on the outside, nothing
+at all happens until the answer is forced. This behaviour can be compared
 to the |hGetContents| function from the Haskell prelude which uses lazy |IO|
 \footnote{The |hGetContents| function internally also uses the
 |unsafeInterleaveIO| function.} to give back the entire contents of a file or
 socket resource as a single lazy |String|. This means the actual |IO| actions
-to read the contents from file will only be performed when the individual
+to read the contents from file are only performed when the individual
 characters of the string are inspected. This behaviour can have a strange
 outcome in practice, evaluation of pure code can have real world side effects.
 The same is the case for our lazy traversals, the debug annotations only kicks
@@ -914,7 +914,7 @@ We now apply the |dseq1| to the result of the paramorphism.
 
 By creating a new paramorphism function that forces the result before returning
 we get a traversal that is lazy internally but is strict on the outside. As we
-will see later when dealing with structures annotated with the persistent
+see in chapter \ref{chap:storage} when dealing with structures annotated with the persistent
 annotations, this evaluation semantics is essential.
 
 \end{section}
