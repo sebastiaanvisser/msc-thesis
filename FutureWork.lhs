@@ -21,8 +21,7 @@ Guaranteeing type safety in between session is much harder to achieve. This
 problem can be solved by storing a simple cryptographic hash of the type of the
 data together with the data itself. When reading the data back in this hash can
 be used to verify whether the data is what is to be expected. A similar
-technique for the programming language Clean has been described in
-\cite{clean}.
+technique has been described for the programming language Clean \cite{clean}.
 
 \end{section}
 
@@ -36,7 +35,7 @@ having to recompute a new value for the entire data structure when only certain
 parts of the structure change.
 
 Operations caching intermediate results are called incremental
-folds\cite{incr}. Incremental folds can easily be projected to the persistent
+folds \cite{incr}. Incremental folds can easily be projected to the persistent
 data structures from our framework and saved together with non-recursive nodes.
 This would allow users to have efficient queries over long-lived and
 incrementally changing data structures.
@@ -45,7 +44,7 @@ incrementally changing data structures.
 
 \begin{section}{Using attribute grammars to write queries}
 
-The attribute grammar system for Haskell\cite{ag} can be used as a DSL to
+The attribute grammar system for Haskell \cite{ag} can be used as a DSL to
 describe algebras for catamorphisms. The current system produces an entire
 application that creates the datatypes, produces the catamorphisms and run the
 algebras using these catamorphisms. It would be useful if could merely
@@ -53,7 +52,7 @@ abstract the algebras from the system and use these to write queries over the
 persistent data structures.
 
 Recent work has shown that it also possible to create a first-class attribute
-grammar system\cite{fly} for Haskell. First class AG systems might even be
+grammar system \cite{fly} for Haskell. First class AG systems might even be
 easier to use as a front-end for our algebraic operations.
 
 \end{section}

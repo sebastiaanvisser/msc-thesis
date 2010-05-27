@@ -42,7 +42,7 @@ away from recursion when writing our algorithms.
 In this chapter we use a well known functional programming technique for
 working with recursive datatypes. This technique has been explained by Meijer
 et al. in their paper \emph{Functional programming with bananas, lenses,
-envelopes and barbed wire.}\cite{bananas} We introduce \emph{morphisms} to write
+envelopes and barbed wire.} \cite{bananas} We introduce \emph{morphisms} to write
 operations that abstract away from recursion. We implement both an
 annotation aware \emph{paramorphism} and \emph{apomorphism}. By writing
 \emph{algebras} for these morphisms we are able to destruct and construct
@@ -58,10 +58,10 @@ in a strict context on the running time of the operations.
 \begin{section}{Paramorphisms}
 \label{sec:para}
 
-We start out by implementing a \emph{paramorphism}\cite{paras}, a
+We start out by implementing a \emph{paramorphism} \cite{paras}, a
 bottom up traversal that can fold a recursive structure into a single value.  A
 paramorphism is a generalization of the more commonly known
-\emph{catamorphism}\cite{bananas}. The standard Haskell function |foldr|, which
+\emph{catamorphism} \cite{bananas}. The standard Haskell function |foldr|, which
 can be used to destruct a list to a result value, is an example of a
 catamorphism.
 
@@ -202,7 +202,7 @@ structures from a seed value.
 \begin{section}{Apomorphisms}
 \label{sec:apomorphisms}
 
-Dual to the paramorphism is the \emph{apomorphism}\cite{apomorphisms}. Where the paramorphism
+Dual to the paramorphism is the \emph{apomorphism} \cite{apomorphisms}. Where the paramorphism
 abstract away from recursion, the apomorphisms abstracts away from corecursion.
 Similarly, where paramorphisms use algebras to describe recursive operations,
 apomorphisms use coalgebras to describe corecursive operations. Apomorphisms
@@ -567,7 +567,7 @@ algebras. Writing more complicated algebras can be quite hard, mainly because
 it is not always easy to compose multiple aspects of an operation into one
 algebra. Combining multilpe algebras into a single algebra that can be used in
 a single traversal is a well known problem in the world of functional
-programming.  Attribute grammar systems like the \emph{UUAGC}\cite{ag} can be
+programming.  Attribute grammar systems like the \emph{UUAGC} \cite{ag} can be
 used to combine different algebraic operations into a single traversal in an
 aspect-oriented way. This section describes a more lightweight and idiomatic
 approach to algebra composition. We make the paramorphic algebra type an
@@ -885,7 +885,7 @@ The same is the case for our lazy traversals, the debug annotations only kicks
 in when the result is inspected. While this behaviour is probably safe for the
 debug annotation this is not the case in general. There is a really good
 reason the |unsafeInterleaveIO| function starts with the word `unsafe', there
-are a lot of problems associated with lazy IO\cite{lazyioharmful}.
+are a lot of problems associated with lazy IO \cite{lazyioharmful}.
 
 To make sure all the potential side effect stay within the context they belong to
 we have to make sure our paramorphism remains strict on the outside. We do

@@ -7,7 +7,7 @@ Management of long-lived data is an essential ingredient of a large amount of
 modern computer programs. Over the past decades of software technology, plenty
 of systems have been developed to store information outside the process space of
 a running application. Examples of such systems are structured file systems,
-relational databases management systems\cite{rdbms} (RDBMSs), XML document
+relational databases management systems \cite{rdbms} (RDBMSs), XML document
 stores, and key/value databases. All of these tools allow for some
 form of structuring the data. For example, file systems allow for a
 hierarchical view on data using directories and files, relational database
@@ -22,7 +22,7 @@ storage and when reading it back again.
 
 Over the years many solutions have been proposed for this problem, for many
 different contexts. For example, for most object-oriented (OO) programming
-languages there exists Object-Relational Mappers\cite{orm} (ORMs) that allow
+languages there exists Object-Relational Mappers \cite{orm} (ORMs) that allow
 for a transparent mapping between objects and tables within a relational
 databases.  ORM tools exploit the structural properties of both the table based
 RDBMSs and objects in an object-oriented language to derive an automated
@@ -250,7 +250,7 @@ queries, support for spatial types have been built as a database extension.
 There are several data structures capable of performing
 such spatial queries efficiently.  A quadtree is a domain specific data
 structure specialized for efficient indexing of spatial information.  Quadtrees
-are specializations of multidimensional search trees\cite{multitree}.  Elements
+are specializations of multidimensional search trees \cite{multitree}.  Elements
 inside a quadtree are saved and indexed based on their geometrical coordinates
 which results in efficient spatial lookups.  Finding the |k| elements
 nearest to a specific elements using a quadtree can be done in not more than

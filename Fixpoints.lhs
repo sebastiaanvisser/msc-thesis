@@ -140,7 +140,7 @@ allows a generic traversal over a structure while performing an action for each
 element. The actions performed are |Applicative| or sometimes monadic
 computations. The |Traversable| instance for our binary tree example is a
 straightforward preorder traversal. The actions are written down using idiom
-brackets. \cite{idioms} show how idiom brackets can be used for effecful
+brackets. Mcbride and Paterson \cite{idioms} show how idiom brackets can be used for effecful
 applicative programming.
 
 > instance Traversable Tree_f where

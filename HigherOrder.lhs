@@ -36,9 +36,9 @@ In the previous chapters we have shown how to build a generic storage framework
 for recursive data structures. This framework only works for regular datatypes,
 types in which the recursive positions can only refer to the exact same type
 again. The system does not work for any-non regular datatypes like mutually
-recursive datatypes\cite{multirec}, nested datatypes\cite{nested} and
+recursive datatypes \cite{multirec}, nested datatypes \cite{nested} and
 indexed datatypes like generalized algebraic datatypes or
-GADTs\cite{foundationsfor}. In this section we show how to extend our
+GADTs \cite{foundationsfor}. In this section we show how to extend our
 current system to work with non-regular datatypes. First we explore some
 examples of non-regular datatypes.
 
@@ -48,7 +48,7 @@ examples of non-regular datatypes.
 \emph{Mutually recursive datatypes}, or \emph{indirect recursive datatypes},
 are types in which the recursive positions refer to other datatypes that
 directly or indirectly refer back to the original.  Rodriguez et
-al.\cite{multirec} show an interesting example of a mutual recursive datatype.
+al. Rodriguez et al. \cite{multirec} show an interesting example of a mutual recursive datatype.
 They present a syntax tree containing both expressions and declarations.
 
 > data Expr =
@@ -68,7 +68,7 @@ In this example the |Expr| datatype uses the |Decl| datatype and vice versa.
 
 \emph{Nested datatypes} are parametrized recursive datatypes that have one or
 more recursive positions in which the type parameter changes. An example of a
-nested datatype is the \emph{perfect tree}\cite{perfect}, a tree that grows in
+nested datatype is the \emph{perfect tree} \cite{perfect}, a tree that grows in
 size exponentially at every recursive position.
 
 > data PerfectTree a =
@@ -126,7 +126,7 @@ of indexed datatypes.
 In this chapter we only focus on explicitly indexed datatypes using GADTs.
 We do not discuss mutually recursive datatypes and nested datatypes.
 However we show, as an example, how to rewrite a nested finger
-tree\cite{fingertree} datatype to a single indexed GADT. The GADT has the
+tree \cite{fingertree} datatype to a single indexed GADT. The GADT has the
 same invariants as the original nested finger tree type as presented by Hinze
 et al.
 
@@ -135,7 +135,7 @@ datatypes in Haskell, all nested datatypes can be written down as a GADT. By
 making the nested behaviour of nested datatypes explicit using a type variable
 in a GADT our framework can also be applied to other nested datatypes.
 
-Rodriguez et al.\citet{multirec} show how to encode a family of mutually
+Rodriguez et al. \citet{multirec} show how to encode a family of mutually
 recursive datatypes as an indexed GADT in order to perform generic programming
 over this family. This observation indicates that the persistence framework for
 indexed datatypes we are about to introduce also works for families of
@@ -217,7 +217,7 @@ parametrizing the annotated fixed point with the identity annotation.
 To illustrate the usage of the higher order fixed point combinator we now
 model a finger tree data type as a indexed GADT. The finger tree is a purely
 functional data structure that can be used to model an abstract sequence with
-interesting runtime behaviour. Hinze and Paterson\cite{fingertree} show
+interesting runtime behaviour. Hinze and Paterson \cite{fingertree} show
 how to implement a finger tree in Haskell using a nested datatype. The
 datatypes the authors describe looks more or less\footnote{In their paper Hinze
 and Paterson use a slightly less constraint type in which they encode the digit
@@ -396,7 +396,7 @@ higher order variant of these three type classes.
 
 \subsection{Functor type class} 
 
-Ghani and Johann\cite{initial} describe how to create a type class for higher
+Ghani and Johann \cite{initial} describe how to create a type class for higher
 order functors. The functorial map function works on indexed datatypes.
 
 > class HFunctor h where
@@ -913,7 +913,7 @@ Both the input and overflow part of the output of the computed functions are
 nodes, because only values can be inserted inserted into a finger tree and only
 2-3 trees can overflow to a deeper level. The |N| type also encodes the
 optionality using the |Maybe| type, this allows the algebra to stop the
-insertion when no node overflows. Hinze and Paterson\cite{fingertree} prove
+insertion when no node overflows. Hinze and Paterson \cite{fingertree} prove
 that overflowing happens rarely and the amortized time for appending a value is
 still $O(1)$.
 
