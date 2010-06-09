@@ -34,10 +34,10 @@ size stored in the payload minus the header size.
 \begin{center}
 \includegraphics[scale=0.25]{img/heap.pdf}
 \end{center}
-\caption{A snippet of a heap structure containing for blocks of which two block
-are in use and contain a payload. The blocks are placed next to each other. An
-in-memory allocation map is used to map payload sizes to free block blocks of
-data.}
+\caption{A snippet of a heap structure containing four blocks of which two
+block are in use and contain a payload. The blocks are placed next to each
+other. An in-memory allocation map is used to map payload sizes to free block
+blocks of data.}
 \end{figure}
 
 Applications that use the heap can allocate blocks of data of any size and use
