@@ -14,7 +14,7 @@ overview of work related to this project.
 
 In their paper \emph{Efficient and Type-Safe Generic Data Storage} Smetsers,
 Van Weelden and Plasmeijer \cite{clean} describe a library for generic storage
-for the programming language Clean. Like the framework proposed in this
+for the programming language Clean. Like the framework described in this
 document, they also aim at generically mapping pure and functional data
 structures to a persistent storage on disk.  Using something similar to our
 storage heap -- they call this \emph{Chunks} -- they are able to persist
