@@ -20,7 +20,7 @@
 > import Data.Traversable
 > import Prelude hiding (mapM, sum)
 > import Control.Monad hiding (mapM)
-> import Control.Monad.Identity
+> import Control.Monad.Identity hiding (mapM)
 > import Generics.Regular (deriveAll, PF)
 
 %endif
@@ -98,19 +98,23 @@ explicit, and abstract from the common pattern.
 
 \subsection{Fixed point combinator}
 
-The above definition of the binary tree datatype has recursion directly encoded
-in its definition by a reference back to the original |Tree| type in the
-|Branch1| constructor. We make the recursion more explicit by adding an
-additional type parameter |r| for the recursive positions:
+The first step in making the use of recursion in a datatype explicit is
+to abstract from it. We move from |Tree1| to |TreeF| by adding a parameter~|r|
+that is used whereever |Tree1| makes a recursive call:
 
 > data TreeF k v rr = Leaf | Branch k v rr rr
 >   deriving (Functor, Foldable, Traversable)
 
-\todo{Hide the unused |Foldable| class somehow.}
+\andres{|Foldable| is required as a superclass of |Traversable|, but confusing.}
+The type |TreeF| is also called the \emph{pattern functor} of |Tree|. In the
+rest of this paper, we refer to datatypes defined via their pattern functor as
+\emph{open} recursive datatypes.
 
-We call the |TreeF| type the \emph{tree functor} and we call recursive
-datatypes that are written with an additional recursion parameter \emph{open
-recursive datatypes}.
+\andres[inline]{I think that the flow here is suboptimal: We should first introduce
+the fixed point combinator, the smart constructor, the catamorphism etc. The
+whole paragraph on derived class instances is distracing at this point. Furthermore,
+I think it makes sense to actually give the instances, and perhaps say they can also
+be derived. That makes it trivial to move them to a later point.}
 
 To gain more control over the recursive positions we automatically
 derive\footnote{Using the Glasgow Haskell Compiler |>=| 6.12.} the |Functor| and
@@ -135,14 +139,15 @@ constructor |f| of kind |* -> *| and parametrizes |f| with its own fixed point.
 
 > newtype Fix f = In { out :: f (Fix f) }
 
-The fixed point combinator is used to tie the recursive knot and get back a
-structure isomorphic to the original |Tree| datatype.
+By using |Fix| on a pattern functor such as |TreeF|, we obtain a recursive
+datatype once more that is isomorphic to the original |Tree1| datatype:
 
 > type Tree k v = Fix (TreeF k v)
 
-Building a binary tree structure for our new |Tree| type now requires wrapping
-all the constructors inside the |In| constructor from the fixed point
-combinator. We define two smart constructors to simplify building binary trees.
+Building a binary tree structure for our new |Tree| type requires wrapping
+all constructor applications with an additional application of the |In| constructor
+of the |Fix| datatype. It is helpful to define \emph{smart constructors} for
+this task:
 
 > leaf :: Tree k v
 > leaf = In Leaf
@@ -150,22 +155,29 @@ combinator. We define two smart constructors to simplify building binary trees.
 > branch :: k -> v -> Tree k v -> Tree k v -> Tree k v
 > branch k v l r = In (Branch k v l r)
 
-New \todo{example}.
+The example tree now becomes
 
 > myTreeF :: Tree Int Int
-> myTreeF = branch 3 9
->   (branch 1 1 leaf leaf) 
->   (branch 4 16 (branch 7 49 leaf leaf) leaf)
+> myTreeF = branch 3 9  (branch 1 1   leaf
+>                                     leaf) 
+>                       (branch 4 16  (branch 7 49  leaf
+>                                                   leaf)
+>                                     leaf)
 
-In figure \todo{fig}.
+and is shown in Figure~\ref{fig:binarytreefix}.\andres{The
+figure is using $\mu$ rather than |In|.}
 
-\begin{figure}[hp]
-\label{fig:binarytree}
+\begin{figure}[tp]
+\label{fig:binarytreefix}
 \begin{center}
 \includegraphics[scale=0.35]{img/binarytree-fix.pdf}
 \end{center}
 \caption{An example of a binary tree.}
 \end{figure}
+
+\andres[inline]{At this point (or earlier), we have to introduce
+catamorphisms and reiterate at least one of the example functions
+as an explicit catamorphism.}
 
 %if False
 
