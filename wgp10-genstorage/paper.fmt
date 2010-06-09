@@ -5,6 +5,12 @@
 %format :+:                 = "\mathrel{\textbf{+}}"
 %format <<=<<               = "\mathrel{\texttt{<=<}}"
 
+%format Debug1              = Debug
+%format D1                  = D
+%format unD1                = unD
+%format Id1                 = Id
+%format unId1               = unId
+
 %format Tree1               = "\Conid{Tree}"
 %format Leaf1               = "\Conid{Leaf}"
 %format Branch1             = "\Conid{Branch}"
