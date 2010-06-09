@@ -1,0 +1,8 @@
+A SOLID STATE FRAMEWORK FOR HASKELL
+  a strong generic foundation for datatype persistence 
+
+
+Abstract
+
+Introduction
+

@@ -1,0 +1,12 @@
+*.tex
+*.hers
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.log
+*.ptb
+*.toc
+*.hers
+*.out
+Paper.pdf
