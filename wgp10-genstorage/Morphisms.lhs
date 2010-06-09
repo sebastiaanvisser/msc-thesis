@@ -36,7 +36,7 @@ construction and destruction of recursive datatype.
 
 Writing operations on annotated datatypes is hard; every time we touch a
 recursive position we need to explicitly wrap/unwrap an annotation. Because the
-annotation have an associated context all operations must also be written in
+annotations have an associated context all operations must also be written in
 monadic style. In this section we solve this problem by abstracting away from
 recursion by writing operations as algebras for recursive morphisms.
 
@@ -52,7 +52,7 @@ from a single seed value, these function are called \emph{producer} functions.
 datatypes, these function are called \emph{modifier} functions.
 \end{enumerate}
 
-\todo{explain other morphisms might be useful}
+\todo{explain other morphisms might be useful, dependent on the input/ouput}
 
 \subsection{Destructing with paramorphisms}
 
@@ -281,7 +281,7 @@ cannot be written using these two morphisms: the modification functions. In
 this section we introduce an \emph{endomorphic apomorphisms} and use this to
 write operations that takes as input a recursive structure and that produce as
 output a recursive structure with the same type. We use this morphisms to build
-modification functions like the |insert| function that insert an new key/value
+modification functions like the |insert| function that inserts an new key/value
 pair into an existing binary search tree.
 
 First we define an additional annotation type class |OutIn| than combines the
@@ -325,7 +325,7 @@ type |FixA a f| or a final recursive structure, possibly with an yet
 unannotated top:
 
 > data EndoA  (a  :: (  * -> *) -> * -> *  )
->               (f  ::    * -> *             ) where
+>             (f  ::    * -> *             ) where
 >   PhiE :: (f (FixA a f) -> f (FixA a f :+: FixBotA a f)) -> EndoA a f
 
 Because the input seed has type |f (Fix a f)| and the output seed has a
