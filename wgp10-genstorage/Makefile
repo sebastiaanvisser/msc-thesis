@@ -3,7 +3,7 @@ DOC=Paper
 all: ${DOC}.pdf
 	open *.pdf
 
-${DOC}.pdf: \
+${DOC}.tex: \
 	*.lhs \
 	*.fmt
 
