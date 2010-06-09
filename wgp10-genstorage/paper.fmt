@@ -39,7 +39,7 @@
 %format EndoA               = "\Conid{Endo_\alpha}"
 %format endoA               = "\Varid{endo_\alpha}"
 
-%format rr                  = "\Varid{\textbf{r}}"
+%format rr                  = "\Varid{\textbf{\textit{r}}}"
 
 %format lookupAlg           = "\Varid{lookup_{ALG}}"
 %format foldAlg             = "\Varid{fold_{ALG}}"

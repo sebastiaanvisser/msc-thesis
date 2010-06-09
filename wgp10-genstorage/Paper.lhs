@@ -25,7 +25,8 @@
 % authoryear    To obtain author/year citation style instead of numeric.
 
 \usepackage{todonotes}
-\newcommand\andres[2][]{\todo[color=blue!40,size=\small,#1]{#2}}
+\newcommand\andres[2][]{\todo[color=blue!40,size=\footnotesize,#1]{#2}}
+\setlength\marginparwidth{1.7cm}
 
 \usepackage{amsmath}
 \usepackage{mathptmx}
