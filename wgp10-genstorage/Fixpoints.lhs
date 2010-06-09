@@ -191,8 +191,7 @@ as an explicit catamorphism.}
 
 %endif
 
-\subsection{Fixed point annotations}
-\label{sec:fixann}
+\subsection{Fixed point annotations}\label{sec:annotations}
 
 By moving from a recursive datatype to an open recursive datatype, we now
 have control about what to do with recursive positions. As we have just seen,
@@ -211,11 +210,11 @@ additional information to the datatype.
 We now make an annotated binary search tree by applying the |FixA| combinator
 to our tree functor:
 
-> type TreeA k v ann = FixA ann (TreeF k v)
+> type TreeA ann k v = FixA ann (TreeF k v)
 
 If we instantiate |ann| with the type-level identity
 
-> newtype Id f ix = Id { unId :: f ix }
+> newtype Id1 f ix = Id1 { unId1 :: f ix }
 
 we once again obtain a type that is isomorphic to our original |Tree1|. 
 We return to the identity annotation in Section~\ref{sec:identity}.
@@ -238,12 +237,12 @@ be a superclass?}
 Using the |In| type class, we define two new smart constructors for the annotated
 binary tree datatype:
 
-> leafA :: In ann (TreeF k v) m => m (TreeA k v ann)
+> leafA :: In ann (TreeF k v) m => m (TreeA ann k v)
 > leafA = In `liftM` inA Leaf
 >
 > branchA  ::  In ann (TreeF k v) m
->          =>  k -> v -> TreeA k v ann -> TreeA k v ann
->          ->  m (TreeA k v ann)
+>          =>  k -> v -> TreeA ann k v -> TreeA ann k v
+>          ->  m (TreeA ann k v)
 > branchA k v l r = In `liftM` inA (Branch k v l r)
 
 The |leafA| and |branchA| smart constructors can be used to build up annotated
@@ -251,13 +250,16 @@ binary search tree for some annotation type |ann|. Because the annotation type
 is associated with a monadic context we now build our example tree in monadic
 style:
 
-> myTree_a :: In ann (TreeF Int Int) m => m (TreeA Int Int ann)
+> myTree_a :: In ann (TreeF Int Int) m => m (TreeA ann Int Int)
 > myTree_a =
 >   do  l  <- leafA
 >       d  <- branchA 7 49  l  l
 >       e  <- branchA 1 1   l  l
 >       f  <- branchA 4 16  d  l
 >       branchA 3 9 e f
+
+Note the type of |myTree|: The value is overloaded on the annotation, so we
+can use it with different annotations later.
 
 \andres{Is another figure needed here?}
 
@@ -277,15 +279,14 @@ we introduce abstraction without seeing the need for it.}
 \subsection{Example annotation: debug trace}
 \label{sec:debug}
 
-As a first example of an annotation type we introduce the |Debug| annotation
-that is used to produce a debug trace of all construction and destruction steps
-of a recursive datatype. 
+As an example of an annotation type we introduce the |Debug| annotation.
+Using |Debug|, we can produce a debug trace of all construction and destruction
+steps that an operation performs.
 
-\begin{spec}
-newtype Debug f a = D { unD :: f a }
-\end{spec}
+> newtype Debug1 f a = D1 { unD1 :: f a }
 
 %if False
+The following definition derives a non-record version of Show:
 
 > newtype Debug f a = D (f a)
 >   deriving Show
@@ -294,45 +295,54 @@ newtype Debug f a = D { unD :: f a }
 > unD (D x) = x
 
 %endif
+The |Debug| type does not actually store any additional information. It
+just serves as a marker that we can subsequently use to add additional
+behaviour.\andres{This is actually a bit sad. It does not serve well to
+motivate why we need the full power of annotations. At the very least,
+add a forward pointer to a more interesting use.}
 
-The |Debug| type solely stores the structure inside the |D| constructor and
-adds no additional information.
-
-We now make an |In| instance for the |Debug| type that unwraps the debug
-annotation, prints a trace message to the console, and returns the node that
-was inside the annotation:
+The behaviour is added when constructing or deconstructing values. As
+we have seen in Section~\ref{sec:annotations}, constructors add annotations
+by calling |inA|, whereas values are extracted from annotations using |outA|.
+The |In| instance for the |Debug| type prints a message that indicates which
+value is being constructed, and then returns that value:\andres{verify}
 
 > instance  (Traversable f, Show (f ())) => In Debug f IO
 >    where  inA = return . D <=< printer "in"
+
+\andres[inline]{The following paragraph on Kleisli composition breaks the
+flow. I would either cut it down sufficiently to be able to ban it to a
+footnote, or get rid of Kleisli composition completely. Instead, |printer|
+has to be explained immediately.}
 
 Throughout this paper the |<=<| operator (|<<=<<| in Haskell) is used for right-to-left
 Kleisli composition. When both used in the same expression, normal
 function compositions takes precedence over Kleisli composition. The type
 of the |<=<| operator is:
 
-\begin{spec}
-Monad m => (b -> m c) -> (a -> m b) -> a -> m c
-\end{spec}
+< Monad m => (b -> m c) -> (a -> m b) -> a -> m c
 
-The dual instance |Out| for the |Debug| type wraps a structure in a
-fresh debug annotation and also prints a trace message to the console.
+The |Out| instance for |Debug| drops the annotation marker, prints
+the extracted value and returns it:
 
 > instance  (Traversable f, Show (f ())) => Out Debug f IO
 >    where  outA = printer "out" . unD
 
 Both class methods use a helper function |printer| that print a single level of
-a recursive structure to the console. 
+a recursive structure to the console.\andres{Too late, see above.} 
 
 > printer :: (Functor f, Show (f ())) => String -> f a -> IO (f a)
 > printer s f = print (s, fmap (const ()) f) >> return f
 
-Using the debug annotation we can specialize our annotated binary tree to a
-debug tree.
+We specialize our annotated binary tree to a debug tree as follows:
 
-> type TreeD k v = FixA Debug (TreeF k v)
+> type TreeD k v = TreeA Debug k v
 
-Creating an example binary tree using a specialized version of our |myTree_a|
-function now prints out a trace of all the construction steps invovled:
+
+As a simple example, let us specialize the type
+of our sample tree |myTree| to make use of the debug annotation. The
+construction then has to take place in the |IO| monad, and will print a
+trace of all the construction steps involved:
 
 %if False
 
@@ -352,7 +362,6 @@ ghci> myTree_a :: IO (TreeD Int Int)
 {D Leaf})} {D (Branch 4 16 {D (Branch 7
 49 {D Leaf} {D Leaf})} {D Leaf})})}
 \end{verbatim}
-
 For the ease of reading we use a special |Show| instance for the |Fix| type
 that prints the inner structure within curly braces instead of printing an
 explicit |In| constructor.
@@ -367,8 +376,12 @@ explicit |In| constructor.
 
 \subsection{Multi level annotations}
 
+\andres[inline]{I do not like this subsection. It has no motivation, and
+it looks like |fullyIn| and |fullyOut| should be instances of proper
+recursion patterns and not be defined directly.}
+
 Both the |inA| and |outA| functions work on a single level of an annotated
-recursive datatype. In terms of these two function we define two functions that
+recursive datatype. In terms of these two functions we define two functions that
 respectively annotate or unannotate an entire recursive structure:
 
 > fullyIn :: In a f m => Fix f -> m (FixA a f)
@@ -407,7 +420,7 @@ ghci> fullyOut it
 
 We define an additional type that represents a recursive structure of which the
 top contains no annotations but the sub structures are fully annotated. The
-unannotated top may contains multiple levels. The |FixBotA| type uses the fixed
+unannotated top may contain multiple levels. The |FixBotA| type uses the fixed
 point combinator with in combination with a sum type:
 
 > type FixBotA a f = Fix (f :+: K (FixA a f))
@@ -440,6 +453,8 @@ A helper function |topIn| can be used to wrap the unannotated top part of a
 
 \subsection{Identity annotations}\label{sec:identity}
 
+\andres[inline]{Move into the beginning and use as running example}
+
 With the debug annotation we have shown how to associate custom functionality
 with the construction and destruction of recursive datatypes. We now define an
 identity annotation that is used to construct recursive datatypes that do not
@@ -465,4 +480,6 @@ unannotated structure:
 > fullyOutId :: Traversable f => FixA Id f -> Fix f
 > fullyOutId = runIdentity . fullyOut
 
-
+\andres[inline]{It would be nice (but isn't strictly necessary) to have a
+little summary at this point. In particular, what other annotations are there?
+With debug and identity, the reader has not yet seen much.}

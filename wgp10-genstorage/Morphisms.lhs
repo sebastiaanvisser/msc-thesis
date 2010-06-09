@@ -25,7 +25,7 @@
 
 %endif
 
-\section{Abstracting away from recursion}
+\section{Recursion patterns}
 
 In the previous section we have seen how to write recursive datatypes with an
 additional type parameter for the recursive positions and using a fixed point

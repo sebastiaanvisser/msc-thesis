@@ -32,7 +32,7 @@ In the previous section we have deliberately build a |Ptr| type with to type
 parameters, the functor type |f| with an explicit index |a|. Due to these two
 type parameters the type becomes usable as a fixed point annotation. We can
 make the |Ptr| type an instance of both the |Out| and |In| type class from
-section \ref{sec:fixann}. We associate the pointer annotation with the |Heap|
+section \ref{sec:annotations}. We associate the pointer annotation with the |Heap|
 context and use the |read| operations as the implementation for |outA| and use
 the |write| operation as the implementation for |inA|:
 
