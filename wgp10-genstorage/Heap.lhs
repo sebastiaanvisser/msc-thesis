@@ -19,6 +19,8 @@
 
 \section{File based storage heap}
 
+\todo{explain why/what}
+
 In this section we introduce a block based heap data structure that is used to
 allocate and use blocks of binary data on disk. The structure of the heap is
 similar of in-memory heaps used by most programming languages to manage
