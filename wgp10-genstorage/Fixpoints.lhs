@@ -191,6 +191,7 @@ as an explicit catamorphism.}
 %endif
 
 \subsection{Fixed point annotations}
+\label{sec:fixann}
 
 \todo{bad sentence}
 Having around the |fmap| and |mapM| functions to work with the recursive
