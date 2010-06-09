@@ -28,61 +28,35 @@
 \section{Working with fixed points}
 \label{sec:fixpoints}
 
-Recursive datatypes in Haskell are a fundamental tool in building functional
-data structures. Algebraic datatypes allow referring back to the original
-definition in the fields of the constructor to form recursion. An example of
-recursive datatype is the following binary search tree storing both keys and
-values:
+\andres{This section needs an overall introduction. What is the goal,
+what is its purpose in the whole story? Also, the first part is quite
+trivial and can be shortened if space is needed.}
+
+Most interesting datatypes are recursive. Here is an example -- a datatype
+for binary search trees storing both keys and values:
+\andres{Since we insist that this is a BST, we have to say something about
+the BST property somewhere.}
 
 > data  Tree1 k v
 >    =  Leaf1 | Branch1 k v (Tree1 k v) (Tree1 k v)
 
-Branches of the binary tree store both keys and values, and a left and right
-sub tree. No values are stored in the leafs of the tree.
+The constructor |Branch1| represents an internal node, containing a key,
+a value, a left and a right subtree. Leaves do not contain values and
+are represented by |Leaf1|.
 
-Using the |Leaf1| and |Branch1| constructors we can now build an example binary
-search tree:
+Using the constructors |Leaf1| and |Branch1|, we can build an example
+binary search tree:
 
 > myTree :: Tree1 Int Int
-> myTree = Branch1 3 9
->   (Branch1 1 1 Leaf1 Leaf1) 
->   (Branch1 4 16 (Branch1 7 49 Leaf1 Leaf1) Leaf1)
+> myTree = Branch1 3 9  (Branch1 1 1   Leaf1
+>                                      Leaf1) 
+>                       (Branch1 4 16  (Branch1 7 49  Leaf1
+>                                                     Leaf1)
+>                                      Leaf1)
 
-This example binary tree is illustrated in figure \ref{fig:binarytree}.
+This example binary tree is illustrated in Figure~\ref{fig:binarytree}.
 
-The recursive definition of the datatypes drives the recursive definition of
-the operations on the types. The |lookup| function for example, takes a key and
-a binary search tree and recursively descends the tree until a value is found
-or a leaf is encountered. When the function encounters a branch a comparison is
-done between the key to be looked up and the key at the branch. When the key to
-be looked up is less-than the current key the function descends into the left
-sub-tree, otherwise the right sub-tree is used. When arrived at a leaf, no
-value is found and |Nothing| is returned.
-
-> lookup1 :: Ord k => k -> Tree1 k v -> Maybe v
-> lookup1 _  Leaf1              = Nothing
-> lookup1 k  (Branch1 c w l r)  =
->   case k `compare` c of
->     LT  -> lookup1 k l
->     EQ  -> Just w
->     GT  -> lookup1 k r
-
-Another example is the |insert| function that inserts a new key/value pair into
-a binary tree. Like |lookup1|, the function performs a key comparison to make
-sure the tree is still a binary search tree after insertion.
-
-> insert1 :: Ord k => k -> v -> Tree1 k v -> Tree1 k v
-> insert1 k v Leaf1              = Branch1 k v Leaf1 Leaf1
-> insert1 k v (Branch1 n x l r)  =
->   case k `compare` n of
->     LT  -> Branch1 n x (insert1 k v l) r
->     _   -> Branch1 n x l (insert1 k v r)
-
-Both the |lookup| and |insert| functions show that the recursive invocations
-happen exactly at the places where the recursive positions of the |Tree|
-datatype are being touched. 
-
-\begin{figure}[hp]
+\begin{figure}[tp]
 \label{fig:binarytree}
 \begin{center}
 \includegraphics[scale=0.35]{img/binarytree.pdf}
@@ -90,7 +64,37 @@ datatype are being touched.
 \caption{An example of a binary tree.}
 \end{figure}
 
-We use this observation to... \todo{todo}
+Functions that operate on a datatype often follow the structure of the
+datatype closely. If the underlying datatype is recursive, the function
+is recursive as well. Consider as an example the |lookup| function on
+binary search trees: it takes a key and a tree and recursively descends
+the tree. In each branch, the stored key is compared with the given key.
+Depending on the outcome of the comparison, the left or right subtrees are
+traversed, or the value is returned. If the traversal reaches a leaf,
+nothing is returned.
+
+> lookup1 :: Ord k => k -> Tree1 k v -> Maybe v
+> lookup1 _  Leaf1              =  Nothing
+> lookup1 k  (Branch1 n x l r)  =  case k `compare` n of
+>                                    LT  ->  lookup1 k l
+>                                    EQ  ->  Just x
+>                                    GT  ->  lookup1 k r
+
+Another example is the |insert| function that inserts a new key-value pair into
+a binary tree. Like |lookup1|, the function performs a key comparison to ensure
+that the binary search tree property is preserved by the operation.
+\andres{We might want to mention the absence of rotations in a footnote.}
+
+> insert1 :: Ord k => k -> v -> Tree1 k v -> Tree1 k v
+> insert1 k v Leaf1              =  Branch1 k v Leaf1 Leaf1
+> insert1 k v (Branch1 n x l r)  =  case k `compare` n of
+>                                     LT  ->  Branch1 n x (insert1 k v l) r
+>                                     _   ->  Branch1 n x l (insert1 k v r)
+
+Both |lookup1| and |insert1| follow a similar pattern. They recurse
+at exactly the places where the underlying datatype |Tree| is recursive.
+In the following, we are going to make the use of recursion in the datatype
+explicit, and abstract from the common pattern.
 
 \subsection{Fixed point combinator}
 
