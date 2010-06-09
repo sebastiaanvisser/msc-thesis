@@ -172,7 +172,7 @@ figure is using $\mu$ rather than |In|.}
 \begin{center}
 \includegraphics[scale=0.35]{img/binarytree-fix.pdf}
 \end{center}
-\caption{An example of a binary tree.}
+\caption{Binary tree with explicit recursion.}
 \end{figure}
 
 \andres[inline]{At this point (or earlier), we have to introduce
@@ -192,34 +192,40 @@ as an explicit catamorphism.}
 
 \subsection{Fixed point annotations}
 
-\todo{bad sentence}
-Having around the |fmap| and |mapM| functions to work with the recursive
-structures inside a recursive datatype is very useful, but aside from that
-wrapping individual non-recursives parts of a recursive datatype in an |In|
-constructor from the |Fix| combinator does not gain us much on itself.
+By moving from a recursive datatype to an open recursive datatype, we now
+have control about what to do with recursive positions. As we have just seen,
+we can plug everything together as before using the fixed point combinator |Fix|.
+However, we can now decide to also do something else. In particular, we can
+decide to store additional information at each recursive position.
 
-Now that we have explicit control over the recursion of our binary tree
-datatype we abuse the fixed point combinator to store additional information at
-the recursive positions.
-
-The annotated fixed point combinator |FixA| uses an additional annotation type
-|ann| that is stored at the recursive positions of an open recursive datatype.
-The |ann| type is parametrized with the original functor |f|.
+For this purpose, we introduce the \emph{annotated} fixed point combinator~|FixA|:
 
 > type FixA ann f = Fix (ann f)
+
+Instead of taking the fixed point of |f|, we take the fixed point of |ann f|,
+where |ann| is a type constructor (of kind |(* -> *) -> * -> *|) that can be used to add
+additional information to the datatype.
 
 We now make an annotated binary search tree by applying the |FixA| combinator
 to our tree functor:
 
 > type TreeA k v ann = FixA ann (TreeF k v)
 
-Building an annotated binary search tree now requires wrapping the
+If we instantiate |ann| with the type-level identity
+
+> newtype Id f ix = Id { unId :: f ix }
+
+we once again obtain a type that is isomorphic to our original |Tree1|. 
+We return to the identity annotation in Section~\ref{sec:identity}.
+In Section~\ref{sec:debug}, we present an example of a non-trivial annotation.
+
+Building an annotated binary search tree of type |TreeA| requires wrapping the
 non-recursive nodes in both an |In| constructor from the fixed point combinator
-\emph{and} wrapping the values inside an annotation. We introduce a type class
-|In| that enabled us to wrap a single node in an annotation. The |inA| class
+and adding an annotation. We introduce a type class |In| that enabled us to wrap
+a single node in an annotation. The |inA| class
 method takes a single node with \emph{fully annotated sub-structures} and wraps
-the node in an annotation type |ann|, this is done is an associated effectful
-context |m|:
+the node in an annotation type~|ann|, this is done is an associated effectful
+context~|m|:
 
 > class (Traversable f, Monad m) => In ann f m where
 >   inA :: f (FixA ann f) -> m (ann f (FixA ann f))
@@ -344,12 +350,12 @@ For the ease of reading we use a special |Show| instance for the |Fix| type
 that prints the inner structure within curly braces instead of printing an
 explicit |In| constructor.
 
-\begin{figure}[hp]
-\label{fig:binarytree}
+\begin{figure}[tp]
+\label{fig:binarytreeann}
 \begin{center}
 \includegraphics[scale=0.35]{img/binarytree-ann.pdf}
 \end{center}
-\caption{An example of a binary tree.}
+\caption{Binary tree with annotations.}
 \end{figure}
 
 \subsection{Multi level annotations}
@@ -425,7 +431,7 @@ A helper function |topIn| can be used to wrap the unannotated top part of a
 >   where  sum f _  (L  l)  = f  l
 >          sum _ g  (R  r)  = g  r
 
-\subsection{Identity annotations}
+\subsection{Identity annotations}\label{sec:identity}
 
 With the debug annotation we have shown how to associate custom functionality
 with the construction and destruction of recursive datatypes. We now define an
