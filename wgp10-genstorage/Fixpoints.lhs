@@ -376,8 +376,12 @@ explicit |In| constructor.
 
 \subsection{Multi level annotations}
 
+\andres[inline]{I do not like this subsection. It has no motivation, and
+it looks like |fullyIn| and |fullyOut| should be instances of proper
+recursion patterns and not be defined directly.}
+
 Both the |inA| and |outA| functions work on a single level of an annotated
-recursive datatype. In terms of these two function we define two functions that
+recursive datatype. In terms of these two functions we define two functions that
 respectively annotate or unannotate an entire recursive structure:
 
 > fullyIn :: In a f m => Fix f -> m (FixA a f)
@@ -416,7 +420,7 @@ ghci> fullyOut it
 
 We define an additional type that represents a recursive structure of which the
 top contains no annotations but the sub structures are fully annotated. The
-unannotated top may contains multiple levels. The |FixBotA| type uses the fixed
+unannotated top may contain multiple levels. The |FixBotA| type uses the fixed
 point combinator with in combination with a sum type:
 
 > type FixBotA a f = Fix (f :+: K (FixA a f))
@@ -449,6 +453,8 @@ A helper function |topIn| can be used to wrap the unannotated top part of a
 
 \subsection{Identity annotations}\label{sec:identity}
 
+\andres[inline]{Move into the beginning and use as running example}
+
 With the debug annotation we have shown how to associate custom functionality
 with the construction and destruction of recursive datatypes. We now define an
 identity annotation that is used to construct recursive datatypes that do not
@@ -474,4 +480,6 @@ unannotated structure:
 > fullyOutId :: Traversable f => FixA Id f -> Fix f
 > fullyOutId = runIdentity . fullyOut
 
-
+\andres[inline]{It would be nice (but isn't strictly necessary) to have a
+little summary at this point. In particular, what other annotations are there?
+With debug and identity, the reader has not yet seen much.}
