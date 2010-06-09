@@ -1,5 +1,8 @@
 \section{Further work}
 
+\subsection{Laziness}
+\subsection{Sharing}
+
 \section{Related work}
 
 \subsection{Generic storage in Clean}
