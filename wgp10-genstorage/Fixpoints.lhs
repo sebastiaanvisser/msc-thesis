@@ -28,11 +28,12 @@
 \section{Working with fixed points}
 \label{sec:fixpoints}
 
-\andres{This section needs an overall introduction. What is the goal,
-what is its purpose in the whole story? Also, the first part is quite
-trivial and can be shortened if space is needed.}
+\andres[inline]{Introduction: First fixed points. Well known. Lots of
+related work. Then annotated fixed points and example annotations.}
 
-Most interesting datatypes are recursive. Here is an example -- a datatype
+\subsection{Recursive datatypes}
+
+Interesting datatypes are usually recursive. Here is an example -- a datatype
 for binary search trees storing both keys and values:
 \andres{Since we insist that this is a BST, we have to say something about
 the BST property somewhere.}
@@ -172,7 +173,7 @@ figure is using $\mu$ rather than |In|.}
 \begin{center}
 \includegraphics[scale=0.35]{img/binarytree-fix.pdf}
 \end{center}
-\caption{An example of a binary tree.}
+\caption{Binary tree with explicit recursion.}
 \end{figure}
 
 \andres[inline]{At this point (or earlier), we have to introduce
@@ -193,51 +194,49 @@ as an explicit catamorphism.}
 \subsection{Fixed point annotations}
 \label{sec:fixann}
 
-\todo{bad sentence}
-Having around the |fmap| and |mapM| functions to work with the recursive
-structures inside a recursive datatype is very useful, but aside from that
-wrapping individual non-recursives parts of a recursive datatype in an |In|
-constructor from the |Fix| combinator does not gain us much on itself.
+By moving from a recursive datatype to an open recursive datatype, we now
+have control about what to do with recursive positions. As we have just seen,
+we can plug everything together as before using the fixed point combinator |Fix|.
+However, we can now decide to also do something else. In particular, we can
+decide to store additional information at each recursive position.
 
-Now that we have explicit control over the recursion of our binary tree
-datatype we abuse the fixed point combinator to store additional information at
-the recursive positions.
-
-The annotated fixed point combinator |FixA| uses an additional annotation type
-|ann| that is stored at the recursive positions of an open recursive datatype.
-The |ann| type is parametrized with the original functor |f|.
+For this purpose, we introduce the \emph{annotated} fixed point combinator~|FixA|:
 
 > type FixA ann f = Fix (ann f)
+
+Instead of taking the fixed point of |f|, we take the fixed point of |ann f|,
+where |ann| is a type constructor (of kind |(* -> *) -> * -> *|) that can be used to add
+additional information to the datatype.
 
 We now make an annotated binary search tree by applying the |FixA| combinator
 to our tree functor:
 
 > type TreeA k v ann = FixA ann (TreeF k v)
 
-Building an annotated binary search tree now requires wrapping the
+If we instantiate |ann| with the type-level identity
+
+> newtype Id f ix = Id { unId :: f ix }
+
+we once again obtain a type that is isomorphic to our original |Tree1|. 
+We return to the identity annotation in Section~\ref{sec:identity}.
+In Section~\ref{sec:debug}, we present an example of a non-trivial annotation.
+
+Building an annotated binary search tree of type |TreeA| requires wrapping the
 non-recursive nodes in both an |In| constructor from the fixed point combinator
-\emph{and} wrapping the values inside an annotation. We introduce a type class
-|In| that enabled us to wrap a single node in an annotation. The |inA| class
+and adding an annotation. We introduce a type class |In| that enabled us to wrap
+a single node in an annotation. The |inA|
 method takes a single node with \emph{fully annotated sub-structures} and wraps
-the node in an annotation type |ann|, this is done is an associated effectful
-context |m|:
+the node in an annotation type~|ann|. As we will see, annotating values can be
+associated with effects. Therefore, we place the result of |inA| in a
+monadic context~|m|:\andres{I think it would be good to give the instance for
+the identity annotation immediately. Is it clear why |Traversable| should
+be a superclass?}
 
 > class (Traversable f, Monad m) => In ann f m where
 >   inA :: f (FixA ann f) -> m (ann f (FixA ann f))
 
-The dual of the |In| type class is the |Out| type class that is used to unwrap
-values from an annotation type. The |outA| method takes an annotated structure
-with fully annotated substructures and unwraps the annotation to come up with a
-node |f| with fully annotated structures at the recursive positions. Again,
-this class method works in some effectful context |m|.
-
-> class (Traversable f, Monad m) => Out ann f m where
->   outA :: ann f (FixA ann f) -> m (f (FixA ann f)) 
-
-Using the |In| type class we now make two new smart constructors for the binary
-tree datatype. Because we wrap the |Leaf| and |Branch| constructors in an
-annotation using the |inA| function we see the |In| class appear in the
-function contexts:
+Using the |In| type class, we define two new smart constructors for the annotated
+binary tree datatype:
 
 > leafA :: In ann (TreeF k v) m => m (TreeA k v ann)
 > leafA = In `liftM` inA Leaf
@@ -249,7 +248,7 @@ function contexts:
 
 The |leafA| and |branchA| smart constructors can be used to build up annotated
 binary search tree for some annotation type |ann|. Because the annotation type
-is associated with a monadic contect we now build our example tree in monadic
+is associated with a monadic context we now build our example tree in monadic
 style:
 
 > myTree_a :: In ann (TreeF Int Int) m => m (TreeA Int Int ann)
@@ -260,7 +259,20 @@ style:
 >       f  <- branchA 4 16  d  l
 >       branchA 3 9 e f
 
-In figure \todo{fig}.
+\andres{Is another figure needed here?}
+
+The dual of the |In| type class is the |Out| type class that is used to unwrap
+values from an annotation type. The |outA| method takes an annotated structure
+with fully annotated substructures and unwraps the annotation to come up with a
+node |f| with fully annotated structures at the recursive positions. Again,
+this class method works in some monadic context~|m|.
+
+> class (Traversable f, Monad m) => Out ann f m where
+>   outA :: ann f (FixA ann f) -> m (f (FixA ann f)) 
+
+\andres[inline]{Again, I think we should show an instance, for example for the
+identity annotation. Also, we are getting ahead of things at this point, because
+we introduce abstraction without seeing the need for it.}
 
 \subsection{Example annotation: debug trace}
 \label{sec:debug}
@@ -345,12 +357,12 @@ For the ease of reading we use a special |Show| instance for the |Fix| type
 that prints the inner structure within curly braces instead of printing an
 explicit |In| constructor.
 
-\begin{figure}[hp]
-\label{fig:binarytree}
+\begin{figure}[tp]
+\label{fig:binarytreeann}
 \begin{center}
 \includegraphics[scale=0.35]{img/binarytree-ann.pdf}
 \end{center}
-\caption{An example of a binary tree.}
+\caption{Binary tree with annotations.}
 \end{figure}
 
 \subsection{Multi level annotations}
@@ -426,7 +438,7 @@ A helper function |topIn| can be used to wrap the unannotated top part of a
 >   where  sum f _  (L  l)  = f  l
 >          sum _ g  (R  r)  = g  r
 
-\subsection{Identity annotations}
+\subsection{Identity annotations}\label{sec:identity}
 
 With the debug annotation we have shown how to associate custom functionality
 with the construction and destruction of recursive datatypes. We now define an
