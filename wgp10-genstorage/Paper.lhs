@@ -26,6 +26,7 @@
 
 \usepackage{todonotes}
 \usepackage{amsmath}
+\usepackage{mathptmx}
 \usepackage{natbib}
 
 %include polycode.fmt
