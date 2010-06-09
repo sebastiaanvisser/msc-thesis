@@ -17,6 +17,7 @@
 %format lookup1             = "\Varid{lookup}"
 %format insert1             = "\Varid{insert}"
 
+%format TreeP               = "\Conid{Tree_P}"
 %format TreeF               = "\Conid{Tree_F}"
 %format TreeA               = "\Conid{Tree_\alpha}"
 %format leafA               = "\Varid{leaf_\alpha}"

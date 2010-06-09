@@ -20,7 +20,7 @@
 > import Data.Traversable
 > import Prelude hiding (mapM, sum)
 > import Control.Monad hiding (mapM)
-> import Control.Monad.Identity hiding (mapM)
+> import Control.Monad.Identity
 > import Generics.Regular (deriveAll, PF)
 
 %endif
@@ -460,7 +460,9 @@ with the construction and destruction of recursive datatypes. We now define an
 identity annotation that is used to construct recursive datatypes that do not
 have any associated functionality.
 
-> newtype Id f ix = Id { unId :: f ix }
+\begin{spec}
+newtype Id f ix = Id { unId :: f ix }
+\end{spec}
 
 The |Out| and |In| instances for the |Id| type solely unwrap and wrap the |Id|
 constructor and do not perform any side effects. Because the associated context
