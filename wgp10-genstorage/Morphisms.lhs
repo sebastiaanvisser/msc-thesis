@@ -36,7 +36,7 @@ construction and destruction of recursive datatype.
 
 Writing operations on annotated datatypes is hard; every time we touch a
 recursive position we need to explicitly wrap/unwrap an annotation. Because the
-annotation have an associated context all operations must also be written in
+annotations have an associated context all operations must also be written in
 monadic style. In this section we solve this problem by abstracting away from
 recursion by writing operations as algebras for recursive morphisms.
 
@@ -52,7 +52,7 @@ from a single seed value, these function are called \emph{producer} functions.
 datatypes, these function are called \emph{modifier} functions.
 \end{enumerate}
 
-\todo{explain other morphisms might be useful}
+\todo{explain other morphisms might be useful, dependent on the input/ouput}
 
 \subsection{Destructing with paramorphisms}
 
