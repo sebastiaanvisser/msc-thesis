@@ -28,11 +28,12 @@
 \section{Working with fixed points}
 \label{sec:fixpoints}
 
-\andres{This section needs an overall introduction. What is the goal,
-what is its purpose in the whole story? Also, the first part is quite
-trivial and can be shortened if space is needed.}
+\andres[inline]{Introduction: First fixed points. Well known. Lots of
+related work. Then annotated fixed points and example annotations.}
 
-Most interesting datatypes are recursive. Here is an example -- a datatype
+\subsection{Recursive datatypes}
+
+Interesting datatypes are usually recursive. Here is an example -- a datatype
 for binary search trees storing both keys and values:
 \andres{Since we insist that this is a BST, we have to say something about
 the BST property somewhere.}
@@ -222,27 +223,19 @@ In Section~\ref{sec:debug}, we present an example of a non-trivial annotation.
 Building an annotated binary search tree of type |TreeA| requires wrapping the
 non-recursive nodes in both an |In| constructor from the fixed point combinator
 and adding an annotation. We introduce a type class |In| that enabled us to wrap
-a single node in an annotation. The |inA| class
+a single node in an annotation. The |inA|
 method takes a single node with \emph{fully annotated sub-structures} and wraps
-the node in an annotation type~|ann|, this is done is an associated effectful
-context~|m|:
+the node in an annotation type~|ann|. As we will see, annotating values can be
+associated with effects. Therefore, we place the result of |inA| in a
+monadic context~|m|:\andres{I think it would be good to give the instance for
+the identity annotation immediately. Is it clear why |Traversable| should
+be a superclass?}
 
 > class (Traversable f, Monad m) => In ann f m where
 >   inA :: f (FixA ann f) -> m (ann f (FixA ann f))
 
-The dual of the |In| type class is the |Out| type class that is used to unwrap
-values from an annotation type. The |outA| method takes an annotated structure
-with fully annotated substructures and unwraps the annotation to come up with a
-node |f| with fully annotated structures at the recursive positions. Again,
-this class method works in some effectful context |m|.
-
-> class (Traversable f, Monad m) => Out ann f m where
->   outA :: ann f (FixA ann f) -> m (f (FixA ann f)) 
-
-Using the |In| type class we now make two new smart constructors for the binary
-tree datatype. Because we wrap the |Leaf| and |Branch| constructors in an
-annotation using the |inA| function we see the |In| class appear in the
-function contexts:
+Using the |In| type class, we define two new smart constructors for the annotated
+binary tree datatype:
 
 > leafA :: In ann (TreeF k v) m => m (TreeA k v ann)
 > leafA = In `liftM` inA Leaf
@@ -254,7 +247,7 @@ function contexts:
 
 The |leafA| and |branchA| smart constructors can be used to build up annotated
 binary search tree for some annotation type |ann|. Because the annotation type
-is associated with a monadic contect we now build our example tree in monadic
+is associated with a monadic context we now build our example tree in monadic
 style:
 
 > myTree_a :: In ann (TreeF Int Int) m => m (TreeA Int Int ann)
@@ -265,7 +258,20 @@ style:
 >       f  <- branchA 4 16  d  l
 >       branchA 3 9 e f
 
-In figure \todo{fig}.
+\andres{Is another figure needed here?}
+
+The dual of the |In| type class is the |Out| type class that is used to unwrap
+values from an annotation type. The |outA| method takes an annotated structure
+with fully annotated substructures and unwraps the annotation to come up with a
+node |f| with fully annotated structures at the recursive positions. Again,
+this class method works in some monadic context~|m|.
+
+> class (Traversable f, Monad m) => Out ann f m where
+>   outA :: ann f (FixA ann f) -> m (f (FixA ann f)) 
+
+\andres[inline]{Again, I think we should show an instance, for example for the
+identity annotation. Also, we are getting ahead of things at this point, because
+we introduce abstraction without seeing the need for it.}
 
 \subsection{Example annotation: debug trace}
 \label{sec:debug}
