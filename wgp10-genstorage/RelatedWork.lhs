@@ -20,7 +20,7 @@ strict due to both the strict |State| and strict |IO| monad. The strict bind
 operator for the |Heap| monad makes the |lookupP| operation run in a mere
 $O(n)$. Every node is touched in the process.
 
-We have solved this problem by creating two separate heap context, a read-only
+We have solved this problem by creating two separate heap contexts, a read-only
 context which uses lazy IO and a read-write context that uses strict IO. The
 pointer instance for the |Out| type class is now associated with the read-only
 context, the instance for the |In| type class is associated with the read-write
@@ -36,6 +36,8 @@ context and cannot escape. Our operations are now lazy on the inside but appear
 strict on the outside.
 
 \subsection{Sharing}
+
+\section{Higher Order}
 
 \section{Related work}
 
