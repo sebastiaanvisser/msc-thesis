@@ -18,7 +18,7 @@
 > import Data.List hiding (group)
 > import Data.Monoid
 > import Prelude hiding (mapM)
-> import Control.Monad.Identity
+> import Control.Monad.Identity hiding (mapM)
 > import Control.Monad hiding (mapM)
 > import Data.Traversable
 > import Fixpoints hiding ((:+:))
@@ -31,37 +31,52 @@ In the previous section we have seen how to write recursive datatypes with an
 additional type parameter for the recursive positions and using a fixed point
 combinator to tie the knot. Using the fixed point combinator we are allowed to
 store annotation variables at the recursive positions of the datatypes. The
-|In| and |Out| type class are used to associate custom functionality to the
+|In| and |Out| type classes are used to associate custom functionality with the
 construction and destruction of recursive datatype.
 
-Writing operations on annotated datatypes is hard; every time we touch a
-recursive position we need to explicitly wrap/unwrap an annotation. Because the
-annotations have an associated context all operations must also be written in
-monadic style. In this section we solve this problem by abstracting away from
-recursion by writing operations as algebras for recursive morphisms.
+Writing operations on annotated datatypes seems comparatively hard:
+\begin{itemize}
+\item whenever we encounter a recursive position, we need to explicitly
+  wrap or unwrap an annotation; \andres{I find this statement confusing. We have
+the smart constructors for that, or not?}
+\item because adding or removing an annotation is allowed to have a monadic
+  effect, we have to write all operations in monadic style.
+\end{itemize}
+Fortunately, it turns out that we can abstract from all the tedious parts
+in writing operations on annotated values by defining and subsequently
+instantiating suitable recursion patterns.
 
-We show three different types of operations and use a different morphism for
+We show three different types of operations and use a different pattern for
 each type of operation.
 
-\begin{enumerate}
-\item We use \emph{paramorphisms} \cite{paras} to destruct recursive datatypes
-to a single result value, these function are called \emph{query} functions.
-\item We use \emph{apomorphisms} \cite{apos} to construct recursive datatypes
-from a single seed value, these function are called \emph{producer} functions.
+\begin{itemize}
+\item We use \emph{paramorphisms}~\cite{paras} to destruct recursive datatypes
+to a single result value, these functions are called \emph{query} functions.
+\item We use \emph{apomorphisms}~\cite{apos} to construct recursive datatypes
+from a single seed value, these functions are called \emph{producer} functions.
 \item We use \emph{endomorphic paramorphisms} to modify existing recursive
-datatypes, these function are called \emph{modifier} functions.
-\end{enumerate}
+datatypes, these functions are called \emph{modifier} functions.\andres{Let's
+think about the name. Perhaps \emph{modifier} is better than endomorphic
+paramorphism.}
+\end{itemize}
 
-\todo{explain other morphisms might be useful, dependent on the input/ouput}
+\todo[inline]{explain other morphisms might be useful, dependent on the input/ouput}
+
+\andres[inline]{We perhaps have to put this section in context with existing
+work, i.e., emphasize that none of the recursion patterns are really new, but
+that we place them into our annotation framework here.}
 
 \subsection{Destructing with paramorphisms}
 
-\emph{Paramorphisms} -- generalizations of the more widely know
+\andres[inline]{My first intuition is that we should explain the step from
+catamorphisms to paramorphisms in more detail if we have the space.}
+
+\emph{Paramorphisms} -- generalizations of the more widely known
 \emph{catamorphisms} \cite{bananas} -- are implemented as recursive traversals that destruct a
 recursive structure level-by-level to some result value. The traversal function
 is parametrized by an \emph{algebra}, a description of a recursive operation.
-An algebra is a function that produces a result function for a single level. As
-input an algebra takes a functor with at the recursive positions both the
+An algebra is a function that produces a result function for a single level.\andres{Rephrase.} As
+input, an algebra takes a functor with at the recursive positions both the
 results values of the destruction of previous levels and the original sub
 structures at those positions.
 
@@ -72,9 +87,9 @@ structures at those positions.
 
 %endif
 
-> data AlgA  (a  :: (  * -> *) -> * -> *  )
->            (f  ::    * -> *             )
->            (r  ::    *                  ) where
+> data AlgA  (a  ::  (  *  -> *) -> * -> *  )
+>            (f  ::     *  -> *             )
+>            (r  ::     *                   ) where
 >   Psi :: (f (r :*: FixA a f) -> r)  -> AlgA a f r
 
 The paramorphism function takes an algebra that compute a result value from a
@@ -109,20 +124,20 @@ search tree:
 >     Leaf            -> Nothing
 >     Branch c w l r  ->
 >       case k `compare` c of
->         LT -> fst l
->         EQ -> Just w
->         GT -> fst r
+>         LT  ->  fst l
+>         EQ  ->  Just w
+>         GT  ->  fst r
 
 We see the difference between this `lookup' algebra and the lookup function
-from section \ref{sec:fixpoints}: the original function directly uses recursion
-the find the value, the algebra reuses the sub results stored at the recursive
+from Section~\ref{sec:fixpoints}: the original function directly uses recursion
+the find the value, the algebra reuses the subresults stored at the recursive
 positions of the input node.
 
 We can make the algebra into a real function again by applying the |paraA|
 function to it:
 
 > lookup  ::  (Ord k, Out a (TreeF k v) m)
->         =>  k -> TreeA k v a -> m (Maybe v)
+>         =>  k -> TreeA a k v -> m (Maybe v)
 > lookup k = paraA (lookupAlg k)
 
 The algebra can be annotation agnostic, because it abstracts away from
@@ -150,11 +165,11 @@ number of different Haskell types that have a |Monoid| instance. An example is
 the |toList| function that uses the list monoid to deliver all values in a
 binary search tree in a list:
 
-> toList :: Out a (TreeF k v) m => TreeA k v a -> m [v]
+> toList :: Out a (TreeF k v) m => TreeA a k v -> m [v]
 > toList = paraA (foldAlg (\x -> [x]))
 
 We test the |toList| function by applying it to the result of the list in
-section \ref{sec:debug}. We see a full debug trace of all the unwrap steps
+Section~\ref{sec:debug}. We see a full debug trace of all the unwrap steps
 performed by paramorphic traversal:
 
 \begin{verbatim}
@@ -174,10 +189,10 @@ ghci> toList it :: IO [Int]
 \todo{we might want to change this to cata after all}
 Note that both the |lookupAlg| and the |foldAlg| algebras only use the first
 component of the tuple that is supplied to the algebra by the paramorphism.
-Because only the recursive results are used and not the original sub structures
+Because only the recursive results are used and not the original substructures
 these algebras actually are \emph{catamorphisms}, a special case of
-paramorphisms. In section \ref{sec:modification} we see a morphism in which
-also the original sub structures are used in the algebra.
+paramorphisms. In Section~\ref{sec:modification} we see a morphism in which
+also the original substructures are used in the algebra.
 
 The algebras are written in pure style, no annotations appear in the algebra
 and no monadic context is used. Using the annotated paramorphisms function we
@@ -202,9 +217,9 @@ seed value and a \emph{coalebgra}. A coalebgra takes a seed value and produces
 a single node with at the recursive positions either a new seed value or a or
 an existing recursive structure:
 
-> data CoalgA  (a :: (  * -> *) -> * -> *  )
->              (f ::    * -> *             )
->              (s ::    *                  ) where
+> data CoalgA  (a ::  (  *  -> *) -> * -> *  )
+>              (f ::     *  -> *             )
+>              (s ::     *                   ) where
 >   Phi :: (s -> f (s :+: FixBotA a f)) -> CoalgA a f s
 
 Like with algebras for paramorphisms we define an coalgebra that hides the
@@ -226,16 +241,15 @@ As an example we now build a coalgebra that creates a binary search tree from a
 list seed. We assume the seed is a sorted list. When the coalgebra receives an
 empty list a |Leaf| is produces and the construction stops. In the case of a
 non-empty list the middle element is stored in a branch, the left and right
-remains of the list are used as new seeds for left and right sub trees.
+remains of the list are used as new seeds for left and right subtrees.
 
 > fromSortedListCoalg :: Coalg [(k, v)] (TreeF k v)
 > fromSortedListCoalg = Phi $ \t ->
 >   case t of
->     []  -> Leaf
->     xs  ->
->       let l       = take ((length xs `div` 2) - 1) xs
->           (k,v):r = drop (length l               ) xs
->       in Branch k v (Left l) (Left r)
+>     []  ->  Leaf
+>     xs  ->  let  l        =  take ((length xs `div` 2) - 1) xs
+>                  (k,v):r  =  drop (length l               ) xs
+>             in Branch k v (Left l) (Left r)
 
 We lift the coalgebra to a true function |fromList| using the annotated
 apomorphism. Before applying the morphism the function sorts the input seed by
@@ -320,7 +334,7 @@ an endomorphic apomorphism, an apomorphism that takes as seed value a recursive
 structure with the same type as the structure to produce.
 
 The algebra type for the morphism takes as input seed a node with fully
-annotated sub structures and produces either a new seed with slightly modified
+annotated substructures and produces either a new seed with slightly modified
 type |FixA a f| or a final recursive structure, possibly with an yet
 unannotated top:
 
@@ -386,7 +400,7 @@ new key/value pairs into a binary search tree:
 >         _   -> Branch m w (stop  l) (next  r)
 
 The structure of the |insertEndo| function is similar to that of the |insert|
-function from section \ref{sec:fixpoints}. At the positions that the original
+function from Section~\ref{sec:fixpoints}. At the positions that the original
 |insert| directly goes into recursion this function abstract away from
 recursion using the three helpers functions.
 
@@ -394,7 +408,7 @@ We lift the |insertEndo| to a true insert function using the endomorphic
 apomorphism:
 
 > insert  :: (Ord k, OutIn a (TreeF k v) m)
->         => k -> v -> TreeA k v a -> m (TreeA k v a)
+>         => k -> v -> TreeA a k v -> m (TreeA a k v)
 > insert k v = endoA (insertEndo k v)
 
 In the this and the previous section we have shown a framework for
