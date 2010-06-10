@@ -16,13 +16,14 @@
 >   #-}
 > module Fixpoints where
 
-> import Control.Monad.Trans
-> import Data.Foldable hiding (sum)
-> import Data.Traversable
-> import Prelude hiding (mapM, sum)
 > import Control.Monad hiding (mapM)
 > import Control.Monad.Identity
+> import Control.Monad.Trans
+> import Data.Foldable hiding (sum)
+> import Data.Monoid
+> import Data.Traversable
 > import Generics.Regular (deriveAll, PF)
+> import Prelude hiding (mapM, sum)
 
 %endif
 
@@ -59,11 +60,11 @@ binary search tree:
 This example binary tree is illustrated in Figure~\ref{fig:binarytree}.
 
 \begin{figure}[tp]
-\label{fig:binarytree}
 \begin{center}
 \includegraphics[scale=0.35]{img/binarytree.pdf}
 \end{center}
 \caption{An example of a binary tree.}
+\label{fig:binarytree}
 \end{figure}
 
 Functions that operate on a datatype often follow the structure of the
@@ -105,36 +106,50 @@ to abstract from it. We move from |Tree1| to |TreeF| by adding a parameter~|r|
 that is used whereever |Tree1| makes a recursive call:
 
 > data TreeF k v rr = Leaf | Branch k v rr rr
->   deriving (Functor, Foldable, Traversable)
 
-\andres{|Foldable| is required as a superclass of |Traversable|, but confusing.}
+%if False
+
+> (<>) :: Monoid a => a -> a -> a
+> (<>) = mappend
+
+%endif
+
+\begin{figure}[tp]
+\begin{center}
+
+> instance Functor (TreeF k v) where
+>   fmap _ Leaf              = Leaf
+>   fmap f (Branch k v l r)  = Branch k v (f l) (f r)
+>
+> instance Foldable (TreeF k v) where
+>   foldMap _ Leaf              = mempty
+>   foldMap f (Branch _ _ l r)  = f l <> f r
+>
+> instance Traversable (TreeF k v) where
+>   mapM _ Leaf              = return Leaf
+>   mapM f (Branch k v l r)  = liftM2 (Branch k v) (f l) (f r)
+
+\end{center}
+\caption{The |Functor|, |Foldable| and |Traversable| type class instances for
+the pattern functor of |Tree|. These instances can be automatically derived
+using the Glasgow Haskell Compiler version |>=| 6.12.  Note that the |Functor|
+and |Traversable| instances for the |TreeF| type work on the additional type
+parameter for the recursive positions and not on the key or value types.}
+\label{fig:funcfoldtrav}
+\end{figure}
+
 The type |TreeF| is also called the \emph{pattern functor} of |Tree|. In the
 rest of this paper, we refer to datatypes defined via their pattern functor as
 \emph{open} recursive datatypes.
 
 \andres[inline]{I think that the flow here is suboptimal: We should first introduce
 the fixed point combinator, the smart constructor, the catamorphism etc. The
-whole paragraph on derived class instances is distracing at this point. Furthermore,
-I think it makes sense to actually give the instances, and perhaps say they can also
-be derived. That makes it trivial to move them to a later point.}
+whole paragraph on derived class instances is distracing at this point.
+}
 
-To gain more control over the recursive positions we automatically
-derive\footnote{Using the Glasgow Haskell Compiler |>=| 6.12.} the |Functor| and
-|Traversable| type classes. The |fmap| method from the |Functor| class can be
-used to generically map a function over the values of container datatype.  The
-|mapM| method from the |Traversable| class is similar to |fmap| but can work in
-a monadic context:
-
-\begin{spec}
-fmap  :: Functor f      => (a ->    b) -> f a ->      f b
-
-mapM  :: Traversable f  =>
-         Monad m        => (a -> m  b) -> f a -> m (  f b)
-\end{spec}
-
-Note that the |Functor| and |Traversable| instances for the |TreeF| type work
-on the additional type parameter for the recursive positions and not on the key
-or value types.
+To gain more control over the recursive positions we create instances for the
+|Functor|, |Foldable| and |Traversable| type classes. The instance
+implementations are shown in figure \ref{fig:funcfoldtrav}.
 
 We now introduce the type level fixed point combinator |Fix| that takes a type
 constructor |f| of kind |* -> *| and parametrizes |f| with its own fixed point.
@@ -170,11 +185,11 @@ and is shown in Figure~\ref{fig:binarytreefix}.\andres{The
 figure is using $\mu$ rather than |In|.}
 
 \begin{figure}[tp]
-\label{fig:binarytreefix}
 \begin{center}
 \includegraphics[scale=0.35]{img/binarytree-fix.pdf}
 \end{center}
 \caption{Binary tree with explicit recursion.}
+\label{fig:binarytreefix}
 \end{figure}
 
 \andres[inline]{At this point (or earlier), we have to introduce
@@ -371,11 +386,11 @@ that prints the inner structure within curly braces instead of printing an
 explicit |In| constructor.
 
 \begin{figure}[tp]
-\label{fig:binarytreeann}
 \begin{center}
 \includegraphics[scale=0.35]{img/binarytree-ann.pdf}
 \end{center}
 \caption{Binary tree with annotations.}
+\label{fig:binarytreeann}
 \end{figure}
 
 \subsection{Multi level annotations}

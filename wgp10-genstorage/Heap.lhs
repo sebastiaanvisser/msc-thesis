@@ -34,7 +34,6 @@ the block. The payload is an arbitrary sequence of binary data, at most the
 size stored in the payload minus the header size. 
 
 \begin{figure}[h]
-\label{fig:binarytree}
 \begin{center}
 \includegraphics[scale=0.25]{img/heap.pdf}
 \end{center}
@@ -42,6 +41,7 @@ size stored in the payload minus the header size.
 block are in use and contain a payload. The blocks are placed next to each
 other. An in-memory allocation map is used to map payload sizes to free block
 blocks of data.}
+\label{fig:binarytree}
 \end{figure}
 
 Applications that use the heap can allocate blocks of data of any size and use
@@ -189,7 +189,6 @@ map. After this it applies the heap computation and closes the file.
 %endif
 
 \begin{figure}[t]
-\label{fig:binaryclass}
 \begin{center}
 \begin{spec}
 
@@ -200,5 +199,6 @@ class Binary t where
 \end{spec}
 \end{center}
 \caption{The |Binary| type class}
+\label{fig:binaryclass}
 \end{figure}
 
