@@ -464,22 +464,23 @@ have any associated functionality.
 newtype Id f ix = Id { unId :: f ix }
 \end{spec}
 
-The |Out| and |In| instances for the |Id| type solely unwrap and wrap the |Id|
-constructor and do not perform any side effects. Because the associated context
-is irrelevant we use the |Identity| monad, that effectively yields pure code.
+The |Out| and |In| instances for the |Id1| type solely unwrap and wrap the
+|Id1| constructor and do not perform any side effects. Because the associated
+context is irrelevant we use the |Identity| monad, that effectively yields pure
+code.
 
-> instance Traversable f => In Id f Identity where
->   inA = return . Id
+> instance Traversable f => In Id1 f Identity where
+>   inA = return . Id1
 >
-> instance Traversable f => Out Id f Identity where
->   outA = return . unId
+> instance Traversable f => Out Id1 f Identity where
+>   outA = return . unId1
 
 An recursive structure annotated with the identity annotation is isomorphic to
 an unannotated structure. Using the |fullyOut| function we can make a pure
 function that converts an structure annotated with identity annotations to an
 unannotated structure:
 
-> fullyOutId :: Traversable f => FixA Id f -> Fix f
+> fullyOutId :: Traversable f => FixA Id1 f -> Fix f
 > fullyOutId = runIdentity . fullyOut
 
 \andres[inline]{It would be nice (but isn't strictly necessary) to have a

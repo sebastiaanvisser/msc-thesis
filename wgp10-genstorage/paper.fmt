@@ -52,4 +52,6 @@
 %format foldAlg             = "\Varid{fold_{ALG}}"
 %format fromSortedListCoalg = "\Varid{fromSortedList_{COALG}}"
 %format insertEndo          = "\Varid{insert_{ENDO}}"
+%format squaresP            = "\Varid{squares_{P}}"
+%format lookupP             = "\Varid{lookup_{P}}"
 

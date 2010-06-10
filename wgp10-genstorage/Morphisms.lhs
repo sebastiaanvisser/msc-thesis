@@ -122,7 +122,7 @@ We can make the algebra into a real function again by applying the |paraA|
 function to it:
 
 > lookup  ::  (Ord k, Out a (TreeF k v) m)
->         =>  k -> TreeA k v a -> m (Maybe v)
+>         =>  k -> TreeA a k v -> m (Maybe v)
 > lookup k = paraA (lookupAlg k)
 
 The algebra can be annotation agnostic, because it abstracts away from
@@ -150,7 +150,7 @@ number of different Haskell types that have a |Monoid| instance. An example is
 the |toList| function that uses the list monoid to deliver all values in a
 binary search tree in a list:
 
-> toList :: Out a (TreeF k v) m => TreeA k v a -> m [v]
+> toList :: Out a (TreeF k v) m => TreeA a k v -> m [v]
 > toList = paraA (foldAlg (\x -> [x]))
 
 We test the |toList| function by applying it to the result of the list in
@@ -186,13 +186,14 @@ the annotated structure where needed. We can also specialize the paramorphisms
 function to only work for the identity annotation in the identity monad. Now we
 gain pure operations on unannotated structures:
 
-> para :: Traversable f => AlgA Id f r -> Fix f -> r
+> para :: Traversable f => AlgA Id1 f r -> Fix f -> r
 > para p = runIdentity . paraA p . runIdentity . fullyIn
 
 By abstracting away from recursion we can reuse a single operation in different
 contexts, both for annotated and unannotated recursive structures.
 
 \subsection{Constructing with apomorphisms}
+\label{sec:apomorphisms}
 
 Where paramorphisms are used to destruct recursive datatypes into a result
 value, \emph{apomorphisms} are used to construct recursive datatypes from a
@@ -269,7 +270,7 @@ ghci> fromList squares :: IO (TreeD Int Int)
 Like with the paramorphism we can simply create a pure, unannotated variant of
 the apomorphism by using the identity annotation in the identity monad:
 
-> apo :: Traversable f => CoalgA Id f s -> s -> Fix f
+> apo :: Traversable f => CoalgA Id1 f s -> s -> Fix f
 > apo phi = runIdentity . fullyOut . runIdentity . apoA phi
 
 \subsection{Modification with endomorphisms}
@@ -394,7 +395,7 @@ We lift the |insertEndo| to a true insert function using the endomorphic
 apomorphism:
 
 > insert  :: (Ord k, OutIn a (TreeF k v) m)
->         => k -> v -> TreeA k v a -> m (TreeA k v a)
+>         => k -> v -> TreeA a k v -> m (TreeA a k v)
 > insert k v = endoA (insertEndo k v)
 
 In the this and the previous section we have shown a framework for

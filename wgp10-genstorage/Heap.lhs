@@ -18,6 +18,7 @@
 %endif
 
 \section{File based storage heap}
+\label{sec:heap}
 
 \todo{explain why/what}
 
