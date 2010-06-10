@@ -11,16 +11,12 @@
 > module Storage where
 
 > import Control.Monad
-> import Control.Monad.Trans
-> import Control.Applicative
-> import Prelude hiding (read, lookup)
-> import Data.Traversable
 > import Data.Binary
-> import Heap
+> import Data.Traversable
 > import Fixpoints
+> import Heap
 > import Morphisms
-> import qualified Generics.Regular.Functions.Binary as G
-> import qualified Prelude as Prelude
+> import Prelude hiding (read, lookup)
 
 %endif
 
@@ -176,54 +172,27 @@ write <=< f <=< read
 Recall the |fetch| heap operation from section \ref{sec:heap}, after reading a
 node from disk it immediately frees it.  By using |fetch| instead of |read| we
 make all modification to the persistent data structure are \emph{in-place,
-mutable updates}. 
+mutable updates}. \todo{only usable when being lazy}
 
-% We use the example construction function |myTree_a| from section
-% \ref{sec:fixann} and specialize the type to the |Ptr| annotation in the |Heap|
-% context. We run the function as a heap operations against an empty file.
-% 
-% \begin{verbatim}
-% ghci> let tree = myTree_a :: Heap (TreeP Int Int)
-% ghci> run "test.db" tree
-% \end{verbatim}
+With the |OutIn| instance we can now also project modification functions like
+|insert| to work on the persistent storage:
+
+> insertP :: Int -> Int -> TreeP Int Int -> Heap (TreeP Int Int)
+> insertP = insert
 
 
+> modify :: Binary (f (Fix f)) => (Fix f -> Heap (Fix f)) -> Heap ()
+> modify c = read (P 0) >>= c . In >>= update (P 0) . out
 
+\begin{verbatim}
+ghci> run "squares.db" (query (lookupP 9))
+Nothing
+ghci> run "squares.db" (modify (insertP 9 81))
+ghci> run "squares.db" (query (lookupP 9))
+Just 81
+\end{verbatim}
 
-% 
-% 
-% 
-% 
-% > modify :: Binary (f (Fix f)) => (Fix f -> Heap (Fix f)) -> Heap ()
-% > modify c = read (P 0) >>= c . In >>= update (P 0) . out
-% 
-% 
-% 
-% 
-% > lookupP :: (Ord k, Binary k, Binary v) => k
-% >         -> TreeP k v -> Heap (Maybe v)
-% > lookupP = lookup
-% 
-% > insertP :: (Ord k, Binary k, Binary v) =>
-% >      k -> v -> TreeP k v -> Heap (TreeP k v)
-% > insertP = insert
-% 
-% > main :: IO ()
-% > main =
-% >   do  run "squares.db" $ produce $
-% >         (fromListP (map (\a -> (a, a*a)) [1..10::Int]))
-% >       putStrLn "Database created."
-% 
-% > main' :: IO ()
-% > main' =
-% >   run "squares.db" $ forever $
-% >     do liftIO $ putStr "Give a number> "
-% >        num <- Prelude.read <$> liftIO getLine
-% >        sqr <- query (lookupP num)  -- actual lookup
-% >        case sqr of
-% >          Nothing -> do modify (insertP num (num * num))
-% >                        liftIO (putStrLn "inserted")
-% >          Just s  -> liftIO $ print ( num :: Int
-% >                                    , s   :: Int
-% >                                    )
+Using this building blocks we... \todo{blablabl}
+
+Appendix a shows an example program.
 

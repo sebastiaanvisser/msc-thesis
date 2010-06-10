@@ -54,4 +54,5 @@
 %format insertEndo          = "\Varid{insert_{ENDO}}"
 %format squaresP            = "\Varid{squares_{P}}"
 %format lookupP             = "\Varid{lookup_{P}}"
+%format insertP             = "\Varid{insert_{P}}"
 
