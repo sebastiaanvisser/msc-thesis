@@ -21,6 +21,7 @@
 %endif
 
 \section{Persistent data structures}
+\label{sec:storage}
 
 \todo{Intro: In section ? we have X and in section ? we have Y and now we combine.}
 
