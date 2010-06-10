@@ -16,6 +16,7 @@
 >   #-}
 > module Fixpoints where
 
+> import Control.Monad.Trans
 > import Data.Foldable hiding (sum)
 > import Data.Traversable
 > import Prelude hiding (mapM, sum)
@@ -307,8 +308,9 @@ by calling |inA|, whereas values are extracted from annotations using |outA|.
 The |In| instance for the |Debug| type prints a message that indicates which
 value is being constructed, and then returns that value:\andres{verify}
 
-> instance  (Traversable f, Show (f ())) => In Debug f IO
->    where  inA = return . D <=< printer "in"
+> instance  (MonadIO m, Traversable f, Show (f ()))
+>       =>  In Debug f m where
+>   inA = return . D <=< printer "in"
 
 \andres[inline]{The following paragraph on Kleisli composition breaks the
 flow. I would either cut it down sufficiently to be able to ban it to a
@@ -325,14 +327,16 @@ of the |<=<| operator is:
 The |Out| instance for |Debug| drops the annotation marker, prints
 the extracted value and returns it:
 
-> instance  (Traversable f, Show (f ())) => Out Debug f IO
->    where  outA = printer "out" . unD
+> instance  (MonadIO m, Traversable f, Show (f ()))
+>       =>  Out Debug f m where
+>   outA = printer "out" . unD
 
 Both class methods use a helper function |printer| that print a single level of
 a recursive structure to the console.\andres{Too late, see above.} 
 
-> printer :: (Functor f, Show (f ())) => String -> f a -> IO (f a)
-> printer s f = print (s, fmap (const ()) f) >> return f
+> printer  ::  (MonadIO m, Functor f, Show (f ()))
+>          =>  String -> f a -> m (f a)
+> printer s f = liftIO (print (s, fmap (const ()) f) >> return f)
 
 We specialize our annotated binary tree to a debug tree as follows:
 
