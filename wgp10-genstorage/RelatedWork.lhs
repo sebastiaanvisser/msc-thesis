@@ -109,48 +109,58 @@ finger tree to have are encoded using the datatype indices.
 
 \subsection{Generic programming with fixed points}
 
-Generic programming with fixed point is a well explored area, both for regular
-datatypes \cite{polyp} and mutually recursive datatypes \cite{multirec}. Most
+Generic programming with fixed points is a well-explored area, both for regular
+datatypes~\cite{polyp}\andres{Cite Backhouse?}
+and mutually recursive datatypes~\cite{multirec}. Most
 generic programming approaches use fixed points of nested sums of product, a
 view in which recursion, constructors, and constructor fields of algebraic
 datatypes are represented. Our approach uses a more limited view in which we
 only abstract away from recursion. The nested sums of product view is useful
 when writing operations that are truly datatype generic. Only abstracting away
 from recursion has shown to be useful when generically annotating datatype
-specific operations.
+specific operations.\andres{Might need a rewrite. ``Generic'' has been
+used in our sense before, which is good.}
 
 Recursion patterns for working with non-regular recursive datatypes have been
-described by Ghani and Johann \cite{initial}.
+described by Ghani and Johann~\cite{initial}.
+
+\andres[inline]{There seems to be something missing here: the general
+idea to use fixed points, has been used for many purposes, such as -- among
+other things -- to allow extension of the datatype (Garrigue, our rewriting
+paper). Martijn uses annotations of recursive structures to store line
+number information.}
 
 \subsection{Lazy IO}
 
-Lazy |IO| in Haskell has many associated problems. Pure code processing values
+Lazy IO in Haskell has many associated problems. Pure code processing values
 origination from effectful computations can trigger side effects and
-technically behave as impure code.  Kiselyov \cite{iteratee} describe iteratee
-based IO as a solution for the lazy IO problem. Until now their approach has
+technically behave as impure code.  Kiselyov \cite{iteratee} describes
+iteratee-based IO
+as a solution for the lazy IO problem. Until now their approach has
 only been shown useful for linear IO system, like processing a file line by
 line. Iterators have a structure similar to algebras for list catamorphisms,
-whether their approach is extendible to different functor types is still a
-topic of active research.
+whether their approach is extensible to different functor types is still a
+topic of active research.\andres{Is it? References? Backup?}
 
 \subsection{Persistent storage in Clean}
 
 In their paper \emph{Efficient and Type-Safe Generic Data Storage} Smetsers,
-Van Weelden and Plasmeijer \cite{clean} describe a generic storage framework
+Van Weelden and Plasmeijer~\cite{clean} describe a generic storage framework
 for the programming language Clean. Similar to our storage framework, they aim
 at generically mapping functional data structures to a persistent storage on
 disk. Using something similar to our storage heap -- they call this
-\emph{Chunks} -- they are able to persist individual parts of the data
-structures on disk without the need for reading and writing the entire
+\emph{Chunks} -- they are able to store individual parts of the data
+structures on the disk without the need for reading and writing the entire
 collection at once.
 
-The mayor difference between their approach and ours is that they do not slice
+The major difference between their approach and ours is that they do not slice
 the data structure at the recursive points but at the points where the actual
-element values are stored. This means every record value is stored in its own
+element values are stored. This means that
+every record value is stored in its own
 chunk, while they entire data structure itself is stored in one single chunk.
 Updates of individual record values can now be done efficiently without
 touching the entire collection, but for every structural change to the
-collection the chunk containing the data structure itself --- they call this
-the \emph{Root chunk} --- has to be read in and written back as a whole.
+collection the chunk containing the data structure itself -- they call this
+the \emph{Root chunk} -- has to be read in and written back as a whole.
 
-
+\andres[inline]{No other related work on storage?}
