@@ -158,40 +158,43 @@ Just 9
 
 \subsection{Persistent modification}
 
-The previous section explained how to write both persistent producer functions
-and persistent query function. Those operations either construct a new data
-structure from a seed, or compute a result value from an existing data
-structure. In this section we show how to write operations that modify existing
-data structure on disk.
+We have described how producers such as |fromList| and consumers such as
+|lookup| can easily be lifted to a persistent setting if defined in our
+generic annotation framework. We now show the same for modifiers.
 
-We start by giving an instance for the |OutIn| type class for the pointer
-annotation in the |Heap| context:
+To start, we have to give an instance for the |OutIn| type class for
+the pointer annotation in the |Heap| context:
 
 > instance (Traversable f, Binary (f (FixA Ptr f))) => OutIn Ptr f Heap
 >    where outInA f = write <=< f <=< fetch
 
-We explicitly do not reuse the default implementation for |outInA|, which for
-the |Ptr|/|Heap| instance would be equivalent to:
-
+Note that we do \emph{not} use the default implementation for |outInA|,
+which in this case would be equivalent to
 \begin{spec}
 write <=< f <=< read
 \end{spec}
+Instead, we replace |read| by |fetch|. As explained in Section~\ref{sec:heap},
+|fetch| immediately frees a block after reading it. By using |fetch| instead
+of |read|, we get the effect that all modifications to the persistent data
+structure are \emph{in-place}.\todo{only usable when being lazy}\andres{Also,
+I don't believe it. This only works if the updates are structure-preserving
+as well, so we should be a bit more careful here.}
 
-Recall the |fetch| heap operation from section \ref{sec:heap}, after reading a
-node from disk it immediately frees it.  By using |fetch| instead of |read| we
-make all modification to the persistent data structure are \emph{in-place,
-mutable updates}. \todo{only usable when being lazy}
-
-With the |OutIn| instance we can now also project modification functions like
-|insert| to work on the persistent storage:
+With the |OutIn| instance we can now also specialize modification functions
+such as |insert| to work on the persistent storage:
 
 > insertP :: Int -> Int -> TreeP Int Int -> Heap (TreeP Int Int)
 > insertP = insert
 
+Similar to |produce| and |query|, we define a function |modify|
+that applies a given modifier to the tree pointed at by the pointer
+in the null block, and stores the resulting tree pointer in the null
+block once more:
 
 > modify :: Binary (f (Fix f)) => (Fix f -> Heap (Fix f)) -> Heap ()
 > modify c = read (P 0) >>= c . In >>= update (P 0) . out
 
+Here is an example:
 \begin{verbatim}
 ghci> run "squares.db" (query (lookupP 9))
 Nothing
@@ -203,4 +206,6 @@ Just 81
 Using this building blocks we... \todo{blablabl}
 
 Appendix a shows an example program.
+
+\andres[inline]{Some summary should go here.}
 
