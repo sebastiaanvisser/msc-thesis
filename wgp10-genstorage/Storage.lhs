@@ -107,38 +107,37 @@ memory:
 Note that all we have to do is to specialize the type of the original
 operation. We can reuse exactly the same |fromList| function.
 
-The result of running the operation against a heap file is a pointer, wrapped
-inside an |In| construcotr, to the root node of the tree as stored on disk. 
-Performin the operation is as simple as supplying it to the |run| function from
-our heap data structure:
-
+The result of running the |fromList| operation against a heap file is a pointer
+to the root node of the tree as stored on disk, wrapped inside an |In|
+constructor. Performing the operation is as simple as supplying it to the |run|
+function from our heap interface:
 \begin{verbatim}
-ghci> let squares = [(1,1),(3,3),(4,16),(7,49)]
+ghci> let squares = [(1,1),(3,9),(4,16),(7,49)]
 ghci> run "squares.db" (fromListP squares)
 \end{verbatim}
 
-In figure \ref{fig:binarytree-pers} we see an illustration of our example tree
+Figure \ref{fig:binarytree-pers} shows an illustration of our example tree
 laid out on the heap. The example above does write a binary tree of integers to
 disk as we expected, but has a slight problem when used on its own: the root
-pointer of the structure is discarded and lost. We build a helper function
-|produce| that takes a producer operation, like |fromListP|, runs the operation
-on the heap \emph{and} save the final pointer in a reserved location on the
-heap:
+pointer of the structure is discarded and lost. We therefore
+define a helper function~|produce| that takes a producer operation, such as
+|fromListP|, runs the operation on the heap and then saves the final pointer
+in a reserved location on the heap:
 
 > produce :: Binary (f (Fix f)) => Heap (Fix f) -> Heap ()
 > produce c = c >>= update (P 0) . out
 
 By writing the pointer to the root of the produced functional data structure in
-the special \emph{null block} we can easily relocate it to perform consecutive
-operations on the same data structure. We remove the \texttt{squares.db} and
+the special \emph{null block} we can easily locate it again to perform
+consecutive operations on the same data structure.
+We delete the @squares.db@ file and
 run the example again, this time saving the root node:
-
 \begin{verbatim}
 ghci> run "squares.db" (produce (fromListP squares))
 \end{verbatim}
 
-We make a similar wrapper function for performing query functions. The |query|
-operation takes a heap operation and supplies it as input the data structure
+We make a similar wrapper function for performing query functions. The~|query|
+operation takes a heap operation and passes it as input the data structure
 pointed to by the pointer stored in the null block:
 
 > query :: Binary (f (Fix f)) => (Fix f -> Heap b) -> Heap b
@@ -155,7 +154,7 @@ ghci> run "squares.db" (query (lookupP 3))
 Just 9
 \end{verbatim}
 
-\todo{explain what happens}
+\todo[inline]{explain what happens}
 
 \subsection{Persistent modification}
 
