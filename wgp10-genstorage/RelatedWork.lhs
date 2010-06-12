@@ -37,6 +37,22 @@ strict on the outside.
 
 \subsection{Sharing}
 
+The storage framework described works for non-cyclic data structures.
+Non-cyclic data structure that use sharing can be stored on disk using our
+framework, but because sharing in Haskell is not observable shared structures
+will be stored more than once. Storing shared values more than once can be a
+serious space leak for datatypes that heavily rely on sharing.
+
+Solution has been proposed to make sharing in Haskell observable \cite{sharing,
+reify}. These solutions are often not very elegant, because they require some
+form of reflection on the internal machinery of the compiler runtime.
+
+It would be a useful extensions to our framework to allow designers of
+functional data structures to explicitly mark points at which sharing is
+possible. Sharing markers can limit the amount of data used to store data
+structures on disk and can even allow cyclic data structures to be saved in a
+finite amount of space.
+
 \todo{Sharing}
 
 \subsection{Higher Order}
