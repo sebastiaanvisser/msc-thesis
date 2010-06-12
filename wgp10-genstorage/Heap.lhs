@@ -20,20 +20,22 @@
 \section{File based storage heap}
 \label{sec:heap}
 
-\todo{explain why/what}
+\todo[inline]{explain why/what}
 
-In this section we introduce a block based heap data structure that is used to
+In this section, we introduce a block-based heap data structure that is used to
 allocate and use blocks of binary data on disk. The structure of the heap is
-similar of in-memory heaps used by most programming languages to manage
-dynamically allocated data.
+similar to that of in-memory heaps as used by most programming languages to
+manage dynamically allocated data.
 
 The heap uses a file to store a contiguous list of blocks of binary data. Each
 of the blocks contains a header and a payload. The header contains flag to
-tells us if the block is free or currently in-use and indication of the size of
-the block. The payload is an arbitrary sequence of binary data, at most the
-size stored in the payload minus the header size. 
+tell us if the block is currently free or in use. Furthermore, the header
+indicates the size of the block.
+The payload is an arbitrary sequence of binary data. The size of the payload
+must not exceed the size specified in the header minus the header size.
+An example layout of the heap is shown in Figure~\ref{fig:heap}.
 
-\begin{figure}[h]
+\begin{figure}[tp]
 \begin{center}
 \includegraphics[scale=0.25]{img/heap.pdf}
 \end{center}
@@ -41,14 +43,14 @@ size stored in the payload minus the header size.
 block are in use and contain a payload. The blocks are placed next to each
 other. An in-memory allocation map is used to map payload sizes to free block
 blocks of data.}
-\label{fig:binarytree}
+\label{fig:heap}
 \end{figure}
 
 Applications that use the heap can allocate blocks of data of any size and use
 it to freely write to it and read back the payload. All access to the heap is
 managed using pointers. The pointer datatype just stores an integer value that
-represents an offset into the heap file. We assume pointers always point to the
-beginning of a block.
+represents an offset into the heap file. We assume that pointers always
+point to the beginning of a block.
 
 > type Offset  = Integer
 >

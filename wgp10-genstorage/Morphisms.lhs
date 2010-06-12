@@ -18,7 +18,7 @@
 > import Data.List hiding (group)
 > import Data.Monoid
 > import Prelude hiding (mapM)
-> import Control.Monad.Identity
+> import Control.Monad.Identity (Identity(..))
 > import Control.Monad hiding (mapM)
 > import Data.Traversable
 > import Fixpoints hiding ((:+:))

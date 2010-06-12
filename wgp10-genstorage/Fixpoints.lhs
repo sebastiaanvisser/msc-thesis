@@ -17,7 +17,7 @@
 > module Fixpoints where
 
 > import Control.Monad hiding (mapM)
-> import Control.Monad.Identity
+> import Control.Monad.Identity (Identity(..))
 > import Control.Monad.Trans
 > import Data.Foldable hiding (sum)
 > import Data.Monoid
