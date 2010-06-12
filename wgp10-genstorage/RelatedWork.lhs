@@ -37,7 +37,34 @@ strict on the outside.
 
 \subsection{Sharing}
 
-\section{Higher Order}
+\todo{Sharing}
+
+\subsection{Higher Order}
+
+We have shown how to build a generic storage framework for recursive data
+structures. This framework only works for regular datatypes, types in which the
+recursive positions can only refer to the exact same type again. The system
+does not work for any-non regular datatypes like mutually recursive datatypes,
+nested datatypes \cite{nested} and indexed datatypes like generalized algebraic
+datatypes or GADTs \cite{foundationsfor}.
+
+As part of the reseach we have extended the framework for fixed point
+annotations to also work for indexed datatypes. The first step in extending the
+framework is to define a \emph{higher order} fixed point combinator:
+
+> newtype HFix f ix = HIn (f (HFix f) ix)
+
+The additional index parameter makes the recursion non-regular which allows us
+to customize behaviour for different recursive positions. The techniques used
+for generic programming with fixed points for indexed datatypes is well
+described by Rodriguez et al. \cite{multirec}. Altough the annotation framework
+for indexed datatypes is very similar to the framework for regular recursive
+datatypes no code reuse is possible due to the difference in types.
+
+In XXX \todo{refer to thesis somehow?} we show how represent a finger tree
+\cite{fingertree} as an indexed GADT and use the higher order storage framework
+to derive a persistent finger tree. All the structural invariants we expect the
+finger tree to have are encoded using the datatype indices.
 
 \section{Related work}
 
