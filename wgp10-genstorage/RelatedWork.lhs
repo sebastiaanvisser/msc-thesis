@@ -37,11 +37,80 @@ strict on the outside.
 
 \subsection{Sharing}
 
-\section{Higher Order}
+The storage framework described works for non-cyclic data structures.
+Non-cyclic data structure that use sharing can be stored on disk using our
+framework, but because sharing in Haskell is not observable shared structures
+will be stored more than once. Storing shared values more than once can be a
+serious space leak for datatypes that heavily rely on sharing.
+
+Solution has been proposed to make sharing in Haskell observable \cite{sharing,
+reify}. These solutions are often not very elegant, because they require some
+form of reflection on the internal machinery of the compiler runtime.
+
+It would be a useful extensions to our framework to allow designers of
+functional data structures to explicitly mark points at which sharing is
+possible. Sharing markers can limit the amount of data used to store data
+structures on disk and can even allow cyclic data structures to be saved in a
+finite amount of space.
+
+\todo{Sharing}
+
+\subsection{Higher Order}
+
+We have shown how to build a generic storage framework for recursive data
+structures. This framework only works for regular datatypes, types in which the
+recursive positions can only refer to the exact same type again. The system
+does not work for any-non regular datatypes like mutually recursive datatypes,
+nested datatypes \cite{nested} and indexed datatypes like generalized algebraic
+datatypes or GADTs \cite{foundationsfor}.
+
+As part of the reseach we have extended the framework for fixed point
+annotations to also work for indexed datatypes. The first step in extending the
+framework is to define a \emph{higher order} fixed point combinator:
+
+> newtype HFix f ix = HIn (f (HFix f) ix)
+
+The additional index parameter makes the recursion non-regular which allows us
+to customize behaviour for different recursive positions. The techniques used
+for generic programming with fixed points for indexed datatypes is well
+described by Rodriguez et al. \cite{multirec}. Altough the annotation framework
+for indexed datatypes is very similar to the framework for regular recursive
+datatypes no code reuse is possible due to the difference in types.
+
+In XXX \todo{refer to thesis somehow?} we show how represent a finger tree
+\cite{fingertree} as an indexed GADT and use the higher order storage framework
+to derive a persistent finger tree. All the structural invariants we expect the
+finger tree to have are encoded using the datatype indices.
 
 \section{Related work}
 
-\subsection{Generic storage in Clean}
+\subsection{Generic programming with fixed points}
+
+Generic programming with fixed point is a well explored area, both for regular
+datatypes \cite{polyp} and mutually recursive datatypes \cite{multirec}. Most
+generic programming approaches use fixed points of nested sums of product, a
+view in which recursion, constructors, and constructor fields of algebraic
+datatypes are represented. Our approach uses a more limited view in which we
+only abstract away from recursion. The nested sums of product view is useful
+when writing operations that are truly datatype generic. Only abstracting away
+from recursion has shown to be useful when generically annotating datatype
+specific operations.
+
+Recursion patterns for working with non-regular recursive datatypes have been
+described by Ghani and Johann \cite{initial}.
+
+\subsection{Lazy IO}
+
+Lazy |IO| in Haskell has many associated problems. Pure code processing values
+origination from effectful computations can trigger side effects and
+technically behave as impure code.  Kiselyov \cite{iteratee} describe iteratee
+based IO as a solution for the lazy IO problem. Until now their approach has
+only been shown useful for linear IO system, like processing a file line by
+line. Iterators have a structure similar to algebras for list catamorphisms,
+whether their approach is extendible to different functor types is still a
+topic of active research.
+
+\subsection{Persistent storage in Clean}
 
 In their paper \emph{Efficient and Type-Safe Generic Data Storage} Smetsers,
 Van Weelden and Plasmeijer \cite{clean} describe a generic storage framework
@@ -54,9 +123,9 @@ collection at once.
 
 The mayor difference between their approach and ours is that they do not slice
 the data structure at the recursive points but at the points where the actual
-element values are stored. This means every record value is stored in its
-own chunk, while they entire data structure itself is stored in one single
-chunk. Updates of individual record values can now be done efficiently without
+element values are stored. This means every record value is stored in its own
+chunk, while they entire data structure itself is stored in one single chunk.
+Updates of individual record values can now be done efficiently without
 touching the entire collection, but for every structural change to the
 collection the chunk containing the data structure itself --- they call this
 the \emph{Root chunk} --- has to be read in and written back as a whole.

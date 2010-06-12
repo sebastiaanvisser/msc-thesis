@@ -24,6 +24,8 @@
 > import Data.Traversable
 > import Generics.Regular (deriveAll, PF)
 > import Prelude hiding (mapM, sum)
+> import Data.Time.LocalTime
+> import Data.Time.Clock
 
 %endif
 
@@ -291,6 +293,99 @@ this class method works in some monadic context~|m|.
 \andres[inline]{Again, I think we should show an instance, for example for the
 identity annotation. Also, we are getting ahead of things at this point, because
 we introduce abstraction without seeing the need for it.}
+
+\subsection{Example annotation: modification time}
+\label{sec:debug}
+
+As an example of an annotation type we introduce the |ModTime| annotation.
+Using |ModTime|, we can log the exact time that the parts of a recursive
+structure are last modified. Besides the actual recursive structure the
+|ModTime| type also saves a |LocalTime|.\footnote{The |LocalTime| type is from
+the Haskell \texttt{time} package.}
+
+> data ModTime1 f a = M1 { time1 :: LocalTime, unM1 :: f a }
+
+%if False
+The following definition derives a non-record version of Show:
+
+> data ModTime f a = M LocalTime (f a)
+>   deriving Show
+
+> time :: ModTime f a -> LocalTime
+> time (M t _) = t
+
+> unM :: ModTime f a -> f a
+> unM (M _ x) = x
+
+%endif
+
+The behaviour is added when constructing or deconstructing values. As we have
+seen in Section~\ref{sec:annotations}, constructors add annotations by calling
+|inA|, whereas values are extracted from annotations using |outA|.  The |In|
+instance for the |ModTime| wraps the value that is being constructed in an |M|
+constructor, together with the current time:
+
+> instance Traversable f => In ModTime f IO where
+>   inA f = do  t <- getCurrentTime1
+>               return (M t f)
+
+%if False
+
+> getCurrentTime1 :: IO LocalTime
+> getCurrentTime1 =
+>   do zone <- getCurrentTimeZone
+>      utcToLocalTime zone `liftM` getCurrentTime
+
+%endif
+
+Because getting the current time requires a side effect the annotation is
+associated with the |IO| monad. The |Out| instance for |ModTime| is a bit
+simpler, it just drops the annotation marker and returns the extracted value:
+
+> instance Traversable f => Out ModTime f IO where
+>   outA = return . unM
+
+We specialize our annotated binary tree to a tree containing last modifications
+times for every subtree as follows:
+
+> type TreeM k v = TreeA ModTime k v
+
+As a simple example, let us specialize the type
+of our sample tree |myTree_a| to make use of the last modification time annotation. The
+construction then has to take place in the |IO| monad, and will produce binary
+with modification times stored at the recursive positions:
+
+\begin{verbatim}
+ghci> myTree_a :: IO (TreeD Int Int)
+{M 236807 (Branch 3 9
+  {M 236755 (Branch 1 1
+    {M 236688 Leaf}
+    {M 236688 Leaf})}
+  {M 236781 (Branch 4 16
+    {M 236728 (Branch 7 49
+      {M 236688 Leaf}
+      {M 236688 Leaf})}
+    {M 236688 Leaf})})}
+\end{verbatim}
+
+For readability the modification times are cropped to the microseconds, we
+reformatted the output to resemble the tree structure, and we used a custom
+|Show| instance for |Fix| that uses curly braces instead of an explicit |In|
+constructor.
+
+The last modification times of all the leafs is the same, because
+we share the result of one call to |leafA| in the definition of |myTree_a|. We
+see that the modification times follow the order of the monadic operations in
+|myTree_a|: the leafs are created first, the root of the tree is created last.
+
+\begin{figure}[tp]
+\begin{center}
+\includegraphics[scale=0.35]{img/binarytree-M.pdf}
+\end{center}
+\caption{Binary tree with local modification times saved as annotations at the
+recursive positions.}
+\label{fig:binarytreeann}
+\end{figure}
 
 \subsection{Example annotation: debug trace}
 \label{sec:debug}

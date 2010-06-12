@@ -18,7 +18,7 @@
 > import Data.List hiding (group)
 > import Data.Monoid
 > import Prelude hiding (mapM)
-> import Control.Monad.Identity hiding (mapM)
+> import Control.Monad.Identity
 > import Control.Monad hiding (mapM)
 > import Data.Traversable
 > import Fixpoints hiding ((:+:))
@@ -144,13 +144,6 @@ We can \emph{run} the algebra by supplying it to~|paraA|:
 
 The algebra can be annotation-agnostic, because it abstracts from
 recursion and outsources recursion to the |paraA| recursion pattern.
-
-%if False
-
-> (<>) :: Monoid a => a -> a -> a
-> (<>) = mappend
-
-%endif
 
 Another interesting example of a paramorphism is the following: we use
 a custom function to map all values in the binary tree to elements of

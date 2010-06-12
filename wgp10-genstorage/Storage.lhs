@@ -97,8 +97,8 @@ to use the pointer annotation in the |Heap| context. This yields a operation
 that builds a binary search tree \emph{on disk} instead of in application
 memory:
 
-> squaresP :: Heap (TreeP Int Int)
-> squaresP = fromList [(1,1),(3,3),(4,16),(7,49)]
+> fromListP :: [(Int, Int)] -> Heap (TreeP Int Int)
+> fromListP = fromList
 
 The result of running the operation against a heap file is a pointer, wrapped
 inside an |In| construcotr, to the root node of the tree as stored on disk. 
@@ -106,14 +106,15 @@ Performin the operation is as simple as supplying it to the |run| function from
 our heap data structure:
 
 \begin{verbatim}
-ghci> run "squares.db" squaresP
+ghci> let squares = [(1,1),(3,3),(4,16),(7,49)]
+ghci> run "squares.db" (fromListP squares)
 \end{verbatim}
 
 In figure \ref{fig:binarytree-pers} we see an illustration of our example tree
 laid out on the heap. The example above does write a binary tree of integers to
 disk as we expected, but has a slight problem when used on its own: the root
 pointer of the structure is discarded and lost. We build a helper function
-|produce| that takes a producer operation, like |squaresP|, runs the operation
+|produce| that takes a producer operation, like |fromListP|, runs the operation
 on the heap \emph{and} save the final pointer in a reserved location on the
 heap:
 
@@ -126,7 +127,7 @@ operations on the same data structure. We remove the \texttt{squares.db} and
 run the example again, this time saving the root node:
 
 \begin{verbatim}
-ghci> run "squares.db" (produce squaresP)
+ghci> run "squares.db" (produce (fromListP squares))
 \end{verbatim}
 
 We make a similar wrapper function for performing query functions. The |query|
