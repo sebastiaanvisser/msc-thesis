@@ -109,4 +109,3 @@ values implemented as a binary search tree, similar to Haskell's
 
 \end{itemize}
 
-\newpage
