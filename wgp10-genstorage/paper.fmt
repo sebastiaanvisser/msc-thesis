@@ -11,6 +11,13 @@
 %format Id1                 = Id
 %format unId1               = unId
 
+%format ModTime1            = ModTime
+%format M1                  = M
+%format unM1                = unM
+%format time1               = time
+%format getCurrentTime1     = getCurrentTime
+
+
 %format Tree1               = "\Conid{Tree}"
 %format Leaf1               = "\Conid{Leaf}"
 %format Branch1             = "\Conid{Branch}"
