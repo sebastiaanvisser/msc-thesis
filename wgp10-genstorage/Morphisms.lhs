@@ -27,6 +27,8 @@
 
 \section{Recursion patterns}
 
+\todo[inline]{Idea from Sebas: Introduce only cata and ana, then endomorphic stuff}
+
 In the previous section we have seen how to write recursive datatypes with an
 additional type parameter for the recursive positions and using a fixed point
 combinator to tie the knot. Using the fixed point combinator we are allowed to
@@ -92,9 +94,9 @@ structures at those positions.
 >            (r  ::     *                   ) where
 >   Psi :: (f (r :*: FixA a f) -> r)  -> AlgA a f r
 
-The paramorphism function takes an algebra that compute a result value from a
-one-level structure and uses this to recursively destruct an entire recursive
-structure:
+The function |paraA| then takes an algebra that computes a result value from a
+one-level structure and uses the algebra to recursively destruct an entire
+recursive structure:
 
 > paraA :: Out a f m => AlgA a f r -> FixA a f -> m r
 > paraA (Psi p)  =    return . p
@@ -102,69 +104,73 @@ structure:
 >                <=<  outA . out
 >   where group f c = liftM (,c) (f c)
 
-\todo{literally explain this code?}
-This paramorphism works on annotated structures; before computing the sub
-results and before applying the algebra, it first unwraps the annotation for
-the top-level node using the |outA| function. Using the |paraA| function we can
-lift every paramorphic algebra to work on annotated structures without the
-algbera having to know about the annotations. We make an additional algbera
-type that hides the annotation variable inside an existential quantification:
+\todo{literally explain this code?}\andres{Yes, a little bit more, but
+it becomes easier if we switch to cata.}
+This paramorphism works on annotated structures; before computing the
+subresults and before applying the algebra, it first unwraps the annotation for
+the top-level node using the |outA| function.
+
+We can write algebras of paramorphisms as if there are no annotations, and
+then use the |paraA| function to lift such algebras to work on annotated
+structures. Algebras that do not make use of a particular annotation must
+be polymorphic in the annotation type:
 
 > type Alg f r = forall a. AlgA a f r
 
-When an algebra is built using the |Alg| type we know for sure it works for
-every annotation type.
-
-Now we build an example algebra that performs a value lookup by key in a binary
-search tree:
+As an example, let us reimplement the |lookup1| function for binary search
+trees as an algebra:
 
 > lookupAlg :: Ord k => k -> Alg (TreeF k v) (Maybe v)
 > lookupAlg k = Psi $ \t ->
 >   case t of
->     Leaf            -> Nothing
->     Branch c w l r  ->
->       case k `compare` c of
->         LT  ->  fst l
->         EQ  ->  Just w
->         GT  ->  fst r
+>     Leaf            ->  Nothing
+>     Branch c w l r  ->  case k `compare` c of
+>                           LT  ->  fst l
+>                           EQ  ->  Just w
+>                           GT  ->  fst r
 
-We see the difference between this `lookup' algebra and the lookup function
+Note the difference between |lookupAlg| and the |lookup1| function
 from Section~\ref{sec:fixpoints}: the original function directly uses recursion
 the find the value, the algebra reuses the subresults stored at the recursive
-positions of the input node.
+positions of the input node.\andres{Even better if we have already given
+an algebra before. Then we can analyze the overhead introduced by
+annotations, which is nearly none.}
 
-We can make the algebra into a real function again by applying the |paraA|
-function to it:
+We can \emph{run} the algebra by supplying it to~|paraA|:
 
 > lookup  ::  (Ord k, Out a (TreeF k v) m)
 >         =>  k -> TreeA a k v -> m (Maybe v)
 > lookup k = paraA (lookupAlg k)
 
-The algebra can be annotation agnostic, because it abstracts away from
-recursion and outsources recursion to the paramorphic traversal function.
+The algebra can be annotation-agnostic, because it abstracts from
+recursion and outsources recursion to the |paraA| recursion pattern.
 
-Another interesting example of a paramorphism is one that used a custom
-function to maps all values inside a binary search tree into a monoid value and
-combines the value into one using the monoid combinator |<>| (\texttt{mappend}
-in Haskell).
+Another interesting example of a paramorphism is the following: we use
+a custom function to map all values in the binary tree to elements of
+a monoid. We then use the monoid operator |(<>)|\footnote{|(<>)| is written as
+@mappend@ in Haskell} to combine all these values into a single result.
+The algebra |foldAlg| is defined as follows:
 
 > foldAlg :: Monoid m => (v -> m) -> Alg (TreeF k v) m
 > foldAlg f = Psi $ \t -> case t of
 >   Leaf            ->  mempty
 >   Branch _ v l r  ->  fst l <> f v <> fst r
 
-The |foldAlg| is a very generic algebra that can be specialized for a large
-number of different Haskell types that have a |Monoid| instance. An example is
-the |toList| function that uses the list monoid to deliver all values in a
-binary search tree in a list:
+The algebra |foldAlg| can be instantiated to a large number of useful functions.
+One example is the function |toList| that flattens a binary search tree using
+an inorder traversal:
 
 > toList :: Out a (TreeF k v) m => TreeA a k v -> m [v]
 > toList = paraA (foldAlg (\x -> [x]))
 
-We test the |toList| function by applying it to the result of the list in
-Section~\ref{sec:debug}. We see a full debug trace of all the unwrap steps
-performed by paramorphic traversal:
+Once again, note that we have written the code in exactly the same way as
+we would have without annotations. The resulting function |toList| is fully
+polymorphic in the annotation type |a|.
 
+We test the |toList| function by applying it to the result of the list in
+Section~\ref{sec:debug}. Because that value makes use of the debug annotatoin,
+we now also see a full debug trace of the unwrap steps performed during the
+traversal:
 \begin{verbatim}
 ghci> toList it :: IO [Int]
 ("out",Branch 3 9 () ())
@@ -184,15 +190,16 @@ Note that both the |lookupAlg| and the |foldAlg| algebras only use the first
 component of the tuple that is supplied to the algebra by the paramorphism.
 Because only the recursive results are used and not the original substructures
 these algebras actually are \emph{catamorphisms}, a special case of
-paramorphisms. In Section~\ref{sec:modification} we see a morphism in which
-also the original substructures are used in the algebra.
+paramorphisms. In Section~\ref{sec:modification} we discuss a morphism that
+really needs to access the original substructures in its algebra.
 
 The algebras are written in pure style, no annotations appear in the algebra
-and no monadic context is used. Using the annotated paramorphisms function we
+and no monadic context is used. Using the annotated paramorphism function
+|paraA|, we
 interpreted the algebras in monadic context and apply the |outA| function to
-the annotated structure where needed. We can also specialize the paramorphisms
-function to only work for the identity annotation in the identity monad. Now we
-gain pure operations on unannotated structures:
+the annotated structure where needed. We can also specialize |paraA|
+function to work with the identity annotation in the identity monad. We then
+obtain pure operations on unannotated structures:
 
 > para :: Traversable f => AlgA Id1 f r -> Fix f -> r
 > para p = runIdentity . paraA p . runIdentity . fullyIn
@@ -205,10 +212,10 @@ contexts, both for annotated and unannotated recursive structures.
 
 Where paramorphisms are used to destruct recursive datatypes into a result
 value, \emph{apomorphisms} are used to construct recursive datatypes from a
-seed value. Apomorphisms are generalizations of the more widely know
+seed value. Apomorphisms are generalizations of the more widely known
 \emph{anamorphisms}. Apomorphisms build recursive structures from an initial
 seed value and a \emph{coalebgra}. A coalebgra takes a seed value and produces
-a single node with at the recursive positions either a new seed value or a or
+a single node with at the recursive positions either a new seed value or
 an existing recursive structure:
 
 > data CoalgA  (a ::  (  *  -> *) -> * -> *  )
@@ -216,26 +223,27 @@ an existing recursive structure:
 >              (s ::     *                   ) where
 >   Phi :: (s -> f (s :+: FixBotA a f)) -> CoalgA a f s
 
-Like with algebras for paramorphisms we define an coalgebra that hides the
-annotation variable inside an existential quantification:
+As for paramorphisms, we define a type synonym for coalgebras that do not
+make use of a particular annotation:
 
 > type Coalg s f = forall a. CoalgA a f s
 
-The apomorphisms functions |apoA| takes a coalgebra that produces a single
-level datatype and itself corecursively produces an entire recursive datatype.
-When the coalgebra produces a new seed value inside the node, the |apoA|
-function recursively continues the construction.
+The apomorphism function~|apoA| takes a coalgebra an applies it repeatedly
+in order to produce an entire recursive structure. Wherever the coalgebra
+produces a new seed value inside a node, the |apoA| function recursively
+continues the construction.
 
 > apoA :: In a f m => CoalgA a f s -> s -> m (FixA a f)
 > apoA (Phi p)  =    return . In
 >               <=<  inA
 >               <=<  mapM (apoA (Phi p) `either` topIn) . p
 
-As an example we now build a coalgebra that creates a binary search tree from a
-list seed. We assume the seed is a sorted list. When the coalgebra receives an
-empty list a |Leaf| is produces and the construction stops. In the case of a
-non-empty list the middle element is stored in a branch, the left and right
-remains of the list are used as new seeds for left and right subtrees.
+As an example, we define a coalgebra |fromSortedListCoalg| that creates
+a binary search tree from a sorted list of key-value pairs. If the input is an
+empty list, we produce a |Leaf|. A leaf has no arguments, hence the
+construction stops. If the input list is not empty, we generate a
+|Branch|. The middle element is stored in the node, the remaining parts
+of the list are used as new seed values for the left and right subtrees.
 
 > fromSortedListCoalg :: Coalg [(k, v)] (TreeF k v)
 > fromSortedListCoalg = Phi $ \t ->

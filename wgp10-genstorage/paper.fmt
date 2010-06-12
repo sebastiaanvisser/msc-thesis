@@ -1,8 +1,8 @@
 %format mempty              = "\mathrel{\emptyset}"
 %format <>                  = "\mathrel{\diamond}"
 %format <=<                 = "\mathrel{\triangleleft}"
-%format :*:                 = "\mathrel{\textbf{$\times$}}"
-%format :+:                 = "\mathrel{\textbf{+}}"
+%format :*:                 = "\mathrel{\times}"
+%format :+:                 = "\mathrel{+}"
 %format <<=<<               = "\mathrel{\texttt{<=<}}"
 
 %format Debug1              = Debug
