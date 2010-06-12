@@ -18,7 +18,7 @@
 > import Data.List hiding (group)
 > import Data.Monoid
 > import Prelude hiding (mapM)
-> import Control.Monad.Identity hiding (mapM)
+> import Control.Monad.Identity
 > import Control.Monad hiding (mapM)
 > import Data.Traversable
 > import Fixpoints hiding ((:+:))
@@ -142,13 +142,6 @@ function to it:
 
 The algebra can be annotation agnostic, because it abstracts away from
 recursion and outsources recursion to the paramorphic traversal function.
-
-%if False
-
-> (<>) :: Monoid a => a -> a -> a
-> (<>) = mappend
-
-%endif
 
 Another interesting example of a paramorphism is one that used a custom
 function to maps all values inside a binary search tree into a monoid value and

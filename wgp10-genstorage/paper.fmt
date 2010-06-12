@@ -55,4 +55,5 @@
 %format squaresP            = "\Varid{squares_{P}}"
 %format lookupP             = "\Varid{lookup_{P}}"
 %format insertP             = "\Varid{insert_{P}}"
+%format fromListP           = "\Varid{fromList_{P}}"
 
