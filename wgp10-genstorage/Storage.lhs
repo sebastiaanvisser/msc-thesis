@@ -205,7 +205,8 @@ Just 81
 
 Using this building blocks we... \todo{blablabl}
 
-Appendix a shows an example program.
+Appendix a shows an example program.\andres{Should go to intro, and perhaps
+be referred to from here.}
 
 \andres[inline]{Some summary should go here.}
 

@@ -1,4 +1,7 @@
-\section{Further work}
+\section{Discussion and future work}
+
+In this section, we discuss some subtle points of our approach. We also
+point out current shortcomings and topics for future work.
 
 \subsection{Laziness}
 \label{sec:laziness}
@@ -6,19 +9,27 @@
 The framework for working with annotated recursive datatypes uses type classes
 to associate functionality with wrapping and unwrapping annotations at the
 recursive positions. These type classes have an associated context that allows
-working with effects. When the context is a \emph{strict} context the
+annotating and un-annotating structures to have monadic effects.
+If the context is a \emph{strict} context, the
 operations working on the recursive data structure become strict too. This
-strictness can have severe implication on the running time of the algorithms.
+strictness can have a severe and unexpected impact on the running time of the
+algorithms.
 
-Take the |lookup| function on binary search trees. When we instantiate the
-annotation to be the identity annotation the operations performs an in-memory
-lookup in an expected $O(\text{log }n)$ asymptotic running
-time\footnote{Assuming the tree is a properly |balanced| binary search tree}.
-When we instantiate the annotation to be the pointer annotation from section
-\ref{sec:storage} the lookup function runs inside the |Heap| monad which is
-strict due to both the strict |State| and strict |IO| monad. The strict bind
-operator for the |Heap| monad makes the |lookupP| operation run in a mere
-$O(n)$. Every node is touched in the process.
+As an example, consider the |lookup| function on binary search trees.
+If we instantiate the
+annotation to be the identity annotation, the operation performs an in-memory
+lookup, traversing one path in the tree from the root to a leaf. If the tree
+is properly balanced, this corresponds to a runtime of $O(\log n)$ where
+$n$ is the size of the tree.
+
+However, if we
+instantiate the annotation to be the pointer annotation from
+Section~\ref{sec:storage},
+the lookup function runs inside the |Heap| monad which is
+strict, because the underlying |IO| monad is strict.\andres{You said that
+|State| is strict, too, but I don't think so.} The strict bind
+operator for the |Heap| monad makes the |lookupP| operation traverse
+the entire tree, i.e., to run in $\Theta(n)$.
 
 We have solved this problem by creating two separate heap contexts, a read-only
 context which uses lazy IO and a read-write context that uses strict IO. The
@@ -28,7 +39,7 @@ context. The instance for the |OutIn| uses a hybrid approach, lifting lazy read
 actions into the strict context. The separation between the two context allows
 us to have strict producer functions and lazy query functions. The running time
 of the persistent |lookup| function in the lazy context is reduced to the same
-as its in-memory variant.
+as its in-memory variant.\andres{Quite vague. Reread and perhaps rewrite.}
 
 To avoid any problems regarding lazy IO, we strictly force the entire result
 values of query operations to ensure all side-effects stay within the Heap
@@ -37,50 +48,62 @@ strict on the outside.
 
 \subsection{Sharing}
 
-The storage framework described works for non-cyclic data structures.
-Non-cyclic data structure that use sharing can be stored on disk using our
-framework, but because sharing in Haskell is not observable shared structures
-will be stored more than once. Storing shared values more than once can be a
+The storage framework as described works for finite data structures.
+Finite data structures that use sharing can be stored on disk using our
+framework, but because sharing in Haskell is not observable, shared substructures
+will be duplicated in the heap. Storing shared values more than once can be a
 serious space leak for datatypes that heavily rely on sharing.
 
 Solution has been proposed to make sharing in Haskell observable \cite{sharing,
 reify}. These solutions are often not very elegant, because they require some
 form of reflection on the internal machinery of the compiler runtime.
 
-It would be a useful extensions to our framework to allow designers of
+It would be a useful extension to our framework to allow designers of
 functional data structures to explicitly mark points at which sharing is
 possible. Sharing markers can limit the amount of data used to store data
 structures on disk and can even allow cyclic data structures to be saved in a
-finite amount of space.
+finite amount of space. Note that a data structure with explicitly marked
+points of sharing fits nicely into our general framework of representing
+data structures as annotated fixed points.
 
-\todo{Sharing}
+\todo[inline]{Sharing}
 
-\subsection{Higher Order}
+\subsection{Other data structures}
 
 We have shown how to build a generic storage framework for recursive data
-structures. This framework only works for regular datatypes, types in which the
-recursive positions can only refer to the exact same type again. The system
-does not work for any-non regular datatypes like mutually recursive datatypes,
-nested datatypes \cite{nested} and indexed datatypes like generalized algebraic
-datatypes or GADTs \cite{foundationsfor}.
+structures. As running example, we used binary search trees, but the same
+technique can easily be applied to any regular datatype, i.e., all types
+that can be expressed as a fixed point of a functor in terms of |FixA|.
 
-As part of the reseach we have extended the framework for fixed point
-annotations to also work for indexed datatypes. The first step in extending the
-framework is to define a \emph{higher order} fixed point combinator:
+Non-regular datatypes such as families of mutually recursive datatypes,
+nested datatypes~\cite{nested} and indexed datatypes or generalized
+algebraic datatypes (GADTs)~\cite{foundationsfor} cannot be expressed directly.
+
+However, it is known that many non-regular datatypes can be expressed
+in terms of a \emph{higher-order} fixed point
+combinator~\cite{initial,foundationsfor,multirec} such as
 
 > newtype HFix f ix = HIn (f (HFix f) ix)
 
-The additional index parameter makes the recursion non-regular which allows us
-to customize behaviour for different recursive positions. The techniques used
-for generic programming with fixed points for indexed datatypes is well
-described by Rodriguez et al. \cite{multirec}. Altough the annotation framework
-for indexed datatypes is very similar to the framework for regular recursive
-datatypes no code reuse is possible due to the difference in types.
+We have extended our annotation framework to such a setting. Each of the
+constructions described in the paper can be lifted to the more complex scenario,
+but no code reuse is directly possible due to the more complicated kinds
+in the higher-order situation.
 
-In XXX \todo{refer to thesis somehow?} we show how represent a finger tree
-\cite{fingertree} as an indexed GADT and use the higher order storage framework
+In XXX \todo{refer to thesis somehow?}\andres{Yes, give a link for the time
+being.}, we show how represent finger trees~\cite{fingertree}, a nested data
+structure supporting efficient lookup and concatenation, as an indexed GADT
+and use the higher-order storage framework
 to derive a persistent finger tree. All the structural invariants we expect the
 finger tree to have are encoded using the datatype indices.
+
+\subsection{Garbage collection}
+
+\andres[inline]{TODO}
+
+\subsection{Concurrency}
+
+\andres[inline]{TODO}
 
 \section{Related work}
 
