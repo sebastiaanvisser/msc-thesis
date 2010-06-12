@@ -126,6 +126,20 @@ and it makes use of a state monad to manage the allocation map:
 
 %endif
 
+\begin{figure}[t]
+\begin{center}
+\begin{spec}
+
+class Binary t where
+  put  :: t -> Put
+  get  :: Get t
+
+\end{spec}
+\end{center}
+\caption{The |Binary| type class}
+\label{fig:binaryclass}
+\end{figure}
+
 The |update| heap operation takes a heap pointer and a Haskell
 value of type |f a|. It writes a binary serialization of the value to the
 payload of the block:
@@ -162,24 +176,24 @@ return the value:
 The |read| function leaves the original block intact, whereas the |fetch|
 frees the block after reading the data.
 
-The |allocate|, |free| and |update| heap operations are used as building
-blocks for the |write|, |read| and |fetch| operations, but are not used further
-in this framework. In the next section we see how the latter three function are
+The |allocate|, |free| and |update| heap operations are used in the
+implementation of |write|, |read| and |fetch|, but are not used further
+in this framework. In the next section we see how the three higher-level
+functions |write|, |read| and |fetch| can be
 used in combination with the annotation framework to build persistent data
 structures.
 
-Because the |Heap| context is a monad we can easily combine different operation
-into one using the monadic bind operator, or Haskell's do-notation. We allow
-running a heap operation against a file on disk using the |run| function.
+In order to run a sequence of heap operations, we must supply the name of
+a file that can be used as on-disk heap:
 
 > run :: FilePath -> Heap a -> IO a
 
-Because of the file access the |run| function works in the |IO| monad. The
+Because of the file access, the result of |run| is in the |IO| monad. The
 |run| function opens the heap file and initializes it when it is new. When the
 file does exist it quickly scans all blocks to compute the in-memory allocation
-map. After this it applies the heap computation and closes the file.
+map. It then applies the heap computations, and closes the heap file in the end.
 
-\todo{explain what we have done and why}
+\todo[inline]{explain what we have done and why}
 
 %if False
 
@@ -191,18 +205,4 @@ map. After this it applies the heap computation and closes the file.
 > run = undefined
 
 %endif
-
-\begin{figure}[t]
-\begin{center}
-\begin{spec}
-
-class Binary t where
-  put  :: t -> Put
-  get  :: Get t
-
-\end{spec}
-\end{center}
-\caption{The |Binary| type class}
-\label{fig:binaryclass}
-\end{figure}
 
