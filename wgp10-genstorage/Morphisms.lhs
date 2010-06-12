@@ -152,28 +152,32 @@ recursion and outsources recursion to the |paraA| recursion pattern.
 
 %endif
 
-Another interesting example of a paramorphism is one that used a custom
-function to maps all values inside a binary search tree into a monoid value and
-combines the value into one using the monoid combinator |<>| (\texttt{mappend}
-in Haskell).
+Another interesting example of a paramorphism is the following: we use
+a custom function to map all values in the binary tree to elements of
+a monoid. We then use the monoid operator |(<>)|\footnote{|(<>)| is written as
+@mappend@ in Haskell} to combine all these values into a single result.
+The algebra |foldAlg| is defined as follows:
 
 > foldAlg :: Monoid m => (v -> m) -> Alg (TreeF k v) m
 > foldAlg f = Psi $ \t -> case t of
 >   Leaf            ->  mempty
 >   Branch _ v l r  ->  fst l <> f v <> fst r
 
-The |foldAlg| is a very generic algebra that can be specialized for a large
-number of different Haskell types that have a |Monoid| instance. An example is
-the |toList| function that uses the list monoid to deliver all values in a
-binary search tree in a list:
+The algebra |foldAlg| can be instantiated to a large number of useful functions.
+One example is the function |toList| that flattens a binary search tree using
+an inorder traversal:
 
 > toList :: Out a (TreeF k v) m => TreeA a k v -> m [v]
 > toList = paraA (foldAlg (\x -> [x]))
 
-We test the |toList| function by applying it to the result of the list in
-Section~\ref{sec:debug}. We see a full debug trace of all the unwrap steps
-performed by paramorphic traversal:
+Once again, note that we have written the code in exactly the same way as
+we would have without annotations. The resulting function |toList| is fully
+polymorphic in the annotation type |a|.
 
+We test the |toList| function by applying it to the result of the list in
+Section~\ref{sec:debug}. Because that value makes use of the debug annotatoin,
+we now also see a full debug trace of the unwrap steps performed during the
+traversal:
 \begin{verbatim}
 ghci> toList it :: IO [Int]
 ("out",Branch 3 9 () ())
@@ -193,15 +197,16 @@ Note that both the |lookupAlg| and the |foldAlg| algebras only use the first
 component of the tuple that is supplied to the algebra by the paramorphism.
 Because only the recursive results are used and not the original substructures
 these algebras actually are \emph{catamorphisms}, a special case of
-paramorphisms. In Section~\ref{sec:modification} we see a morphism in which
-also the original substructures are used in the algebra.
+paramorphisms. In Section~\ref{sec:modification} we discuss a morphism that
+really needs to access the original substructures in its algebra.
 
 The algebras are written in pure style, no annotations appear in the algebra
-and no monadic context is used. Using the annotated paramorphisms function we
+and no monadic context is used. Using the annotated paramorphism function
+|paraA|, we
 interpreted the algebras in monadic context and apply the |outA| function to
-the annotated structure where needed. We can also specialize the paramorphisms
-function to only work for the identity annotation in the identity monad. Now we
-gain pure operations on unannotated structures:
+the annotated structure where needed. We can also specialize |paraA|
+function to work with the identity annotation in the identity monad. We then
+obtain pure operations on unannotated structures:
 
 > para :: Traversable f => AlgA Id1 f r -> Fix f -> r
 > para p = runIdentity . paraA p . runIdentity . fullyIn
