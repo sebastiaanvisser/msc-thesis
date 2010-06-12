@@ -23,24 +23,27 @@
 \section{Persistent data structures}
 \label{sec:storage}
 
-\todo{Intro: In section ? we have X and in section ? we have Y and now we combine.}
+\todo[inline]{Intro: In section ? we have X and in section ? we have Y and now we combine.}
 
-In the previous section we have deliberately build a |Ptr| type with to type
-parameters, the functor type |f| with an explicit index |a|. Due to these two
-type parameters the type becomes usable as a fixed point annotation. We can
-make the |Ptr| type an instance of both the |Out| and |In| type class from
-section \ref{sec:annotations}. We associate the pointer annotation with the |Heap|
-type parameters the type becomes usable as a fixed point annotation. We build a
-\emph{persistent} binary search tree by using a pointer annotation at the
-recursive positions of the tree:
+In the previous section, we have chosen to define the |Ptr| datatype with
+\emph{two} type parameters -- a functor of kind~|* -> *| and an explicit
+index of kind~|*|. Due to this design decision, the pointer type becomes
+usable as a fixed point annotation -- as we will see in Section~\ref{sec:ppq},
+we can make the |Ptr| type an instance of both the |Out| and the |In|
+type classes from Section~\ref{sec:annotations}. The effects associated with
+wrapping an unwrapping live in the |Heap| monad. 
+
+We then show how to build \emph{persistent} data structures such as binary
+search trees, by using the pointer annotation:
 
 > type TreeP k v = FixA Ptr (TreeF k v)
 
 When we work with a value of type |TreeP k v| we now actually work with a
-\emph{pointer} to binary tree somewhere on the heap on disk. The pointer
-references a block on the heap that stores a binary serialization of node with
-type |TreeF k v (TreeP k v)|; a single node with at the recursive positions
-again pointers to the sub structures.
+\emph{pointer} to a binary tree that lives somewhere on the heap that is
+stored on the disk. To be precise, the pointer references a heap block that
+stores a binary serialization of a single node of type |TreeF k v (TreeP k v)|.
+The recursive positions of the node contain again pointers to substructures.
+Figure~\ref{fig:binarytree-pers} shows how such a tree will look like.
 
 \begin{figure*}[pt]
 \begin{center}
@@ -52,11 +55,12 @@ referenced by pointer to the file offset.}
 \label{fig:binarytree-pers}
 \end{figure*}
 
-\subsection{Persistent producers and queries}
+\subsection{Persistent producers and queries}\label{sec:ppq}
 
-We make the |Ptr| type an instance of both the |Out| and |In| type class from
-section \ref{sec:annotations}. We associate the pointer annotation with the
-|Heap| context and use the |read| operations as the implementation for |outA|
+To make the pointer type |Ptr| usable as an annotation, we have to define
+instances of the |Out| and |In| type classes from Section~\ref{sec:annotations}.
+We associate the pointer annotation with the
+|Heap| context, use the |read| operation as the implementation for |outA|
 and use the |write| operation as the implementation for |inA|:
 
 > instance (Traversable f, Binary (f (FixA Ptr f))) => Out Ptr f Heap
@@ -65,9 +69,9 @@ and use the |write| operation as the implementation for |inA|:
 > instance (Traversable f, Binary (f (FixA Ptr f))) => In Ptr f Heap
 >    where inA = write
 
-To make the two instances work we need a |Binary| instance for both the fixed
-combinator and the |TreeF| pattern functor. Both instances can be seen in
-figure \ref{fig:binary-instances}.
+To make the two instances work, we need a |Binary| instance for both the fixed
+combinator and the |TreeF| pattern functor. Both instances are shown in
+Figure~\ref{fig:binary-instances}.
 
 \begin{figure}[pt]
 \begin{center}
@@ -92,13 +96,16 @@ figure \ref{fig:binary-instances}.
 \label{fig:binary-instances}
 \end{figure}
 
-We now specialize the |fromList| function from section \ref{sec:apomorphisms}
+We can now specialize the |fromList| function from Section~\ref{sec:apomorphisms}
 to use the pointer annotation in the |Heap| context. This yields a operation
 that builds a binary search tree \emph{on disk} instead of in application
 memory:
 
 > fromListP :: [(Int, Int)] -> Heap (TreeP Int Int)
 > fromListP = fromList
+
+Note that all we have to do is to specialize the type of the original
+operation. We can reuse exactly the same |fromList| function.
 
 The result of running the operation against a heap file is a pointer, wrapped
 inside an |In| construcotr, to the root node of the tree as stored on disk. 
