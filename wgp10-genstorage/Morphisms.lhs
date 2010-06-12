@@ -94,9 +94,9 @@ structures at those positions.
 >            (r  ::     *                   ) where
 >   Psi :: (f (r :*: FixA a f) -> r)  -> AlgA a f r
 
-The paramorphism function takes an algebra that compute a result value from a
-one-level structure and uses this to recursively destruct an entire recursive
-structure:
+The function |paraA| then takes an algebra that computes a result value from a
+one-level structure and uses the algebra to recursively destruct an entire
+recursive structure:
 
 > paraA :: Out a f m => AlgA a f r -> FixA a f -> m r
 > paraA (Psi p)  =    return . p
@@ -104,46 +104,46 @@ structure:
 >                <=<  outA . out
 >   where group f c = liftM (,c) (f c)
 
-\todo{literally explain this code?}
-This paramorphism works on annotated structures; before computing the sub
-results and before applying the algebra, it first unwraps the annotation for
-the top-level node using the |outA| function. Using the |paraA| function we can
-lift every paramorphic algebra to work on annotated structures without the
-algbera having to know about the annotations. We make an additional algbera
-type that hides the annotation variable inside an existential quantification:
+\todo{literally explain this code?}\andres{Yes, a little bit more, but
+it becomes easier if we switch to cata.}
+This paramorphism works on annotated structures; before computing the
+subresults and before applying the algebra, it first unwraps the annotation for
+the top-level node using the |outA| function.
+
+We can write algebras of paramorphisms as if there are no annotations, and
+then use the |paraA| function to lift such algebras to work on annotated
+structures. Algebras that do not make use of a particular annotation must
+be polymorphic in the annotation type:
 
 > type Alg f r = forall a. AlgA a f r
 
-When an algebra is built using the |Alg| type we know for sure it works for
-every annotation type.
-
-Now we build an example algebra that performs a value lookup by key in a binary
-search tree:
+As an example, let us reimplement the |lookup1| function for binary search
+trees as an algebra:
 
 > lookupAlg :: Ord k => k -> Alg (TreeF k v) (Maybe v)
 > lookupAlg k = Psi $ \t ->
 >   case t of
->     Leaf            -> Nothing
->     Branch c w l r  ->
->       case k `compare` c of
->         LT  ->  fst l
->         EQ  ->  Just w
->         GT  ->  fst r
+>     Leaf            ->  Nothing
+>     Branch c w l r  ->  case k `compare` c of
+>                           LT  ->  fst l
+>                           EQ  ->  Just w
+>                           GT  ->  fst r
 
-We see the difference between this `lookup' algebra and the lookup function
+Note the difference between |lookupAlg| and the |lookup1| function
 from Section~\ref{sec:fixpoints}: the original function directly uses recursion
 the find the value, the algebra reuses the subresults stored at the recursive
-positions of the input node.
+positions of the input node.\andres{Even better if we have already given
+an algebra before. Then we can analyze the overhead introduced by
+annotations, which is nearly none.}
 
-We can make the algebra into a real function again by applying the |paraA|
-function to it:
+We can \emph{run} the algebra by supplying it to~|paraA|:
 
 > lookup  ::  (Ord k, Out a (TreeF k v) m)
 >         =>  k -> TreeA a k v -> m (Maybe v)
 > lookup k = paraA (lookupAlg k)
 
-The algebra can be annotation agnostic, because it abstracts away from
-recursion and outsources recursion to the paramorphic traversal function.
+The algebra can be annotation-agnostic, because it abstracts from
+recursion and outsources recursion to the |paraA| recursion pattern.
 
 %if False
 
