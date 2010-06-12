@@ -68,7 +68,33 @@ finger tree to have are encoded using the datatype indices.
 
 \section{Related work}
 
-\subsection{Generic storage in Clean}
+\subsection{Generic programming with fixed points}
+
+Generic programming with fixed point is a well explored area, both for regular
+datatypes \cite{polyp} and mutually recursive datatypes \cite{multirec}. Most
+generic programming approaches use fixed points of nested sums of product, a
+view in which recursion, constructors, and constructor fields of algebraic
+datatypes are represented. Our approach uses a more limited view in which we
+only abstract away from recursion. The nested sums of product view is useful
+when writing operations that are truly datatype generic. Only abstracting away
+from recursion has shown to be useful when generically annotating datatype
+specific operations.
+
+Recursion patterns for working with non-regular recursive datatypes have been
+described by Ghani and Johann \cite{initial}.
+
+\subsection{Lazy IO}
+
+Lazy |IO| in Haskell has many associated problems. Pure code processing values
+origination from effectful computations can trigger side effects and
+technically behave as impure code.  Kiselyov \cite{iteratee} describe iteratee
+based IO as a solution for the lazy IO problem. Until now their approach has
+only been shown useful for linear IO system, like processing a file line by
+line. Iterators have a structure similar to algebras for list catamorphisms,
+whether their approach is extendible to different functor types is still a
+topic of active research.
+
+\subsection{Persistent storage in Clean}
 
 In their paper \emph{Efficient and Type-Safe Generic Data Storage} Smetsers,
 Van Weelden and Plasmeijer \cite{clean} describe a generic storage framework
@@ -81,9 +107,9 @@ collection at once.
 
 The mayor difference between their approach and ours is that they do not slice
 the data structure at the recursive points but at the points where the actual
-element values are stored. This means every record value is stored in its
-own chunk, while they entire data structure itself is stored in one single
-chunk. Updates of individual record values can now be done efficiently without
+element values are stored. This means every record value is stored in its own
+chunk, while they entire data structure itself is stored in one single chunk.
+Updates of individual record values can now be done efficiently without
 touching the entire collection, but for every structural change to the
 collection the chunk containing the data structure itself --- they call this
 the \emph{Root chunk} --- has to be read in and written back as a whole.
