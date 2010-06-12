@@ -27,6 +27,8 @@
 
 \section{Recursion patterns}
 
+\todo[inline]{Idea from Sebas: Introduce only cata and ana, then endomorphic stuff}
+
 In the previous section we have seen how to write recursive datatypes with an
 additional type parameter for the recursive positions and using a fixed point
 combinator to tie the knot. Using the fixed point combinator we are allowed to
