@@ -32,10 +32,18 @@
 \section{Working with fixed points}
 \label{sec:fixpoints}
 
-\andres[inline]{Introduction: First fixed points. Well known. Lots of
-related work. Then annotated fixed points and example annotations.}
+In this section, we repeat how datatypes can be rewritten as fixed points,
+and algorithms working on such datatypes can be expressed in terms of
+recursion patterns (Sections~\ref{sec:recdata} and \ref{sec:fix}).
+Reexpressing datatypes and algorithms in this style
+grants us fine-grained access to both the structure of the datatypes and
+the behaviour of operations. We make use of that control by introducing
+\emph{annotations} (Section~\ref{sec:annotations}) and discuss examples
+(Sections~\ref{sec:modtime} and \ref{sec:debug}). In the next section,
+we discuss how annotations help us to derive persistent data structures
+generically.
 
-\subsection{Recursive datatypes}
+\subsection{Recursive datatypes}\label{sec:recdata}
 
 Interesting datatypes are usually recursive. Here is an example -- a datatype
 for binary search trees storing both keys and values:
@@ -101,7 +109,7 @@ at exactly the places where the underlying datatype |Tree| is recursive.
 In the following, we are going to make the use of recursion in the datatype
 explicit, and abstract from the common pattern.
 
-\subsection{Fixed point combinator}
+\subsection{Fixed point combinator}\label{sec:fix}
 
 The first step in making the use of recursion in a datatype explicit is
 to abstract from it. We move from |Tree1| to |TreeF| by adding a parameter~|r|
@@ -295,7 +303,7 @@ identity annotation. Also, we are getting ahead of things at this point, because
 we introduce abstraction without seeing the need for it.}
 
 \subsection{Example annotation: modification time}
-\label{sec:debug}
+\label{sec:modtime}
 
 As an example of an annotation type we introduce the |ModTime| annotation.
 Using |ModTime|, we can log the exact time that the parts of a recursive
