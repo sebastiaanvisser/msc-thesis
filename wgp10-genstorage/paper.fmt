@@ -23,6 +23,8 @@
 %format Branch1             = "\Conid{Branch}"
 %format lookup1             = "\Varid{lookup}"
 %format insert1             = "\Varid{insert}"
+%format fromList1           = "\Varid{fromList}"
+%format fromSortedList1     = "\Varid{fromSortedList}"
 
 %format TreeP               = "\Conid{Tree_P}"
 %format TreeF               = "\Conid{Tree_F}"

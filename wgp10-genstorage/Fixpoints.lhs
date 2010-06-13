@@ -22,6 +22,8 @@
 > import Data.Foldable hiding (sum)
 > import Data.Monoid
 > import Data.Traversable
+> import Data.List
+> import Data.Ord
 > import Generics.Regular (deriveAll, PF)
 > import Prelude hiding (mapM, sum)
 > import Data.Time.LocalTime
@@ -94,7 +96,25 @@ returned.
 >                                    EQ  ->  Just x
 >                                    GT  ->  lookup1 k r
 
-Next, let us consider |insert|, a function that inserts a new key-value pair into
+Next, we define |fromList1|, a function that creates a binary search tree
+from a list of key-value pairs. The function first sorts the list on the
+keys and then calls a helper function |fromSortedList1|:
+
+> fromList1 :: Ord k => [(k,v)] -> Tree1 k v
+> fromList1 = fromSortedList1 . sortBy (comparing fst)
+>
+> fromSortedList1 :: [(k,v)] -> Tree1 k v
+> fromSortedList1 []  =  Leaf1
+> fromSortedList1 xs  =  
+>   let (l, (k,v):r) = splitAt (length xs `div` 2 - 1) xs
+>   in  Branch1 k v (fromSortedList1 l) (fromSortedList1 r)
+
+If the input list is empty, a leaf is produced. Otherwise, we split the
+list into two parts of approximately equal length, use the middle pair
+for a new branch and call |fromSortedList1| recursively for both the left
+and the right subtree.
+
+Finally, we look at |insert1|, a function that inserts a new key-value pair into
 a binary tree. Like |lookup1|, the function performs a key comparison to ensure
 that the binary search tree property is preserved by the operation.
 
@@ -104,16 +124,14 @@ that the binary search tree property is preserved by the operation.
 >                                     LT  ->  Branch1 n x (insert1 k v l) r
 >                                     _   ->  Branch1 n x l (insert1 k v r)
 
-Both |lookup1| and |insert1| follow a similar pattern. They recurse
-at exactly the places where the underlying datatype |Tree| is recursive.
-The difference is that while |lookup1| only destructs a tree, |insert1|
-also constructs a new tree during the traversal.
+All three functions follow the structure of the |Tree1| datatype closely.
+They recurse at exactly the places where the underlying datatype |Tree| is recursive.
+Function |lookup1| destructs a tree, whereas |fromList1| builds one. The
+function |insert1| modifies a tree, or destructs one tree while building
+another.
 
-Next, we show how re-expressing a datatype as a fixed point of a functor
+We now show how re-expressing a datatype as a fixed point of a functor
 helps us to make the recursion patterns of the operations explicit.
-
-\andres[inline]{Perhaps we should even show |fromList| here already, for
-overall symmetry.}
 
 \subsection{Fixed points}\label{sec:fix}
 
@@ -151,7 +169,7 @@ this task:
 > branch k v l r = In (Branch k v l r)
 
 Our example tree can now be expressed in terms of |leaf| and |branch|
-rather than |Leaf1| and |Branch1|, but otherwise looks as before:
+rather than |Leaf1| and |Branch1|, but otherwise looks as before.
 
 > myTreeF :: Tree Int Int
 > myTreeF = branch 3 9  (branch 1 1   leaf
@@ -160,9 +178,7 @@ rather than |Leaf1| and |Branch1|, but otherwise looks as before:
 >                                                   leaf)
 >                                     leaf)
 
-It is shown in Figure~\ref{fig:binarytreefix}.\andres{The
-figure is using $\mu$ rather than |In|; both |myTreeF| and the
-figure could be removed.}
+The structure of the tree is shown in Figure~\ref{fig:binarytreefix}.
 
 \begin{figure}[tp]
 \begin{center}
@@ -171,6 +187,88 @@ figure could be removed.}
 \caption{Binary tree with explicit recursion.}
 \label{fig:binarytreefix}
 \end{figure}
+
+\subsection{Recursion patterns}
+
+Given a fixed point representation of a datatype, we can define a number
+of recursion patterns for the datatype. But first, we have to back up the
+fact that the pattern functor really is a functor. To this end, we make
+it an instance of the |Functor| class:\footnote{Since version 6.12.1,
+GHC can derive this instance automatically.}
+
+> instance Functor (TreeF k v) where
+>   fmap _ Leaf              = Leaf
+>   fmap f (Branch k v l r)  = Branch k v (f l) (f r)
+
+\paragraph{Catamorphism}
+
+A \emph{catamorphism} is a recursion pattern that traverses a value
+of a given data structure systematically. It is a generalization of
+Haskell's |foldr| function to other datatypes:
+
+> type Algebra f r = f r -> r
+>
+> cata :: Functor f => Algebra f r -> Fix f -> r
+> cata phi = phi . fmap (cata phi) . out
+
+The argument to the catamorphism is often called an \emph{algebra}. The
+algebra describes how to map a functor where the recursive positions have
+already been evaluated to a result. The function |cata| then repeatedly
+applies the algebra in a bottom-up fashion to transform a whole recursive
+structure.
+
+The function |lookup| on binary search trees is an example of a catamorphism.
+An algebra for |lookup| is defined as follows:
+
+> lookupAlg :: Ord k => k -> Algebra (TreeF k v) (Maybe v)
+> lookupAlg k Leaf              =  Nothing
+> lookupAlg k (Branch n x l r)  =  case k `compare` n of
+>                                    LT  ->  l
+>                                    EQ  ->  Just x
+>                                    GT  ->  r
+
+Compared to the original definition of |lookup1|, the definition of |lookupAlg|
+is not recursive. The benefit for us is that the new form facilitates changing the
+behaviour of the function at recursive calls.
+
+We can get the behaviour of the original |lookup1| function back by running
+the algebra -- we simply pass it to the |cata| function:
+
+> lookup :: Ord k => k -> Tree k v -> Maybe v
+> lookup k = cata (lookupAlg k)
+
+\paragraph{Anamorphism}
+
+An \emph{anamorphism} is a recursive pattern that is dual to the catamorphism.
+Where the catamorphism systematically decomposes a structure, the anamorphism
+systematically builds one. It is a generalization of Haskell's |unfoldr| function
+to other datatypes:
+
+> type Coalgebra f s = s -> f s
+>
+> ana :: Functor f => Coalgebra f s -> s -> Fix f
+> ana psi = In . fmap (ana psi) . psi
+
+The argument to an anamorphism is called a \emph{coalgebra}. A coalgebra takes
+a seed of type |s| and produces a functor |f s| where the elements contain new
+seeds. The function |ana| repeatedly runs the coalgebra to all the seed values,
+starting from the original seed, until none remain.
+
+The function |fromSortedList1| is an anamorphism on trees. We can define
+a suitable coalgebra as follows:
+
+> fromSortedListCoalg :: Coalgebra (TreeF k v) [(k,v)]
+> fromSortedListCoalg []  =  Leaf
+> fromSortedListCoalg xs  =
+>   let (l, (k,v):r) = splitAt (length xs `div` 2 - 1) xs
+>   in  Branch k v l r
+
+The definition is very similar to the original one, but again, we have no
+recursive calls, as those are handled by |ana| now:
+
+> fromList :: Ord k => [(k,v)] -> Tree k v
+> fromList = ana fromSortedListCoalg . sortBy (comparing fst)
+
 %if False
 
 > (<>) :: Monoid a => a -> a -> a
@@ -181,10 +279,6 @@ figure could be removed.}
 \begin{figure}[tp]
 \begin{center}
 
-> instance Functor (TreeF k v) where
->   fmap _ Leaf              = Leaf
->   fmap f (Branch k v l r)  = Branch k v (f l) (f r)
->
 > instance Foldable (TreeF k v) where
 >   foldMap _ Leaf              = mempty
 >   foldMap f (Branch _ _ l r)  = f l <> f r
