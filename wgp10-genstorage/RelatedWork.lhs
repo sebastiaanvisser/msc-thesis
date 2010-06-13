@@ -163,4 +163,14 @@ touching the entire collection, but for every structural change to the
 collection the chunk containing the data structure itself -- they call this
 the \emph{Root chunk} -- has to be read in and written back as a whole.
 
-\andres[inline]{No other related work on storage?}
+\subsection{Happstack state}
+
+The \emph{Happstack} \cite{happsstate} project consist of Haskell web server
+and a state framework. The state framework is called \emph{Happstack-State}.
+It uses a record-based system in which users can add, delete, modify and
+retrieve records of data. This framework uses meta-programming using Template
+Haskell to automatically derive storage operations for custom datatypes. The
+derivation of operations only works for monomorphic types which severly breaks
+modularity.  Happstack State only allows storing record values and does not
+allow using custom domain specific data structures.
+
