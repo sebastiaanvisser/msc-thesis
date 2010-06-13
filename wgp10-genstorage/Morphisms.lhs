@@ -26,6 +26,7 @@
 %endif
 
 \section{Recursion patterns}
+\label{sec:patterns}
 
 \todo[inline]{Idea from Sebas: Introduce only cata and ana, then endomorphic stuff}
 
