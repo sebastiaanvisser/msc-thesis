@@ -20,16 +20,19 @@
 \section{File based storage heap}
 \label{sec:heap}
 
-\todo[inline]{explain why/what}
+In the previous sections we showed how to perform generic programming with
+fixed point annotations. The annotations form the bases of our Haskell storage
+framework. We use the annotations to marshall individual nodes from and to a
+database file on disk. Before explaining this in more detail we first briefly
+show the low-level storage layer.
 
 In this section, we introduce a block-based heap data structure that is used to
-allocate and use blocks of binary data on disk. The structure of the heap is
+allocate and use fragments of binary data on disk. The structure of the heap is
 similar to that of in-memory heaps as used by most programming languages to
 manage dynamically allocated data.
-
 The heap uses a file to store a contiguous list of blocks of binary data. Each
-of the blocks contains a header and a payload. The header contains flag to
-tell us if the block is currently free or in use. Furthermore, the header
+of the blocks contains a header and a payload. The header contains a flag to
+tell if the block is currently free or in use. Furthermore, the header
 indicates the size of the block.
 The payload is an arbitrary sequence of binary data. The size of the payload
 must not exceed the size specified in the header minus the header size.
@@ -46,6 +49,8 @@ blocks of data.}
 \label{fig:heap}
 \end{figure}
 
+\subsection{Offset pointers}
+
 Applications that use the heap can allocate blocks of data of any size and use
 it to freely write to it and read back the payload. All access to the heap is
 managed using pointers. The pointer datatype just stores an integer value that
@@ -58,9 +63,14 @@ point to the beginning of a block.
 >   deriving Binary
 
 The |Ptr| type uses a phantom type to represent the type stored in the payload
-of the block. This way, we can ensure that when we read from and write to
-a block, it always happens with values of the same type.
-\todo{explain why it fits better to use both |f| and |a|}
+of the block, this way ensuring we can only read values from a block of with
+the same type as has been written to. Because we use the |Ptr| type as a fixed
+point annotation, as shown in the next section, we use two phantom type
+variables: one of kind |* -> *| and of kind |*|. The |Ptr| type fits the |a|
+variable from the annotation type classes. From the perspective of this heap
+data structure we could also have used a single phantom type of kind |*|.
+
+\subsection{Allocating and freeing}
 
 The |allocate| function can be used to allocate a new block of data that is
 large enough to hold payload of the given size. The |allocate| function can be
@@ -140,6 +150,8 @@ class Binary t where
 \label{fig:binaryclass}
 \end{figure}
 
+\subsection{Writing and reading}
+
 The |update| heap operation takes a heap pointer and a Haskell
 value of type |f a|. It writes a binary serialization of the value to the
 payload of the block:
@@ -183,6 +195,8 @@ functions |write|, |read| and |fetch| can be
 used in combination with the annotation framework to build persistent data
 structures.
 
+\subsection{Running heap operations}
+
 In order to run a sequence of heap operations, we must supply the name of
 a file that can be used as on-disk heap:
 
@@ -192,8 +206,6 @@ Because of the file access, the result of |run| is in the |IO| monad. The
 |run| function opens the heap file and initializes it when it is new. When the
 file does exist it quickly scans all blocks to compute the in-memory allocation
 map. It then applies the heap computations, and closes the heap file in the end.
-
-\todo[inline]{explain what we have done and why}
 
 %if False
 
@@ -205,4 +217,11 @@ map. It then applies the heap computations, and closes the heap file in the end.
 > run = undefined
 
 %endif
+
+In this section we have described on a very high level a file based heap
+structure that can be used to store arbitrary blocks of binary data on disk.
+Access to the data is managed by pointers as offsets into the file. All Haskell
+values that have an instance for the |Binary| type class can automatically be
+marshalled from and to the heap. The structure is low-level and does not impose
+any relations on the individual blocks.
 
