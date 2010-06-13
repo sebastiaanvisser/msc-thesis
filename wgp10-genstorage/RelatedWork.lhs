@@ -66,7 +66,13 @@ finite amount of space. Note that a data structure with explicitly marked
 points of sharing fits nicely into our general framework of representing
 data structures as annotated fixed points.
 
-\todo[inline]{Sharing}
+The current storage framework without explicit sharing does not require any
+special form of garbage collection. The modification functions written with the
+help of the |OutIn| type class will automatically clean up old nodes that are
+no longer needed. The ability of explicit sharing would change this, a
+modification cannot blindly free old nodes because they might be shared with
+other parts of the data structure. With the addition of explicit sharing comes
+the need for garabge collection.
 
 \subsection{Other data structures}
 
@@ -78,7 +84,6 @@ that can be expressed as a fixed point of a functor in terms of |FixA|.
 Non-regular datatypes such as families of mutually recursive datatypes,
 nested datatypes~\cite{nested} and indexed datatypes or generalized
 algebraic datatypes (GADTs)~\cite{foundationsfor} cannot be expressed directly.
-
 However, it is known that many non-regular datatypes can be expressed
 in terms of a \emph{higher-order} fixed point
 combinator~\cite{initial,foundationsfor,multirec} such as
@@ -96,10 +101,6 @@ structure supporting efficient lookup and concatenation, as an indexed GADT
 and use the higher-order storage framework
 to derive a persistent finger tree. All the structural invariants we expect the
 finger tree to have are encoded using the datatype indices.
-
-\subsection{Garbage collection}
-
-\andres[inline]{TODO}
 
 \subsection{Concurrency}
 
