@@ -20,6 +20,33 @@
 
 \section{Introduction}
 
+Algebraic datatypes in Haskell provide a powerful way to structure data.
+Recursive datatypes can be used to create functional data structures.
+Unfortunately values of datatypes in Haskell can only be manipulated in memory.
+When data structures grow too large to fit in application memory or when the
+data outlives the running time of a single process there is no convenient way
+to store data structures outside application memory.
+
+For most object-oriented (OO) programming languages there exists
+Object-Relational Mappers \cite{orm} (ORMs) that allow for a transparent
+mapping between objects and tables within a relational databases. Automating
+derivation of database queries from the structure of objects can save time in
+the development process.
+
+Many attempts have been made to map values of algebraic datatypes to 
+relational databases tables. Due to the mismatch between the column based
+layout of relation databases and the structure of functional data structures
+only limited solutions exist.
+
+We identify three important properties of a functional persistence
+framework:
+
+\begin{enumerate}
+\item \textbf{Efficiency:}   Incremental access to parts of the data.
+\item \textbf{Flexibility:}  The system should provide ways to store domain specific data structures.
+\item \textbf{Transparency:} Users should not be bothered with the details of the underlying system.
+\end{enumerate}
+
 In this paper we present a framework for saving functional data structures in
 Haskell to a database file on disk. The data structures are stored in a way
 that allows partial access to the structure, which allows us to efficiently
@@ -62,6 +89,26 @@ function, which are operations that manipulate a persistent map from keys to
 values implemented as a binary search tree, similar to Haskell's
 \texttt{Data.Map} \cite{bintree}.
 
+In section \ref{sec:fixpoints} we implement a generic framework for working
+with annotated recursive datatypes. By parametrizing datatypes with an
+additional type variable for the recursive positions we gain control over the
+recursion. We store annotations at the recursive positions and associate
+functionality with the construction and destruction of recursive datatypes.
+
+In section \ref{sec:patterns} we write operations by abstracting away from
+recursion using recursion patterns. Using \emph{catamorphisms} and
+\emph{anamorphisms} we lift annotation agnostic algebras to operate on
+annotated datatypes.
+
+In section \ref{sec:heap} we implement an on-disk heap data structure for block
+based binary storage. This heap allows dynamic allocation and freenig of blocks
+of binary data on disk. The structure can grow and shrink on-demand.
+
+In section \ref{sec:storage} we use pointers as offsets to blocks on the
+storage heap as annotations for the recursive positions of datatypes. Using
+pointers as annotations yields data structures that are stored on disk.  As a
+running example we show how to apply the storage framework to create a
+persistent binary tree.
 
 
 
@@ -74,38 +121,5 @@ values implemented as a binary search tree, similar to Haskell's
 
 
 
-\begin{itemize}
 
-\item - Algebraic datatypes in Haskell provide a powerful way to structure data. \\
-      - Recursive datatypes can be used to create functional data structures.
-\item - Unfortunately there are no good way to store functional data structures on disk. \\
-      - We identify three important properties of a functional persistence framework:
-      \begin{enumerate}
-      \item Efficiency:   Incremental access to parts of the data.
-      \item Flexibility:  The system should provide ways to store domain specific data structures.
-      \item Transparency: Users should not be bothered with the details and limitations of the underlying system.
-      \end{enumerate}
-
-\item Current persistence solutions in Haskell do not provide these three properties:
-      \begin{enumerate}
-      \item Connections to existing relational database management systems: \\
-            - These system allows incremental access, but restrict the users to a table based layout. \\
-            - The relational data model is forced upon the user.
-      \item Packages for binary serialization like Data.Binary
-      \end{enumerate}
-
-\item State your contributions:
-      \begin{enumerate}
-      \item - We implement a generic framework for working with annotated recursive datatypes. \\
-            - The system allows to annotate both data and functionality for all recursive datatype in Haskell.
-      \item - We implement a on-disk heap data structure for block based binary storage. \\
-            - This heap allows for generic on-demand growing and shrinking binary data storage on disk.
-      \item - We use both the generic annotation framework and the heap to derive a generic storage framework. \\
-            - The system allow to store arbitrary Haskell data types on disk. \\
-            - Recursive datatypes can be accessed incrementally.
-      \item - As an example we show how to apply the framework to create a persistent binary tree. \\
-            - We indicate the system can even be used for indexed datatypes.
-      \end{enumerate}
-
-\end{itemize}
 
