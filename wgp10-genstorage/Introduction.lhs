@@ -22,24 +22,24 @@
 
 Algebraic datatypes in Haskell provide a powerful way to structure data.
 Recursive datatypes can be used to create functional data structures.
-Unfortunately, values of datatypes in Haskell can only be manipulated
-in-memory.  When data structures grow too large to fit in application memory or
-when the data outlives the running time of a single process there is no
+Unfortunately, when data structures grow too large to fit in application memory
+or when the data outlives the running time of a single process there is no
 convenient way to store data structures outside application memory.
 
 For most object-oriented programming languages there exist Object-Relational
 Mappers \cite{orm} that allow for a transparent mapping between objects and
 tables within relational databases. Automated derivation of database queries
 from the structure of objects can save time in the development process.
-
 Many attempts have been made to map values of algebraic datatypes in Haskell to
 relational databases tables. Due to the mismatch between the column based
 layout of relational databases and the structure of functional data structures
 only values of specific types can be marshalled.
 
 In this paper we present a new framework for saving functional data structures
-in Haskell to a database file on disk. We identify the three important
-properties of our framework:
+in Haskell to a database file on disk. We do not use relational databases, but
+build or own system that matches the structure of algebraic datatypes.
+
+We identify the three important properties of our framework:
 
 \begin{enumerate}
 \item \textbf{Flexibility:} The storage system doest not impose a single way to
@@ -65,13 +65,12 @@ illustrates the use of our storage framework:
 > find :: IO ()
 > find = run "squares.db" $ forever $
 >   do  num  <- liftIO (read `liftM` getLine)
->       res  <- query (lookupP num)
+>       res  <- consume (lookupP num)
 >       case res of
 >         Just sqr  -> liftIO (print (num, sqr))
 >         Nothing   -> modify (insertP num (num * num))
 
-Even without knowing any details about the code, by looking at it line by line
-the programs are easy to grasp. The first little program opens up database file
+The first little program opens up database file
 on disk called \texttt{squares.db} and uses it to store a small mapping from
 numbers to their squares. The second program, that can run independently from
 the first program, opens up the same database and starts to a loop that
@@ -82,7 +81,7 @@ computed and added to the database.
 
 The operations that are run against the database file run in their own monadic
 context, allowing to sequence multiple actions in one database action. We offer
-three basic operations to manipulate the database file: |produce|, |query| and
+three basic operations to manipulate the database file: |produce|, |consume| and
 |modify|. The three functions are used to lift operations on persistent
 functional data structures to work on the database file.  In the example
 program we lift |fromListP|, |lookupP| and the |insertP| function to manipulate

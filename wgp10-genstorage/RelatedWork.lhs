@@ -27,9 +27,10 @@ instantiate the annotation to be the pointer annotation from
 Section~\ref{sec:storage},
 the lookup function runs inside the |Heap| monad which is
 strict, because the underlying |IO| monad is strict.\andres{You said that
-|State| is strict, too, but I don't think so.} The strict bind
-operator for the |Heap| monad makes the |lookupP| operation traverse
-the entire tree, i.e., to run in $\Theta(n)$.
+|State| is strict, too, but I don't think so. Sebas: Reading/writing state is
+lazy, the bind of state is strict.} The strict bind operator for the |Heap|
+monad makes the |lookupP| operation traverse the entire tree, i.e., to run in
+$\Theta(n)$.
 
 We have solved this problem by creating two separate heap contexts, a read-only
 context which uses lazy IO and a read-write context that uses strict IO. The
@@ -37,12 +38,12 @@ pointer instance for the |Out| type class is now associated with the read-only
 context, the instance for the |In| type class is associated with the read-write
 context. The instance for the |OutIn| uses a hybrid approach, lifting lazy read
 actions into the strict context. The separation between the two context allows
-us to have strict producer functions and lazy query functions. The running time
-of the persistent |lookup| function in the lazy context is reduced to the same
-as its in-memory variant.\andres{Quite vague. Reread and perhaps rewrite.}
+us to have strict producer functions and lazy consumer functions. The running time
+of the persistent |lookup| function in the lazy context is now reduced back to
+$O(\log n)$.
 
 To avoid any problems regarding lazy IO, we strictly force the entire result
-values of query operations to ensure all side-effects stay within the Heap
+values of consumer operations to ensure all side-effects stay within the Heap
 context and cannot escape. Our operations are now lazy on the inside but appear
 strict on the outside.
 
@@ -164,13 +165,13 @@ touching the entire collection, but for every structural change to the
 collection the chunk containing the data structure itself -- they call this
 the \emph{Root chunk} -- has to be read in and written back as a whole.
 
-\subsection{Happstack state}
+\subsection{Happstack State}
 
 The \emph{Happstack} \cite{happsstate} project consist of Haskell web server
 and a state framework. The state framework is called \emph{Happstack-State}.
 It uses a record-based system in which users can add, delete, modify and
-retrieve records of data. This framework uses meta-programming using Template
-Haskell to automatically derive storage operations for custom datatypes. The
+retrieve records of data on a database file. The system uses Template
+Haskell meta-programming to automatically derive storage operations for custom datatypes. The
 derivation of operations only works for monomorphic types which severly breaks
 modularity.  Happstack State only allows storing record values and does not
 allow using custom domain specific data structures.
