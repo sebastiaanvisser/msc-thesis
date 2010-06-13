@@ -45,20 +45,22 @@ generically.
 
 \subsection{Recursive datatypes}\label{sec:recdata}
 
-Interesting datatypes are usually recursive. Here is an example -- a datatype
-for binary search trees storing both keys and values:
-\andres{Since we insist that this is a BST, we have to say something about
-the BST property somewhere.}
+As a running example of a typical recursive datatype,
+we consider the datatype of binary search trees:
 
 > data  Tree1 k v
 >    =  Leaf1 | Branch1 k v (Tree1 k v) (Tree1 k v)
 
+The type |Tree1| is parameterized over the type of keys~|k| and the
+type of values~|v|.
 The constructor |Branch1| represents an internal node, containing a key,
 a value, a left and a right subtree. Leaves do not contain values and
-are represented by |Leaf1|.
+are represented by |Leaf1|. We will maintain the binary search tree
+property as an invariant. For simplicity, we will not try to keep the
+tree properly balanced at all times.
 
-Using the constructors |Leaf1| and |Branch1|, we can build an example
-binary search tree:
+An example tree, also shown in Figure~\ref{fig:binarytree}, can be
+defined as follows:
 
 > myTree :: Tree1 Int Int
 > myTree = Branch1 3 9  (Branch1 1 1   Leaf1
@@ -66,8 +68,6 @@ binary search tree:
 >                       (Branch1 4 16  (Branch1 7 49  Leaf1
 >                                                     Leaf1)
 >                                      Leaf1)
-
-This example binary tree is illustrated in Figure~\ref{fig:binarytree}.
 
 \begin{figure}[tp]
 \begin{center}
@@ -77,14 +77,15 @@ This example binary tree is illustrated in Figure~\ref{fig:binarytree}.
 \label{fig:binarytree}
 \end{figure}
 
-Functions that operate on a datatype often follow the structure of the
-datatype closely. If the underlying datatype is recursive, the function
-is recursive as well. Consider as an example the |lookup| function on
-binary search trees: it takes a key and a tree and recursively descends
-the tree. In each branch, the stored key is compared with the given key.
-Depending on the outcome of the comparison, the left or right subtrees are
-traversed, or the value is returned. If the traversal reaches a leaf,
-nothing is returned.
+We now present some simple operations on binary search trees. As many
+functions that operate on datatypes, these examples follow the structure
+of the datatype closely: they are instances of standard recursion patterns.
+
+First, let us consider the |lookup| function on binary search trees. Given
+a key, the function descends the key. In each branch, it compares the
+argument with the stored key in order to decide what branch to take. If
+a correct key is found before a leaf is reached, the associated value is
+returned.
 
 > lookup1 :: Ord k => k -> Tree1 k v -> Maybe v
 > lookup1 _  Leaf1              =  Nothing
@@ -93,10 +94,9 @@ nothing is returned.
 >                                    EQ  ->  Just x
 >                                    GT  ->  lookup1 k r
 
-Another example is the |insert| function that inserts a new key-value pair into
+Next, let us consider |insert|, a function that inserts a new key-value pair into
 a binary tree. Like |lookup1|, the function performs a key comparison to ensure
 that the binary search tree property is preserved by the operation.
-\andres{We might want to mention the absence of rotations in a footnote.}
 
 > insert1 :: Ord k => k -> v -> Tree1 k v -> Tree1 k v
 > insert1 k v Leaf1              =  Branch1 k v Leaf1 Leaf1
@@ -106,10 +106,16 @@ that the binary search tree property is preserved by the operation.
 
 Both |lookup1| and |insert1| follow a similar pattern. They recurse
 at exactly the places where the underlying datatype |Tree| is recursive.
-In the following, we are going to make the use of recursion in the datatype
-explicit, and abstract from the common pattern.
+The difference is that while |lookup1| only destructs a tree, |insert1|
+also constructs a new tree during the traversal.
 
-\subsection{Fixed point combinator}\label{sec:fix}
+Next, we show how re-expressing a datatype as a fixed point of a functor
+helps us to make the recursion patterns of the operations explicit.
+
+\andres[inline]{Perhaps we should even show |fromList| here already, for
+overall symmetry.}
+
+\subsection{Fixed points}\label{sec:fix}
 
 The first step in making the use of recursion in a datatype explicit is
 to abstract from it. We move from |Tree1| to |TreeF| by adding a parameter~|r|
