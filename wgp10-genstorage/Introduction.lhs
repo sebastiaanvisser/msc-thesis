@@ -22,37 +22,37 @@
 
 Algebraic datatypes in Haskell provide a powerful way to structure data.
 Recursive datatypes can be used to create functional data structures.
-Unfortunately values of datatypes in Haskell can only be manipulated in memory.
-When data structures grow too large to fit in application memory or when the
-data outlives the running time of a single process there is no convenient way
-to store data structures outside application memory.
+Unfortunately, values of datatypes in Haskell can only be manipulated
+in-memory.  When data structures grow too large to fit in application memory or
+when the data outlives the running time of a single process there is no
+convenient way to store data structures outside application memory.
 
-For most object-oriented (OO) programming languages there exists
-Object-Relational Mappers \cite{orm} (ORMs) that allow for a transparent
-mapping between objects and tables within a relational databases. Automating
-derivation of database queries from the structure of objects can save time in
-the development process.
+For most object-oriented programming languages there exist Object-Relational
+Mappers \cite{orm} that allow for a transparent mapping between objects and
+tables within relational databases. Automated derivation of database queries
+from the structure of objects can save time in the development process.
 
-Many attempts have been made to map values of algebraic datatypes to 
+Many attempts have been made to map values of algebraic datatypes in Haskell to
 relational databases tables. Due to the mismatch between the column based
-layout of relation databases and the structure of functional data structures
-only limited solutions exist.
+layout of relational databases and the structure of functional data structures
+only values of specific types can be marshalled.
 
-We identify three important properties of a functional persistence
-framework:
+In this paper we present a new framework for saving functional data structures
+in Haskell to a database file on disk. We identify the three important
+properties of our framework:
 
 \begin{enumerate}
-\item \textbf{Efficiency:}   Incremental access to parts of the data.
-\item \textbf{Flexibility:}  The system should provide ways to store domain specific data structures.
-\item \textbf{Transparency:} Users should not be bothered with the details of the underlying system.
+\item \textbf{Flexibility:} The storage system doest not impose a single way to
+structure the data. Both general purpose and domain specific data structure can
+be stored on disk.
+\item \textbf{Efficiency:} By enabling incremental access to parts of the data
+we allow efficient manipulation of large collections of data.  Algorithms
+working on a persistent data structure have the same asymptotic running time as
+their in-memory counterpart.
+\item \textbf{Transparency:} The final interface to the users uses common
+Haskell idioms. Users are not be bothered with the inner workings of the
+storage system when manipulating persistent data structures.
 \end{enumerate}
-
-In this paper we present a framework for saving functional data structures in
-Haskell to a database file on disk. The data structures are stored in a way
-that allows partial access to the structure, which allows us to efficiently
-manipulate the data. The storage framework is not restricted to a single data
-structure. Using generic programming we are able to lift a large class of
-recursive datatypes to work on a persistent storage.
 
 Consider the following two simple Haskell program:
 
