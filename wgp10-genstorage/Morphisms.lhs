@@ -54,7 +54,7 @@ each type of operation.
 
 \begin{itemize}
 \item We use \emph{paramorphisms}~\cite{paras} to destruct recursive datatypes
-to a single result value, these functions are called \emph{query} functions.
+to a single result value, these functions are called \emph{consumer} functions.
 \item We use \emph{apomorphisms}~\cite{apos} to construct recursive datatypes
 from a single seed value, these functions are called \emph{producer} functions.
 \item We use \emph{endomorphic paramorphisms} to modify existing recursive

@@ -38,12 +38,12 @@ pointer instance for the |Out| type class is now associated with the read-only
 context, the instance for the |In| type class is associated with the read-write
 context. The instance for the |OutIn| uses a hybrid approach, lifting lazy read
 actions into the strict context. The separation between the two context allows
-us to have strict producer functions and lazy query functions. The running time
+us to have strict producer functions and lazy consumer functions. The running time
 of the persistent |lookup| function in the lazy context is now reduced back to
 $O(\log n)$.
 
 To avoid any problems regarding lazy IO, we strictly force the entire result
-values of query operations to ensure all side-effects stay within the Heap
+values of consumer operations to ensure all side-effects stay within the Heap
 context and cannot escape. Our operations are now lazy on the inside but appear
 strict on the outside.
 

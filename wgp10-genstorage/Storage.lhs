@@ -136,21 +136,21 @@ run the example again, this time saving the root node:
 ghci> run "squares.db" (produce (fromListP squares))
 \end{verbatim}
 
-We make a similar wrapper function for performing query functions. The~|query|
+We make a similar wrapper function for performing consumer functions. The~|consume|
 operation takes a heap operation and passes it as input the data structure
 pointed to by the pointer stored in the null block:
 
-> query :: Binary (f (Fix f)) => (Fix f -> Heap b) -> Heap b
-> query c = read (P 0) >>= c . In
+> consume :: Binary (f (Fix f)) => (Fix f -> Heap b) -> Heap b
+> consume c = read (P 0) >>= c . In
 
-We can now run any query operation on the binary tree of squares stored on
+We can now run any consumer operation on the binary tree of squares stored on
 disk. We specialize the |lookup| function and apply it to our squares database:
 
 > lookupP :: Int -> TreeP Int Int -> Heap (Maybe Int)
 > lookupP = lookup
 
 \begin{verbatim}
-ghci> run "squares.db" (query (lookupP 3))
+ghci> run "squares.db" (consume (lookupP 3))
 Just 9
 \end{verbatim}
 
@@ -186,7 +186,7 @@ such as |insert| to work on the persistent storage:
 > insertP :: Int -> Int -> TreeP Int Int -> Heap (TreeP Int Int)
 > insertP = insert
 
-Similar to |produce| and |query|, we define a function |modify|
+Similar to |produce| and |consume|, we define a function |modify|
 that applies a given modifier to the tree pointed at by the pointer
 in the null block, and stores the resulting tree pointer in the null
 block once more:
@@ -196,10 +196,10 @@ block once more:
 
 Here is an example:
 \begin{verbatim}
-ghci> run "squares.db" (query (lookupP 9))
+ghci> run "squares.db" (consume (lookupP 9))
 Nothing
 ghci> run "squares.db" (modify (insertP 9 81))
-ghci> run "squares.db" (query (lookupP 9))
+ghci> run "squares.db" (consume (lookupP 9))
 Just 81
 \end{verbatim}
 

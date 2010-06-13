@@ -65,7 +65,7 @@ illustrates the use of our storage framework:
 > find :: IO ()
 > find = run "squares.db" $ forever $
 >   do  num  <- liftIO (read `liftM` getLine)
->       res  <- query (lookupP num)
+>       res  <- consume (lookupP num)
 >       case res of
 >         Just sqr  -> liftIO (print (num, sqr))
 >         Nothing   -> modify (insertP num (num * num))
@@ -81,7 +81,7 @@ computed and added to the database.
 
 The operations that are run against the database file run in their own monadic
 context, allowing to sequence multiple actions in one database action. We offer
-three basic operations to manipulate the database file: |produce|, |query| and
+three basic operations to manipulate the database file: |produce|, |consume| and
 |modify|. The three functions are used to lift operations on persistent
 functional data structures to work on the database file.  In the example
 program we lift |fromListP|, |lookupP| and the |insertP| function to manipulate
