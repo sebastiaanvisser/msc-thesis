@@ -117,12 +117,60 @@ overall symmetry.}
 
 \subsection{Fixed points}\label{sec:fix}
 
-The first step in making the use of recursion in a datatype explicit is
-to abstract from it. We move from |Tree1| to |TreeF| by adding a parameter~|r|
+We will show how abstracting from the recursive positions in a datatype
+changes the situation. For our running example, this means that we move
+from |Tree1| to |TreeF| by adding a parameter~|r|
 that is used whereever |Tree1| makes a recursive call:
 
 > data TreeF k v rr = Leaf | Branch k v rr rr
 
+The type |TreeF| is also called the \emph{pattern functor} of |Tree|. 
+
+To get our binary search trees back, we have to tie the recursive knot,
+i.e., instantiate the parameter |r| with the recursive call. This job is
+performed by the type-level fixed point combinator |Fix| that takes a
+functor~|f| of kind~|* -> *| and parameterized |f| with its own fixed
+point:
+
+> newtype Fix f = In { out :: f (Fix f) }
+
+By using |Fix| on a pattern functor such as |TreeF|, we obtain a recursive
+datatype once more that is isomorphic to the original |Tree1| datatype:
+
+> type Tree k v = Fix (TreeF k v)
+
+Building a binary tree structure for our new |Tree| type requires wrapping
+all constructor applications with an additional application of the |In| constructor
+of the |Fix| datatype. It is thus helpful to define \emph{smart constructors} for
+this task:
+
+> leaf :: Tree k v
+> leaf = In Leaf
+>
+> branch :: k -> v -> Tree k v -> Tree k v -> Tree k v
+> branch k v l r = In (Branch k v l r)
+
+Our example tree can now be expressed in terms of |leaf| and |branch|
+rather than |Leaf1| and |Branch1|, but otherwise looks as before:
+
+> myTreeF :: Tree Int Int
+> myTreeF = branch 3 9  (branch 1 1   leaf
+>                                     leaf) 
+>                       (branch 4 16  (branch 7 49  leaf
+>                                                   leaf)
+>                                     leaf)
+
+It is shown in Figure~\ref{fig:binarytreefix}.\andres{The
+figure is using $\mu$ rather than |In|; both |myTreeF| and the
+figure could be removed.}
+
+\begin{figure}[tp]
+\begin{center}
+\includegraphics[scale=0.35]{img/binarytree-fix.pdf}
+\end{center}
+\caption{Binary tree with explicit recursion.}
+\label{fig:binarytreefix}
+\end{figure}
 %if False
 
 > (<>) :: Monoid a => a -> a -> a
@@ -154,10 +202,6 @@ parameter for the recursive positions and not on the key or value types.}
 \label{fig:funcfoldtrav}
 \end{figure}
 
-The type |TreeF| is also called the \emph{pattern functor} of |Tree|. In the
-rest of this paper, we refer to datatypes defined via their pattern functor as
-\emph{open} recursive datatypes.
-
 \andres[inline]{I think that the flow here is suboptimal: We should first introduce
 the fixed point combinator, the smart constructor, the catamorphism etc. The
 whole paragraph on derived class instances is distracing at this point.
@@ -167,46 +211,6 @@ To gain more control over the recursive positions we create instances for the
 |Functor|, |Foldable| and |Traversable| type classes. The instance
 implementations are shown in figure \ref{fig:funcfoldtrav}.
 
-We now introduce the type level fixed point combinator |Fix| that takes a type
-constructor |f| of kind |* -> *| and parametrizes |f| with its own fixed point.
-
-> newtype Fix f = In { out :: f (Fix f) }
-
-By using |Fix| on a pattern functor such as |TreeF|, we obtain a recursive
-datatype once more that is isomorphic to the original |Tree1| datatype:
-
-> type Tree k v = Fix (TreeF k v)
-
-Building a binary tree structure for our new |Tree| type requires wrapping
-all constructor applications with an additional application of the |In| constructor
-of the |Fix| datatype. It is helpful to define \emph{smart constructors} for
-this task:
-
-> leaf :: Tree k v
-> leaf = In Leaf
->
-> branch :: k -> v -> Tree k v -> Tree k v -> Tree k v
-> branch k v l r = In (Branch k v l r)
-
-The example tree now becomes
-
-> myTreeF :: Tree Int Int
-> myTreeF = branch 3 9  (branch 1 1   leaf
->                                     leaf) 
->                       (branch 4 16  (branch 7 49  leaf
->                                                   leaf)
->                                     leaf)
-
-and is shown in Figure~\ref{fig:binarytreefix}.\andres{The
-figure is using $\mu$ rather than |In|.}
-
-\begin{figure}[tp]
-\begin{center}
-\includegraphics[scale=0.35]{img/binarytree-fix.pdf}
-\end{center}
-\caption{Binary tree with explicit recursion.}
-\label{fig:binarytreefix}
-\end{figure}
 
 \andres[inline]{At this point (or earlier), we have to introduce
 catamorphisms and reiterate at least one of the example functions
