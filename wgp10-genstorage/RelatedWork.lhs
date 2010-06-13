@@ -110,7 +110,7 @@ finger tree to have are encoded using the datatype indices.
 \subsection{Generic programming with fixed points}
 
 Generic programming with fixed points is a well-explored area, both for regular
-datatypes~\cite{polyp}\andres{Cite Backhouse?}
+datatypes~\cite{genintro, polyp}
 and mutually recursive datatypes~\cite{multirec}. Most
 generic programming approaches use fixed points of nested sums of product, a
 view in which recursion, constructors, and constructor fields of algebraic
