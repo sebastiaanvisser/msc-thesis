@@ -32,25 +32,35 @@
 \section{Working with fixed points}
 \label{sec:fixpoints}
 
-\andres[inline]{Introduction: First fixed points. Well known. Lots of
-related work. Then annotated fixed points and example annotations.}
+In this section, we repeat how datatypes can be rewritten as fixed points,
+and algorithms working on such datatypes can be expressed in terms of
+recursion patterns (Sections~\ref{sec:recdata} and \ref{sec:fix}).
+Reexpressing datatypes and algorithms in this style
+grants us fine-grained access to both the structure of the datatypes and
+the behaviour of operations. We make use of that control by introducing
+\emph{annotations} (Section~\ref{sec:annotations}) and discuss examples
+(Sections~\ref{sec:modtime} and \ref{sec:debug}). In the next section,
+we discuss how annotations help us to derive persistent data structures
+generically.
 
-\subsection{Recursive datatypes}
+\subsection{Recursive datatypes}\label{sec:recdata}
 
-Interesting datatypes are usually recursive. Here is an example -- a datatype
-for binary search trees storing both keys and values:
-\andres{Since we insist that this is a BST, we have to say something about
-the BST property somewhere.}
+As a running example of a typical recursive datatype,
+we consider the datatype of binary search trees:
 
 > data  Tree1 k v
 >    =  Leaf1 | Branch1 k v (Tree1 k v) (Tree1 k v)
 
+The type |Tree1| is parameterized over the type of keys~|k| and the
+type of values~|v|.
 The constructor |Branch1| represents an internal node, containing a key,
 a value, a left and a right subtree. Leaves do not contain values and
-are represented by |Leaf1|.
+are represented by |Leaf1|. We will maintain the binary search tree
+property as an invariant. For simplicity, we will not try to keep the
+tree properly balanced at all times.
 
-Using the constructors |Leaf1| and |Branch1|, we can build an example
-binary search tree:
+An example tree, also shown in Figure~\ref{fig:binarytree}, can be
+defined as follows:
 
 > myTree :: Tree1 Int Int
 > myTree = Branch1 3 9  (Branch1 1 1   Leaf1
@@ -58,8 +68,6 @@ binary search tree:
 >                       (Branch1 4 16  (Branch1 7 49  Leaf1
 >                                                     Leaf1)
 >                                      Leaf1)
-
-This example binary tree is illustrated in Figure~\ref{fig:binarytree}.
 
 \begin{figure}[tp]
 \begin{center}
@@ -69,14 +77,15 @@ This example binary tree is illustrated in Figure~\ref{fig:binarytree}.
 \label{fig:binarytree}
 \end{figure}
 
-Functions that operate on a datatype often follow the structure of the
-datatype closely. If the underlying datatype is recursive, the function
-is recursive as well. Consider as an example the |lookup| function on
-binary search trees: it takes a key and a tree and recursively descends
-the tree. In each branch, the stored key is compared with the given key.
-Depending on the outcome of the comparison, the left or right subtrees are
-traversed, or the value is returned. If the traversal reaches a leaf,
-nothing is returned.
+We now present some simple operations on binary search trees. As many
+functions that operate on datatypes, these examples follow the structure
+of the datatype closely: they are instances of standard recursion patterns.
+
+First, let us consider the |lookup| function on binary search trees. Given
+a key, the function descends the key. In each branch, it compares the
+argument with the stored key in order to decide what branch to take. If
+a correct key is found before a leaf is reached, the associated value is
+returned.
 
 > lookup1 :: Ord k => k -> Tree1 k v -> Maybe v
 > lookup1 _  Leaf1              =  Nothing
@@ -85,10 +94,9 @@ nothing is returned.
 >                                    EQ  ->  Just x
 >                                    GT  ->  lookup1 k r
 
-Another example is the |insert| function that inserts a new key-value pair into
+Next, let us consider |insert|, a function that inserts a new key-value pair into
 a binary tree. Like |lookup1|, the function performs a key comparison to ensure
 that the binary search tree property is preserved by the operation.
-\andres{We might want to mention the absence of rotations in a footnote.}
 
 > insert1 :: Ord k => k -> v -> Tree1 k v -> Tree1 k v
 > insert1 k v Leaf1              =  Branch1 k v Leaf1 Leaf1
@@ -98,17 +106,71 @@ that the binary search tree property is preserved by the operation.
 
 Both |lookup1| and |insert1| follow a similar pattern. They recurse
 at exactly the places where the underlying datatype |Tree| is recursive.
-In the following, we are going to make the use of recursion in the datatype
-explicit, and abstract from the common pattern.
+The difference is that while |lookup1| only destructs a tree, |insert1|
+also constructs a new tree during the traversal.
 
-\subsection{Fixed point combinator}
+Next, we show how re-expressing a datatype as a fixed point of a functor
+helps us to make the recursion patterns of the operations explicit.
 
-The first step in making the use of recursion in a datatype explicit is
-to abstract from it. We move from |Tree1| to |TreeF| by adding a parameter~|r|
+\andres[inline]{Perhaps we should even show |fromList| here already, for
+overall symmetry.}
+
+\subsection{Fixed points}\label{sec:fix}
+
+We will show how abstracting from the recursive positions in a datatype
+changes the situation. For our running example, this means that we move
+from |Tree1| to |TreeF| by adding a parameter~|r|
 that is used whereever |Tree1| makes a recursive call:
 
 > data TreeF k v rr = Leaf | Branch k v rr rr
 
+The type |TreeF| is also called the \emph{pattern functor} of |Tree|. 
+
+To get our binary search trees back, we have to tie the recursive knot,
+i.e., instantiate the parameter |r| with the recursive call. This job is
+performed by the type-level fixed point combinator |Fix| that takes a
+functor~|f| of kind~|* -> *| and parameterized |f| with its own fixed
+point:
+
+> newtype Fix f = In { out :: f (Fix f) }
+
+By using |Fix| on a pattern functor such as |TreeF|, we obtain a recursive
+datatype once more that is isomorphic to the original |Tree1| datatype:
+
+> type Tree k v = Fix (TreeF k v)
+
+Building a binary tree structure for our new |Tree| type requires wrapping
+all constructor applications with an additional application of the |In| constructor
+of the |Fix| datatype. It is thus helpful to define \emph{smart constructors} for
+this task:
+
+> leaf :: Tree k v
+> leaf = In Leaf
+>
+> branch :: k -> v -> Tree k v -> Tree k v -> Tree k v
+> branch k v l r = In (Branch k v l r)
+
+Our example tree can now be expressed in terms of |leaf| and |branch|
+rather than |Leaf1| and |Branch1|, but otherwise looks as before:
+
+> myTreeF :: Tree Int Int
+> myTreeF = branch 3 9  (branch 1 1   leaf
+>                                     leaf) 
+>                       (branch 4 16  (branch 7 49  leaf
+>                                                   leaf)
+>                                     leaf)
+
+It is shown in Figure~\ref{fig:binarytreefix}.\andres{The
+figure is using $\mu$ rather than |In|; both |myTreeF| and the
+figure could be removed.}
+
+\begin{figure}[tp]
+\begin{center}
+\includegraphics[scale=0.35]{img/binarytree-fix.pdf}
+\end{center}
+\caption{Binary tree with explicit recursion.}
+\label{fig:binarytreefix}
+\end{figure}
 %if False
 
 > (<>) :: Monoid a => a -> a -> a
@@ -140,10 +202,6 @@ parameter for the recursive positions and not on the key or value types.}
 \label{fig:funcfoldtrav}
 \end{figure}
 
-The type |TreeF| is also called the \emph{pattern functor} of |Tree|. In the
-rest of this paper, we refer to datatypes defined via their pattern functor as
-\emph{open} recursive datatypes.
-
 \andres[inline]{I think that the flow here is suboptimal: We should first introduce
 the fixed point combinator, the smart constructor, the catamorphism etc. The
 whole paragraph on derived class instances is distracing at this point.
@@ -153,46 +211,6 @@ To gain more control over the recursive positions we create instances for the
 |Functor|, |Foldable| and |Traversable| type classes. The instance
 implementations are shown in figure \ref{fig:funcfoldtrav}.
 
-We now introduce the type level fixed point combinator |Fix| that takes a type
-constructor |f| of kind |* -> *| and parametrizes |f| with its own fixed point.
-
-> newtype Fix f = In { out :: f (Fix f) }
-
-By using |Fix| on a pattern functor such as |TreeF|, we obtain a recursive
-datatype once more that is isomorphic to the original |Tree1| datatype:
-
-> type Tree k v = Fix (TreeF k v)
-
-Building a binary tree structure for our new |Tree| type requires wrapping
-all constructor applications with an additional application of the |In| constructor
-of the |Fix| datatype. It is helpful to define \emph{smart constructors} for
-this task:
-
-> leaf :: Tree k v
-> leaf = In Leaf
->
-> branch :: k -> v -> Tree k v -> Tree k v -> Tree k v
-> branch k v l r = In (Branch k v l r)
-
-The example tree now becomes
-
-> myTreeF :: Tree Int Int
-> myTreeF = branch 3 9  (branch 1 1   leaf
->                                     leaf) 
->                       (branch 4 16  (branch 7 49  leaf
->                                                   leaf)
->                                     leaf)
-
-and is shown in Figure~\ref{fig:binarytreefix}.\andres{The
-figure is using $\mu$ rather than |In|.}
-
-\begin{figure}[tp]
-\begin{center}
-\includegraphics[scale=0.35]{img/binarytree-fix.pdf}
-\end{center}
-\caption{Binary tree with explicit recursion.}
-\label{fig:binarytreefix}
-\end{figure}
 
 \andres[inline]{At this point (or earlier), we have to introduce
 catamorphisms and reiterate at least one of the example functions
@@ -295,7 +313,7 @@ identity annotation. Also, we are getting ahead of things at this point, because
 we introduce abstraction without seeing the need for it.}
 
 \subsection{Example annotation: modification time}
-\label{sec:debug}
+\label{sec:modtime}
 
 As an example of an annotation type we introduce the |ModTime| annotation.
 Using |ModTime|, we can log the exact time that the parts of a recursive
