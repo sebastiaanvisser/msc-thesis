@@ -54,13 +54,14 @@ Haskell idioms. Users are not be bothered with the inner workings of the
 storage system when manipulating persistent data structures.
 \end{enumerate}
 
-Consider the following two simple Haskell program:
+Consider the following two simple Haskell programs that on a high level
+illustrates the use of our storage framework:
 
 > build :: IO ()
 > build = run "squares.db" $
 >   do  let squares = [(1,1),(3,3),(4,16),(7,49)]
 >       produce (fromListP squares)
-
+>
 > find :: IO ()
 > find = run "squares.db" $ forever $
 >   do  num  <- liftIO (read `liftM` getLine)
@@ -80,30 +81,26 @@ is found this will be reported back to the user, when no square is found is
 computed and added to the database.
 
 The operations that are run against the database file run in their own monadic
-context that supports interweaving arbitrary |IO| actions using |liftIO|. In
-the code we three operations that manipulate the actual database file:
-|produce|, |query| and |modify|. The three functions are used to lift a special
-kind of operations on functional data structures to work on a database file on
-disk. In the example program we see a |fromListP|, |lookupP| and an |insertP|
-function, which are operations that manipulate a persistent map from keys to
-values implemented as a binary search tree, similar to Haskell's
-\texttt{Data.Map} \cite{bintree}.
+context, allowing to sequence multiple actions in one database action. We offer
+three basic operations to manipulate the database file: |produce|, |query| and
+|modify|. The three functions are used to lift operations on persistent
+functional data structures to work on the database file.  In the example
+program we lift |fromListP|, |lookupP| and the |insertP| function to manipulate
+a persistent mappign from keys to values implemented as a binary search tree,
+similar to Haskell's \texttt{Data.Map} \cite{bintree}.
 
 In section \ref{sec:fixpoints} we implement a generic framework for working
 with annotated recursive datatypes. By parametrizing datatypes with an
 additional type variable for the recursive positions we gain control over the
 recursion. We store annotations at the recursive positions and associate
 functionality with the construction and destruction of recursive datatypes.
-
 In section \ref{sec:patterns} we write operations by abstracting away from
 recursion using recursion patterns. Using \emph{catamorphisms} and
 \emph{anamorphisms} we lift annotation agnostic algebras to operate on
 annotated datatypes.
-
 In section \ref{sec:heap} we implement an on-disk heap data structure for block
 based binary storage. This heap allows dynamic allocation and freenig of blocks
 of binary data on disk. The structure can grow and shrink on-demand.
-
 In section \ref{sec:storage} we use pointers as offsets to blocks on the
 storage heap as annotations for the recursive positions of datatypes. Using
 pointers as annotations yields data structures that are stored on disk.  As a
