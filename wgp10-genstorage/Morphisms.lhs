@@ -19,49 +19,54 @@
 > import Data.Monoid
 > import Prelude hiding (mapM)
 > import Control.Monad.Identity (Identity(..))
-> import Control.Monad hiding (mapM)
+> import Control.Monad hiding (mapM, (<=<))
 > import Data.Traversable
-> import Fixpoints hiding ((:+:))
+> import Fixpoints hiding ((:+:), Algebra, lookupAlg, cata)
 
 %endif
 
 \section{Annotated recursion patterns}
 \label{sec:patterns}
 
-\todo[inline]{Idea from Sebas: Introduce only cata and ana, then endomorphic stuff}
+Writing operations on annotated datatypes directly is inconvenient.  The |inA|
+and |outA| methods have monadic result type, forcing us to use monadic style
+all over the place. Furthermore, if we want to write code that is generic over
+all annotations, we cannot use pattern matching, because we do not know how the
+annotated terms look like.
 
-In the previous section we have seen how to write recursive datatypes with an
-additional type parameter for the recursive positions and using a fixed point
-combinator to tie the knot. Using the fixed point combinator we are allowed to
-store annotation variables at the recursive positions of the datatypes. The
-|In| and |Out| type classes are used to associate custom functionality with the
-construction and destruction of recursive datatype.
+In this section, we therefore have another look at catamorphisms, anamorphisms
+and apomorphisms. We discuss how these recursion patterns have to be adapted so
+that they work with annotated structures.
 
-Writing operations on annotated datatypes seems comparatively hard:
-\begin{itemize}
-\item whenever we encounter a recursive position, we need to explicitly
-  wrap or unwrap an annotation; \andres{I find this statement confusing. We have
-the smart constructors for that, or not?}
-\item because adding or removing an annotation is allowed to have a monadic
-  effect, we have to write all operations in monadic style.
-\end{itemize}
-Fortunately, it turns out that we can abstract from all the tedious parts
-in writing operations on annotated values by defining and subsequently
-instantiating suitable recursion patterns.
+Using recursion patterns, we can avoid the problems that directly defined
+operations on annotated structures have. As we will see, in many cases we can
+reuse the original algebras, written in a pure, annotation-agnostic way. By
+plugging them into the new patterns, we can still run them in a framework that
+performs effectful operations behind the scenes.
 
-We show three different types of operations and use a different pattern for
-each type of operation.
+\subsection{Catamorphism}
 
-\begin{itemize}
-\item We use \emph{paramorphisms}~\cite{paras} to destruct recursive datatypes
-to a single result value, these functions are called \emph{consumer} functions.
-\item We use \emph{apomorphisms}~\cite{apos} to construct recursive datatypes
-from a single seed value, these functions are called \emph{producer} functions.
-\item We use \emph{endomorphic paramorphisms} to modify existing recursive
-datatypes, these functions are called \emph{modifier} functions.\andres{Let's
-think about the name. Perhaps \emph{modifier} is better than endomorphic
-paramorphism.}
-\end{itemize}
+Recall the definition of a catamorphism from Section~\ref{sec:simplerecpat}:
+
+> type Algebra f r = f r -> r
+>
+> cata :: Functor f => Algebra f r -> Fix f -> r
+> cata phi = phi . fmap (cata phi) . out
+
+In order to move to the annotate setting, we replace |out|
+by |outA|; as a consequence, everything becomes monadic,
+so we replace function composition by Kleisli composition;
+finally, we replace |fmap| by |mapM|:
+
+> cataA ::  (Out a f m, Monad m, Traversable f) =>
+>           Algebra f r -> FixA a f -> m r
+> cataA phi = return . phi <=< mapM (cataA phi) <=< outA
+
+Haskell's |Traversable| type class replaces the |Functor| constraint -- it
+contains the |mapM| method. Note that we use the same |Algebra| type as before,
+and assume pure algebras written in an annotation-agnostic way -- exactly as we
+want.
+
 
 \todo[inline]{explain other morphisms might be useful, dependent on the input/ouput}
 
@@ -99,10 +104,10 @@ The function |paraA| then takes an algebra that computes a result value from a
 one-level structure and uses the algebra to recursively destruct an entire
 recursive structure:
 
-> paraA :: Out a f m => AlgA a f r -> FixA a f -> m r
+> paraA :: (Out a f m, Traversable f) => AlgA a f r -> FixA a f -> m r
 > paraA (Psi p)  =    return . p
 >                <=<  mapM (group (paraA (Psi p)))
->                <=<  outA . out
+>                <=<  outA
 >   where group f c = liftM (,c) (f c)
 
 \todo{literally explain this code?}\andres{Yes, a little bit more, but
@@ -234,9 +239,8 @@ in order to produce an entire recursive structure. Wherever the coalgebra
 produces a new seed value inside a node, the |apoA| function recursively
 continues the construction.
 
-> apoA :: In a f m => CoalgA a f s -> s -> m (FixA a f)
-> apoA (Phi p)  =    return . In
->               <=<  inA
+> apoA :: (Traversable f, In a f m) => CoalgA a f s -> s -> m (FixA a f)
+> apoA (Phi p)  =    inA
 >               <=<  mapM (apoA (Phi p) `either` topIn) . p
 
 As an example, we define a coalgebra |fromSortedListCoalg| that creates
@@ -310,8 +314,8 @@ of the |Out| and |In| classes: using the class method |outInA|,
 an annotated node is unwrapped, modified, and finally re-wrapped:
 
 > class (Out a f m, In a f m) => OutIn a f m where
->   outInA  ::   (  f (FixA a f) -> m (   f (FixA a f)))
->           ->  a   f (FixA a f) -> m (a  f (FixA a f))
+>   outInA  ::   (  f  (FixA a f) -> m (   f  (FixA a f)))
+>           ->         (FixA a f) -> m        (FixA a f)
 >   outInA f = inA <=< f <=< outA
 
 We require both |Out| and |In| as superclasses of |OutIn|. Given the |outA|
@@ -320,14 +324,6 @@ This default implementation is useful for some
 annotation types, such as the identity and debug annotation.
 Some other annotation types might profit from a custom implementation.\andres{Do
 we have an example for this?}
-
-The following helper function lifts the |outInA| function to work on a
-fixed point:
-
-> outIn1 :: OutIn a f m
->        => (f (  FixA a f)  -> m (f (  FixA a f)))
->        ->       FixA a f   -> m (     FixA a f)
-> outIn1 f = return . In <=< outInA f . out
 
 For the debug annotation, we use the default implementation:
 
@@ -357,13 +353,13 @@ Once more, we define a derived type that hides the annotation variable:
 > type Endo f = forall a. EndoA a f
 
 The modifier pattern has a structure similar to that of the regular
-apomorphism. The main difference is the use of the |outIn1| from the |OutIn|
+apomorphism. The main difference is the use of the |outInA| from the |OutIn|
 type class to unwrap the incoming structure, apply the supplied coalgebra, and
 wrap the result in an annotation:
 
-> endoA  ::  OutIn a f m
+> endoA  ::  (Traversable f, OutIn a f m)
 >        =>  EndoA a f -> FixA a f -> m (FixA a f)
-> endoA (PhiE phi) = outIn1 $
+> endoA (PhiE phi) = outInA $
 >   mapM (endoA (PhiE phi) `either` topIn) . phi
 
 The endo-algebras that drive the modification operations have significant

@@ -188,7 +188,7 @@ The structure of the tree is shown in Figure~\ref{fig:binarytreefix}.
 \label{fig:binarytreefix}
 \end{figure}
 
-\subsection{Recursion patterns}
+\subsection{Recursion patterns}\label{sec:simplerecpat}
 
 Given a fixed point representation of a datatype, we can define a number
 of recursion patterns for the datatype. But first, we have to back up the
@@ -640,7 +640,22 @@ No need to show two annotated trees in figures ...
 
 \subsection{Summary}
 
-\andres[inline]{Todo}
+\andres{Look at this summary again.}
+In this section, we have introduced annotated fixed points. We have discussed
+how to abstract from the creation and removal of annotations by means of the
+|In| and |Out| type classes. We have also introduced two example annotations,
+both with effects in the |IO| monad: one to keep track of the modification time
+of substructures, and one to generate a debug trace of operations on the
+structure. In Section~\ref{sec:storage}, we will introduce an annotation that
+allows us to make data structures persistent.
+
+Before that, we have a closer look at how to work with annotated structures.
+Until now, we have seen that values defined in a monadic style such as |myTree_a|
+can be evaluated at different annotation types, leading to different behaviour.
+In the next section, we show how the recursion patterns we introduced in
+Section~\ref{sec:simplerecpat} can be lifted to the annotated scenario, meaning
+that we can also lift functions specified via algebras to work on annotated structures
+easily.
 
 %if False
 

@@ -46,6 +46,7 @@
 %format AlgA                = "\Conid{Alg_\alpha}"
 %format Psi                 = "\Conid{\Psi}"
 %format Psi                 = "\ensuremath{\Psi}"
+%format cataA               = "\Varid{cata_\alpha}"
 %format paraA               = "\Varid{para_\alpha}"
 %format CoalgA              = "\Conid{Coalg_\alpha}"
 %format Phi                 = "\Conid{\Phi}"
