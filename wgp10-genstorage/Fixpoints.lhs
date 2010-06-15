@@ -318,26 +318,6 @@ positions.
 > (<>) :: Monoid a => a -> a -> a
 > (<>) = mappend
 
-\begin{figure}[tp]
-\begin{center}
-
-> instance Foldable (TreeF k v) where
->   foldMap _ Leaf              = mempty
->   foldMap f (Branch _ _ l r)  = f l <> f r
->
-> instance Traversable (TreeF k v) where
->   mapM _ Leaf              = return Leaf
->   mapM f (Branch k v l r)  = liftM2 (Branch k v) (f l) (f r)
-
-\end{center}
-\caption{The |Functor|, |Foldable| and |Traversable| type class instances for
-the pattern functor of |Tree|. These instances can be automatically derived
-using the Glasgow Haskell Compiler version |>=| 6.12.  Note that the |Functor|
-and |Traversable| instances for the |TreeF| type work on the additional type
-parameter for the recursive positions and not on the key or value types.}
-\label{fig:funcfoldtrav}
-\end{figure}
-
 \andres[inline]{I think that the flow here is suboptimal: We should first introduce
 the fixed point combinator, the smart constructor, the catamorphism etc. The
 whole paragraph on derived class instances is distracing at this point.

@@ -20,8 +20,9 @@
 > import Prelude hiding (mapM)
 > import Control.Monad.Identity (Identity(..))
 > import Control.Monad hiding (mapM, (<=<))
+> import Data.Foldable
 > import Data.Traversable
-> import Fixpoints hiding ((:+:), Algebra, lookupAlg, cata)
+> import Fixpoints hiding ((:+:), Algebra, cata, lookup, Coalgebra, fromList)
 
 %endif
 
@@ -58,8 +59,8 @@ by |outA|; as a consequence, everything becomes monadic,
 so we replace function composition by Kleisli composition;
 finally, we replace |fmap| by |mapM|:
 
-> cataA ::  (Out a f m, Monad m, Traversable f) =>
->           Algebra f r -> FixA a f -> m r
+> cataA ::  (Out ann f m, Monad m, Traversable f) =>
+>           Algebra f r -> FixA ann f -> m r
 > cataA phi = return . phi <=< mapM (cataA phi) <=< outA
 
 Haskell's |Traversable| type class replaces the |Functor| constraint -- it
@@ -67,13 +68,85 @@ contains the |mapM| method. Note that we use the same |Algebra| type as before,
 and assume pure algebras written in an annotation-agnostic way -- exactly as we
 want.
 
+Before we can use |cataA| on an actual datatype such as binary search trees,
+we have to give a |Traversable| instance for the pattern functor:\footnote{%
+Haskell's |Traversable| has |Foldable| as superclass, so we have to define
+that instance as well, but since it does not add here, we omit it. GHC 6.12.1
+and later can derive both |Foldable| and |Traversable| automatically.}
+%if False
 
-\todo[inline]{explain other morphisms might be useful, dependent on the input/ouput}
+> instance Foldable (TreeF k v) where
+>   foldMap _ Leaf              = mempty
+>   foldMap f (Branch _ _ l r)  = f l <> f r
 
-\andres[inline]{We perhaps have to put this section in context with existing
-work, i.e., emphasize that none of the recursion patterns are really new, but
-that we place them into our annotation framework here.}
+%endif
 
+> instance Traversable (TreeF k v) where
+>   mapM _ Leaf              = return Leaf
+>   mapM f (Branch k v l r)  = liftM2 (Branch k v) (f l) (f r)
+
+As before, we obtain an actual lookup function by passing the algebra to~|cataA|:
+
+> lookup k = cataA (lookupAlg k)
+
+If we have an annotated tree, we can use the function. Let us assume that
+@it@ is bound to the result of evaluating |myTree_a| using the modification
+time annotation. The following returns the expected result, but now in the |IO| monad:
+\begin{verbatim}
+ghci> lookup 4 it
+Just 16
+\end{verbatim}
+
+However, if we assume that @it@ is bound to the result of evaluating |myTree_a|
+in the debug annotation, the call to |lookup| reveals a problem:
+\begin{verbatim}
+ghci> lookup 4 it
+("out",Branch 3 9 () ())
+("out",Branch 1 1 () ())
+("out",Leaf)
+("out",Leaf)
+("out",Branch 4 16 () ())
+("out",Branch 7 49 () ())
+("out",Leaf)
+("out",Leaf)
+("out",Leaf)
+Just 16
+\end{verbatim}
+The function produces a result and a trace as expected. However, the trace
+reveals that the \emph{entire} tree is traversed, not just the path to the
+|Branch| containing the key~|4|. The culprit is the strictness of~|IO|, that
+propagates to the whole operation now that |IO| is used behind the scenes.
+We defer the discussion of this problem until Section~\ref{sec:laziness}.
+
+\subsection{Anamorphism}
+
+For anamorphisms, the situation is very similar as for catamorphisms. We
+define an annotated variant of |ana|, called |anaA|, by lifting everything
+systematically to the annotated monadic setting:
+
+> type Coalgebra f s = s -> f s
+>
+> anaA ::  (In ann f m, Monad m, Traversable f) =>
+>          Coalgebra f s -> s -> m (FixA ann f)
+> anaA psi = inA <=< mapM (anaA psi) <=< return . psi
+
+Note that the |Coalgebra| type synonym is unchanged and just repeated here
+for convenience.
+
+We can now produce annotated values more conveniently. Instead of
+using a monadic construction such as |myTree_a|, we can resort to |fromList|:
+
+> fromList xs = anaA  fromSortedListAlg
+>                     (sortBy (comparing fst) xs)
+
+The definition
+
+> myTree_a' :: In ann (TreeF Int Int) m => m (TreeA ann Int Int)
+> myTree_a' = fromList [(1,1),(3,9),(4,16),(7,49)]
+
+is equivalent to the old |myTree_a|.
+
+%if False
 \subsection{Destructing with paramorphisms}
 
 \andres[inline]{My first intuition is that we should explain the step from
@@ -126,8 +199,8 @@ be polymorphic in the annotation type:
 As an example, let us reimplement the |lookup1| function for binary search
 trees as an algebra:
 
-> lookupAlg :: Ord k => k -> Alg (TreeF k v) (Maybe v)
-> lookupAlg k = Psi $ \t ->
+> lookupAlg' :: Ord k => k -> Alg (TreeF k v) (Maybe v)
+> lookupAlg' k = Psi $ \t ->
 >   case t of
 >     Leaf            ->  Nothing
 >     Branch c w l r  ->  case k `compare` c of
@@ -144,9 +217,9 @@ annotations, which is nearly none.}
 
 We can \emph{run} the algebra by supplying it to~|paraA|:
 
-> lookup  ::  (Ord k, Out a (TreeF k v) m)
+> lookup'  ::  (Ord k, Out a (TreeF k v) m)
 >         =>  k -> TreeA a k v -> m (Maybe v)
-> lookup k = paraA (lookupAlg k)
+> lookup' k = paraA (lookupAlg' k)
 
 The algebra can be annotation-agnostic, because it abstracts from
 recursion and outsources recursion to the |paraA| recursion pattern.
@@ -262,10 +335,10 @@ The function~|fromList| runs the coalgebra by passing it to the recursion
 pattern~|apoA|. In addition, we first sort the input list on the key values
 to establish the precondition of~|fromSortedListCoalg|.
 
-> fromList  ::  (In a (TreeF k v) m, Ord k)
->           =>  [(k, v)] -> m (FixA a (TreeF k v))
-> fromList  =   apoA fromSortedListCoalg
->           .   sortBy (comparing fst)
+> fromList'  ::  (In a (TreeF k v) m, Ord k)
+>            =>  [(k, v)] -> m (FixA a (TreeF k v))
+> fromList'  =   apoA fromSortedListCoalg
+>            .   sortBy (comparing fst)
 
 Once again, the functions are written in a pure style. However, we can
 choose to run |formList| in an |IO| context for the |Debug| annotation
@@ -293,6 +366,8 @@ the apomorphism by using the identity annotation in the identity monad:
 
 > apo :: Traversable f => CoalgA Id1 f s -> s -> Fix f
 > apo phi = runIdentity . fullyOut . runIdentity . apoA phi
+
+%endif
 
 \subsection{Modification with endomorphisms}
 \label{sec:modification}
