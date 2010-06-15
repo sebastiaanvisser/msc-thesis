@@ -16,7 +16,7 @@
 >   #-}
 > module Fixpoints where
 
-> import Control.Monad hiding (mapM)
+> import Control.Monad hiding (mapM, (<=<))
 > import Control.Monad.Identity (Identity(..))
 > import Control.Monad.Trans
 > import Data.Foldable hiding (sum)
@@ -550,11 +550,14 @@ recursive positions.}
 \subsection{Example annotation: debug trace}
 \label{sec:debug}
 
-As an example of an annotation type we introduce the |Debug| annotation.
-Using |Debug|, we can produce a debug trace of all construction and destruction
-steps that an operation performs.
+As another example of an annotation we introduce |Debug1|:
 
 > newtype Debug1 f a = D1 { unD1 :: f a }
+
+This annotation does not store any data except for the functor
+itself. We are only interested in the effects associated with
+creation and removal of the annotation: we want to create a debug
+trace of these operations when they occur.
 
 %if False
 The following definition derives a non-record version of Show:
@@ -566,65 +569,49 @@ The following definition derives a non-record version of Show:
 > unD (D x) = x
 
 %endif
-The |Debug| type does not actually store any additional information. It
-just serves as a marker that we can subsequently use to add additional
-behaviour.\andres{This is actually a bit sad. It does not serve well to
-motivate why we need the full power of annotations. At the very least,
-add a forward pointer to a more interesting use.}
 
-The behaviour is added when constructing or deconstructing values. As
-we have seen in Section~\ref{sec:annotations}, constructors add annotations
-by calling |inA|, whereas values are extracted from annotations using |outA|.
-The |In| instance for the |Debug| type prints a message that indicates which
-value is being constructed, and then returns that value:\andres{verify}
+The desired behaviour is implemented in the |In| and |Out| instances
+for the debug annotation:
 
-> instance  (MonadIO m, Traversable f, Show (f ()))
->       =>  In Debug f m where
+> instance (Functor f, Show (f ())) => In Debug f IO where
 >   inA = return . In . D <=< printer "in"
-
-\andres[inline]{The following paragraph on Kleisli composition breaks the
-flow. I would either cut it down sufficiently to be able to ban it to a
-footnote, or get rid of Kleisli composition completely. Instead, |printer|
-has to be explained immediately.}
-
-Throughout this paper the |<=<| operator (|<<=<<| in Haskell) is used for right-to-left
-Kleisli composition. When both used in the same expression, normal
-function compositions takes precedence over Kleisli composition. The type
-of the |<=<| operator is:
-
-< Monad m => (b -> m c) -> (a -> m b) -> a -> m c
-
-The |Out| instance for |Debug| drops the annotation marker, prints
-the extracted value and returns it:
-
-> instance  (MonadIO m, Traversable f, Show (f ()))
->       =>  Out Debug f m where
+>
+> instance (Functor f, Show (f ())) => Out Debug f IO where
 >   outA = printer "out" . unD . out
 
-Both class methods use a helper function |printer| that print a single level of
-a recursive structure to the console.\andres{Too late, see above.} 
+Here,
 
-> printer  ::  (MonadIO m, Functor f, Show (f ()))
->          =>  String -> f a -> m (f a)
-> printer s f = liftIO (print (s, fmap (const ()) f) >> return f)
+> (<=<) :: Monad m => (b -> m c) -> (a -> m b) -> a -> m c
+> (f <=< g) x = g x >>= f
 
-We specialize our annotated binary tree to a debug tree as follows:
+%if False
+
+> infixr 1 <=<
+
+%endif
+is right-to-left Kleisli composition.\footnote{Available as |<<=<<| in Haskell.}
+It has lower precedence than normal function composition.
+The function |printer| prints the top layer of a given recursive structure~|f|
+and also returns~|f|:
+
+> printer :: (Functor f, Show (f ())) => String -> f a -> IO (f a)
+> printer s f = print (s, fmap (const ()) f) >> return f
+
+
+To use the debug annotation, we first specialize our binary
+tree type:
 
 > type TreeD k v = TreeA Debug k v
 
-
-As a simple example, let us specialize the type
-of our sample tree |myTree| to make use of the debug annotation. The
-construction then has to take place in the |IO| monad, and will print a
-trace of all the construction steps involved:
-
+Then, we evaluate |myTree_a| once more, this time using |TreeD|
+as a result type. This causes a trace of all the contruction steps
+to be printed:
 %if False
 
 > instance Show (f (Fix f)) => Show (Fix f) where
 >   show (In f) = "{" ++ show f ++ "}"
 
 %endif
-
 \begin{verbatim}
 ghci> myTree_a :: IO (TreeD Int Int)
 ("in",Leaf)
@@ -636,9 +623,9 @@ ghci> myTree_a :: IO (TreeD Int Int)
 {D Leaf})} {D (Branch 4 16 {D (Branch 7
 49 {D Leaf} {D Leaf})} {D Leaf})})}
 \end{verbatim}
-For the ease of reading we use a special |Show| instance for the |Fix| type
-that prints the inner structure within curly braces instead of printing an
-explicit |In| constructor.
+%if False
+
+No need to show two annotated trees in figures ...
 
 \begin{figure}[tp]
 \begin{center}
@@ -647,6 +634,8 @@ explicit |In| constructor.
 \caption{Binary tree with annotations.}
 \label{fig:binarytreeann}
 \end{figure}
+
+%endif
 
 \subsection{Multi level annotations}
 
