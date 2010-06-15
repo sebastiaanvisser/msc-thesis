@@ -269,12 +269,53 @@ recursive calls, as those are handled by |ana| now:
 > fromList :: Ord k => [(k,v)] -> Tree k v
 > fromList = ana fromSortedListCoalg . sortBy (comparing fst)
 
+\paragraph{Apomorphism}
+
+Let us recall the function |insert|. When we are in a branch of the tree,
+we compare the stored with the given key. Depending on the outcome, we
+continue inserting into one subtree, but want to keep the other subtree
+unchanged. While it is possible to coerce |insert| into both the catamorphism
+and the anamorphism pattern, neither pattern is a very good fit.
+
+Instead, we use an \emph{apomorphism}~\cite{apos} -- a generalization of an
+anamorphism, and the dual concept of a paramorphism~\cite{paras}.
+
+> type ApoCoalgebra f s = s -> f (Either s (Fix f))
+>
+> apo :: Functor f => ApoCoalgebra f s -> s -> Fix f
+> apo psi = In . fmap apo' . psi
+>   where apo' (Left   l)  =  apo psi l
+>         apo' (Right  r)  =  r
+
+Where the coalgebra for anamorphisms generates a functor with new seeds
+from a single seed, we can now decide at every recursive position whether
+we want to produce a new seed (|Left|), or whether we simply want to provide a
+recursive structure to use at this point (|Right|).
+
+It is now easy to define a coalgebra for |insert|:
+
+> insertAlg :: Ord k => k -> v -> ApoCoalgebra (TreeF k v) (Tree k v)
+> insertAlg k v (In Leaf) =
+>   Branch k v (Right (In Leaf)) (Right (In Leaf))
+> insertAlg k v (In (Branch n x l r)) =
+>   case compare k n of
+>     LT  ->  Branch n x (Left   l) (Right  r)
+>     _   ->  Branch n x (Right  l) (Left   r)
+>
+> insert :: Ord k => k -> v -> Tree k v -> Tree k v
+> insert k v = apo (insertAlg k v)
+
+We have now introduced three useful patterns that allow us
+to define functions on a fixed point representation of a
+datatype in such a way that we abstract from the recursive structure.
+In the next section, we will make use of the abstraction by adding
+new functionality in the form of annotations to the recursive
+positions.
+
 %if False
 
 > (<>) :: Monoid a => a -> a -> a
 > (<>) = mappend
-
-%endif
 
 \begin{figure}[tp]
 \begin{center}
@@ -310,6 +351,8 @@ implementations are shown in figure \ref{fig:funcfoldtrav}.
 catamorphisms and reiterate at least one of the example functions
 as an explicit catamorphism.}
 
+%endif
+
 %if False
 
 > $(deriveAll ''TreeF "PFTree") -- $
@@ -321,7 +364,7 @@ as an explicit catamorphism.}
 
 %endif
 
-\subsection{Fixed point annotations}\label{sec:annotations}
+\section{Fixed point annotations}\label{sec:annotations}
 
 By moving from a recursive datatype to an open recursive datatype, we now
 have control about what to do with recursive positions. As we have just seen,
