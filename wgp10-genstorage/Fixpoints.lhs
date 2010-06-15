@@ -637,6 +637,12 @@ No need to show two annotated trees in figures ...
 
 %endif
 
+\subsection{Summary}
+
+\andres[inline]{Todo}
+
+%if False
+
 \subsection{Multi level annotations}
 
 \andres[inline]{I do not like this subsection. It has no motivation, and
@@ -754,3 +760,5 @@ unannotated structure:
 \andres[inline]{It would be nice (but isn't strictly necessary) to have a
 little summary at this point. In particular, what other annotations are there?
 With debug and identity, the reader has not yet seen much.}
+
+%endif
