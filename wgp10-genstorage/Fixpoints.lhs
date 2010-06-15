@@ -257,9 +257,9 @@ starting from the original seed, until none remain.
 The function |fromSortedList1| is an anamorphism on trees. We can define
 a suitable coalgebra as follows:
 
-> fromSortedListCoalg :: Coalgebra (TreeF k v) [(k,v)]
-> fromSortedListCoalg []  =  Leaf
-> fromSortedListCoalg xs  =
+> fromSortedListAlg :: Coalgebra (TreeF k v) [(k,v)]
+> fromSortedListAlg []  =  Leaf
+> fromSortedListAlg xs  =
 >   let (l, (k,v):r) = splitAt (length xs `div` 2 - 1) xs
 >   in  Branch k v l r
 
@@ -267,7 +267,7 @@ The definition is very similar to the original one, but again, we have no
 recursive calls, as those are handled by |ana| now:
 
 > fromList :: Ord k => [(k,v)] -> Tree k v
-> fromList = ana fromSortedListCoalg . sortBy (comparing fst)
+> fromList = ana fromSortedListAlg . sortBy (comparing fst)
 
 \paragraph{Apomorphism}
 
@@ -294,7 +294,8 @@ recursive structure to use at this point (|Right|).
 
 It is now easy to define a coalgebra for |insert|:
 
-> insertAlg :: Ord k => k -> v -> ApoCoalgebra (TreeF k v) (Tree k v)
+> insertAlg ::  Ord k => k -> v ->
+>               ApoCoalgebra (TreeF k v) (Tree k v)
 > insertAlg k v (In Leaf) =
 >   Branch k v (Right (In Leaf)) (Right (In Leaf))
 > insertAlg k v (In (Branch n x l r)) =
