@@ -364,64 +364,88 @@ as an explicit catamorphism.}
 
 %endif
 
-\section{Fixed point annotations}\label{sec:annotations}
+\section{Annotations}\label{sec:annotations}
 
-By moving from a recursive datatype to an open recursive datatype, we now
-have control about what to do with recursive positions. As we have just seen,
-we can plug everything together as before using the fixed point combinator |Fix|.
-However, we can now decide to also do something else. In particular, we can
-decide to store additional information at each recursive position.
+By moving from a recursive datatype to its pattern functor, we now have
+control over what exactly to do with recursive positions. We can simply
+tie the knot using the fixed point combinator |Fix|, as we have seen above.
+However, we can also store additional information at each recursive position.
+In this section, we discuss how we can move from fixed poins to annotated
+fixed points. We discuss how to create and remove annotations systematically,
+and discuss example annotations.
 
-For this purpose, we introduce the \emph{annotated} fixed point combinator~|FixA|:
+\subsection{Annotated fixed points}
+
+The \emph{annotated} fixed point combinator~|FixA| is defined as follows:
 
 > type FixA ann f = Fix (ann f)
 
 Instead of taking the fixed point of |f|, we take the fixed point of |ann f|,
-where |ann| is a type constructor (of kind |(* -> *) -> * -> *|) that can be used to add
-additional information to the datatype.
+where |ann| is a type constructor (of kind |(* -> *) -> * -> *|) that can be used to
+modify the functor, for example by adding additional information.
 
-We now make an annotated binary search tree by applying the |FixA| combinator
-to our tree functor:
+The simplest annotation is the \emph{identity annotation}:
+
+> newtype Id1 f a = Id1 { unId1 :: f a }
+
+Using |FixA Id1| is isomorphic to using |Fix|.
+
+We can define an annotated variant of binary search trees by applying
+|FixA| in place of |Fix|:
 
 > type TreeA ann k v = FixA ann (TreeF k v)
 
-If we instantiate |ann| with the type-level identity
+Once again, |TreeA Id1| is isomorphic to our old |Tree| type.
 
-> newtype Id1 f ix = Id1 { unId1 :: f ix }
+\subsection{Creating and removing annotations}
 
-we once again obtain a type that is isomorphic to our original |Tree1|. 
-We return to the identity annotation in Section~\ref{sec:identity}.
-In Section~\ref{sec:debug}, we present an example of a non-trivial annotation.
+Our main goal in this article is to use annotations to represent pointers
+to data that is stored on disk. Reading and writing to disk are effectful
+operations. Therefore, we allow the creation and removal of annotations to
+be associated with a monadic context.
 
-Building an annotated binary search tree of type |TreeA| requires wrapping the
-non-recursive nodes in both an |In| constructor from the fixed point combinator
-and adding an annotation. We introduce a type class |In| that enabled us to wrap
-a single node in an annotation. The |inA|
-method takes a single node with \emph{fully annotated sub-structures} and wraps
-the node in an annotation type~|ann|. As we will see, annotating values can be
-associated with effects. Therefore, we place the result of |inA| in a
-monadic context~|m|:\andres{I think it would be good to give the instance for
-the identity annotation immediately. Is it clear why |Traversable| should
-be a superclass?}
+We now define a type class |In| and |Out| that generalize the |In| and
+|out| operations on fixed points to the annotated scenario. The method~|inA|
+wraps a functor with fully annotated substructures and adds a new
+annotation. The |outA| method unwraps an annotated node, exposing the
+functor with the annotated substructures.\andres{I'm quite significantly
+changing the class here. Is it ok to group annotating with fixed point
+wrapping? I'm tempted to join up all of |In|, |Out| and |InOut| next.}
+The results of both operations live in the monad~|m|:
 
-> class (Traversable f, Monad m) => In ann f m where
->   inA :: f (FixA ann f) -> m (ann f (FixA ann f))
+> class (Monad m) => In ann f m where
+>   inA :: f (FixA ann f) -> m (FixA ann f)
+>
+> class (Monad m) => Out ann f m where
+>   outA :: FixA ann f -> m (f (FixA ann f)) 
+
+The functor~|f| is added as a class parameter, so that we can impose
+additional restrictions on it at a later stage.
+
+For the identity annotation, we choose |m| to be the identity monad
+(called |Identity|), and |inA| and |outA| are in essence just |In| and |out|:
+
+> instance In Id1 f Identity where
+>   inA = return . In . Id1
+>
+> instance Out Id1 f Identity where
+>   outA = return . unId1 . out
 
 Using the |In| type class, we define two new smart constructors for the annotated
-binary tree datatype:
+binary search tree datatype:
 
 > leafA :: In ann (TreeF k v) m => m (TreeA ann k v)
-> leafA = In `liftM` inA Leaf
+> leafA = inA Leaf
 >
 > branchA  ::  In ann (TreeF k v) m
 >          =>  k -> v -> TreeA ann k v -> TreeA ann k v
 >          ->  m (TreeA ann k v)
-> branchA k v l r = In `liftM` inA (Branch k v l r)
+> branchA k v l r = inA (Branch k v l r)
 
 The |leafA| and |branchA| smart constructors can be used to build up annotated
-binary search tree for some annotation type |ann|. Because the annotation type
-is associated with a monadic context we now build our example tree in monadic
-style:
+binary search tree for an arbitrary annotation type |ann|. However, since the annotation type
+is associated with a monadic context, we now have to build our example tree
+in monadic style:
 
 > myTree_a :: In ann (TreeF Int Int) m => m (TreeA ann Int Int)
 > myTree_a =
@@ -431,31 +455,16 @@ style:
 >       f  <- branchA 4 16  d  l
 >       branchA 3 9 e f
 
-Note the type of |myTree|: The value is overloaded on the annotation, so we
-can use it with different annotations later.
-
-\andres{Is another figure needed here?}
-
-The dual of the |In| type class is the |Out| type class that is used to unwrap
-values from an annotation type. The |outA| method takes an annotated structure
-with fully annotated substructures and unwraps the annotation to come up with a
-node |f| with fully annotated structures at the recursive positions. Again,
-this class method works in some monadic context~|m|.
-
-> class (Traversable f, Monad m) => Out ann f m where
->   outA :: ann f (FixA ann f) -> m (f (FixA ann f)) 
-
-\andres[inline]{Again, I think we should show an instance, for example for the
-identity annotation. Also, we are getting ahead of things at this point, because
-we introduce abstraction without seeing the need for it.}
+Note the type of |myTree_a|: The value is overloaded on the annotation~|ann|,
+so we can use it with different annotations later.
 
 \subsection{Example annotation: modification time}
 \label{sec:modtime}
 
-As an example of an annotation type we introduce the |ModTime| annotation.
-Using |ModTime|, we can log the exact time that the parts of a recursive
-structure are last modified. Besides the actual recursive structure the
-|ModTime| type also saves a |LocalTime|.\footnote{The |LocalTime| type is from
+As a non-trivial example of an annotation, let us keep track of the
+modification time of substructures. For this purpose, we define a
+new datatype |ModTime1| that can be used as an annotation: next to
+the actual structure, it also saves a |LocalTime|.\footnote{The |LocalTime| type is from
 the Haskell \texttt{time} package.}
 
 > data ModTime1 f a = M1 { time1 :: LocalTime, unM1 :: f a }
@@ -474,15 +483,18 @@ The following definition derives a non-record version of Show:
 
 %endif
 
-The behaviour is added when constructing or deconstructing values. As we have
-seen in Section~\ref{sec:annotations}, constructors add annotations by calling
-|inA|, whereas values are extracted from annotations using |outA|.  The |In|
-instance for the |ModTime| wraps the value that is being constructed in an |M|
-constructor, together with the current time:
+In order to use the annotation, we have to define instances of both th
+|In| and |Out| classes, and thereby specify the behaviour associated with
+creating and removing the annotation. In our case, we want to store the
+current time when creating the annotation, but do nothing further
+when dropping it:
 
-> instance Traversable f => In ModTime f IO where
+> instance In ModTime f IO where
 >   inA f = do  t <- getCurrentTime1
->               return (M t f)
+>               return (In (M t f))
+>
+> instance Out ModTime f IO where
+>   outA = return . unM . out
 
 %if False
 
@@ -492,24 +504,18 @@ constructor, together with the current time:
 >      utcToLocalTime zone `liftM` getCurrentTime
 
 %endif
+Because getting the current time requires a side effect, the |ModTime|
+annotation is associated with the |IO| monad. 
 
-Because getting the current time requires a side effect the annotation is
-associated with the |IO| monad. The |Out| instance for |ModTime| is a bit
-simpler, it just drops the annotation marker and returns the extracted value:
-
-> instance Traversable f => Out ModTime f IO where
->   outA = return . unM
-
-We specialize our annotated binary tree to a tree containing last modifications
-times for every subtree as follows:
+We can now use the annotation, for example with our binary search tree
+type, which we specialize to use the |ModTime| annotation:
 
 > type TreeM k v = TreeA ModTime k v
 
-As a simple example, let us specialize the type
-of our sample tree |myTree_a| to make use of the last modification time annotation. The
-construction then has to take place in the |IO| monad, and will produce binary
-with modification times stored at the recursive positions:
-
+As a simple use case, we can evaluate the overloaded example tree |myTree_a|
+using the modification time annotation simply by specializing its type
+accordingly. The construction of the tree has to take place in the |IO|
+monad:
 \begin{verbatim}
 ghci> myTree_a :: IO (TreeD Int Int)
 {M 236807 (Branch 3 9
@@ -522,16 +528,15 @@ ghci> myTree_a :: IO (TreeD Int Int)
       {M 236688 Leaf})}
     {M 236688 Leaf})})}
 \end{verbatim}
+For readability, we have cropped the modification times to the microseconds,
+reformatted the output slightly to resemble the tree structure, and used a custom
+|Show| instance for |Fix| that uses curly braces for the |In|
+constructor. The tree is also shown schematically in Figure~\ref{fig:binarytreeann}.
 
-For readability the modification times are cropped to the microseconds, we
-reformatted the output to resemble the tree structure, and we used a custom
-|Show| instance for |Fix| that uses curly braces instead of an explicit |In|
-constructor.
-
-The last modification times of all the leafs is the same, because
+The last modification times of all the leaves are the same, because
 we share the result of one call to |leafA| in the definition of |myTree_a|. We
 see that the modification times follow the order of the monadic operations in
-|myTree_a|: the leafs are created first, the root of the tree is created last.
+|myTree_a|: the leaves are created first, the root of the tree is created last.
 
 \begin{figure}[tp]
 \begin{center}
@@ -575,7 +580,7 @@ value is being constructed, and then returns that value:\andres{verify}
 
 > instance  (MonadIO m, Traversable f, Show (f ()))
 >       =>  In Debug f m where
->   inA = return . D <=< printer "in"
+>   inA = return . In . D <=< printer "in"
 
 \andres[inline]{The following paragraph on Kleisli composition breaks the
 flow. I would either cut it down sufficiently to be able to ban it to a
@@ -594,7 +599,7 @@ the extracted value and returns it:
 
 > instance  (MonadIO m, Traversable f, Show (f ()))
 >       =>  Out Debug f m where
->   outA = printer "out" . unD
+>   outA = printer "out" . unD . out
 
 Both class methods use a helper function |printer| that print a single level of
 a recursive structure to the console.\andres{Too late, see above.} 
@@ -653,11 +658,11 @@ Both the |inA| and |outA| functions work on a single level of an annotated
 recursive datatype. In terms of these two functions we define two functions that
 respectively annotate or unannotate an entire recursive structure:
 
-> fullyIn :: In a f m => Fix f -> m (FixA a f)
-> fullyIn = return . In <=< inA <=< mapM fullyIn . out
+> fullyIn :: (Traversable f, In a f m) => Fix f -> m (FixA a f)
+> fullyIn = inA <=< mapM fullyIn <=< return . out
 >
-> fullyOut :: Out a f m => FixA a f -> m (Fix f)
-> fullyOut = return . In <=< mapM fullyOut <=< outA . out
+> fullyOut :: (Traversable f, Out a f m) => FixA a f -> m (Fix f)
+> fullyOut = return . In <=< mapM fullyOut <=< outA
 
 The |fullyIn| function takes an unannotated recursive datatype |Fix f| and
 wraps all the nodes recursively in a fresh annotation producing a fully
@@ -714,8 +719,8 @@ in a sub-structure of an annotated node.
 A helper function |topIn| can be used to wrap the unannotated top part of a
 |FixBotA| structure in fresh annotations and build a fully annotated structure:
 
-> topIn :: In a f m => FixBotA a f -> m (FixA a f)
-> topIn = sum  (return . In <=< inA <=< mapM topIn)
+> topIn :: (Traversable f, In a f m) => FixBotA a f -> m (FixA a f)
+> topIn = sum  (inA <=< mapM topIn)
 >              (return . unK) . out
 >   where  sum f _  (L  l)  = f  l
 >          sum _ g  (R  r)  = g  r
@@ -729,6 +734,7 @@ with the construction and destruction of recursive datatypes. We now define an
 identity annotation that is used to construct recursive datatypes that do not
 have any associated functionality.
 
+%if False
 \begin{spec}
 newtype Id f ix = Id { unId :: f ix }
 \end{spec}
@@ -738,11 +744,15 @@ The |Out| and |In| instances for the |Id1| type solely unwrap and wrap the
 context is irrelevant we use the |Identity| monad, that effectively yields pure
 code.
 
+> {-
 > instance Traversable f => In Id1 f Identity where
 >   inA = return . Id1
 >
 > instance Traversable f => Out Id1 f Identity where
 >   outA = return . unId1
+> -}
+
+%endif
 
 An recursive structure annotated with the identity annotation is isomorphic to
 an unannotated structure. Using the |fullyOut| function we can make a pure
