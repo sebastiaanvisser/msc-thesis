@@ -8,12 +8,9 @@
 \title{Generic Storage in Haskell}
 %\subtitle{.}
 
-\authorinfo{Sebastiaan Visser}
-           {Utrecht University}
-           {sebastiaan@@fvisser.nl}
-\authorinfo{Andres L\"oh}
-           {Utrecht University}
-           {andres@@cs.uu.nl}
+\authorinfo{Sebastiaan Visser \and Andres L\"oh}
+           {Department of Information and Computing Sciences\\ Utrecht University}
+           {sebastiaan@@fvisser.nl \and andres@@cs.uu.nl}
 
 \maketitle
 
