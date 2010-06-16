@@ -1,12 +1,12 @@
-\conferenceinfo{WXYZ '05}{date, City.} 
-\copyrightyear{2005} 
-\copyrightdata{[to be supplied]} 
+%\conferenceinfo{WXYZ '05}{date, City.} 
+%\copyrightyear{2005} 
+%\copyrightdata{[to be supplied]} 
 
-\titlebanner{banner above paper title}        % These are ignored unless
-\preprintfooter{short description of paper}   % 'preprint' option specified.
+%\titlebanner{banner above paper title}        % These are ignored unless
+%\preprintfooter{short description of paper}   % 'preprint' option specified.
 
 \title{Generic Storage in Haskell}
-\subtitle{.}
+%\subtitle{.}
 
 \authorinfo{Sebastiaan Visser}
            {Utrecht University}
