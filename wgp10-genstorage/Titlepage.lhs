@@ -18,6 +18,7 @@
 \maketitle
 
 \begin{abstract}
+\todo{abstract}
 \begin{enumerate}
 \item State the problem:
 \item Say why it is an interesting problem:
