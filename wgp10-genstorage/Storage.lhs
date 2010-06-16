@@ -47,7 +47,7 @@ Figure~\ref{fig:binarytree-pers} shows how such a tree looks like.
 \includegraphics[scale=0.3]{img/binarytree-pers.pdf}
 \end{center}
 \caption{A persistent binary tree that lives on the storage heap. Each node is
-stored on its own heap block in binary representation. All sub structures are
+stored on its own heap block in binary representation. All substructures are
 referenced by pointer to the file offset.}
 \label{fig:binarytree-pers}
 \end{figure*}
@@ -156,7 +156,7 @@ Just 9
 
 The database file is opened and the root pointer is read from the null block.
 The root pointer references a persistent binary tree that is passed to the
-|lookupP| function that, node by node, traverses the three until the key is
+|lookupP| function that, node by node, traverses the tree until the key is
 found and the value can be returned.
 
 \subsection{Persistent modification}
