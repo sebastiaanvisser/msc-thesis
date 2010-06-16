@@ -391,9 +391,7 @@ We now define a type class |In| and |Out| that generalize the |In| and
 |out| operations on fixed points to the annotated scenario. The method~|inA|
 wraps a functor with fully annotated substructures and adds a new
 annotation. The |outA| method unwraps an annotated node, exposing the
-functor with the annotated substructures.\andres{I'm quite significantly
-changing the class here. Is it ok to group annotating with fixed point
-wrapping? I'm tempted to join up all of |In|, |Out| and |InOut| next.}
+functor with the annotated substructures.
 The results of both operations live in the monad~|m|:
 
 > class (Monad m) => In ann f m where
