@@ -219,7 +219,7 @@ blocks on disk.
 
 The operations on persistent data structures are applied to the file based
 storage heap in the same way they are normally applied to the in-memory heap.
-By writing data structures as pattern functors and by abstracting away from the
+By writing data structures as pattern functors and by abstracting from the
 recursion we can annotate the behaviour generically. There is no need to
 reflect over memory layout of the compiler runtime.
 

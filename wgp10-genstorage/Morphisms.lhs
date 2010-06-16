@@ -45,7 +45,7 @@ reuse the original algebras, written in a pure, annotation-agnostic way. By
 plugging them into the new patterns, we can still run them in a framework that
 performs effectful operations behind the scenes.
 
-\subsection{Catamorphism}
+\subsection{Catamorphism}\label{sec:catamorphisms}
 
 Recall the definition of a catamorphism from Section~\ref{sec:simplerecpat}:
 
