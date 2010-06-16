@@ -186,9 +186,21 @@ encoded using the datatype indices.
 
 \subsection{Concurrency}
 
-\andres[inline]{TODO}
+The current framework only allows sequential access to the persistent data
+structures. Concurrent access at this moment would most certainly cause
+undesirable effects. Parallel access to the same persistent data structure is a
+topic for future research. We could benefit from in-memory transactions systems
+like \emph{software transactional memory} \cite{stm} to manage concurrent
+threads to manipulate the same structure. Transactional in-memory caches to
+persistent data structures have been shown useful before \cite{tcache}.
 
-\section{Related work}
+Another approach to concurrent access is making the data structures immutable.
+Using |read| instead of the |fetch| in the |OutIn| type class would yield a
+framework were modification functions copy the original structures. Different
+threads can now work on their own version of a data structure. To make this
+approach practically usable we need full sharing between different versions of
+the data structures and need a garbage collector to clean up versions that are
+no longer used.
 
 \subsection{Generic programming with fixed points}
 
