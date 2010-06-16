@@ -541,7 +541,7 @@ tree:
 >               k -> v -> EndoApoCoalgebraA ann (TreeF k v)
 > insertAlg k v Leaf =
 >   Branch k v (make Leaf) (make Leaf)
-> insertAlg k v (Branch n x l r)
+> insertAlg k v (Branch n x l r) =
 >       case k `compare` n of
 >         LT  -> Branch n x (next  l) (stop  r)
 >         _   -> Branch n x (stop  l) (next  r)
