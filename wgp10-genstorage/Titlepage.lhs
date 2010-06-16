@@ -18,13 +18,16 @@
 \maketitle
 
 \begin{abstract}
-\todo{abstract}
-\begin{enumerate}
-\item State the problem:
-\item Say why it is an interesting problem:
-\item Say what your solution achieves:
-\item Say what follows from your solution:
-\end{enumerate}
+We present a framework to define data structures that can be used on disk.
+The structure resides in a heap in a file on the disk. Operations
+read and write only the parts of the data structure that are actually
+needed. The framework is based on expressing datatypes as fixed points
+of functors and then annotating the recursive positions with additional
+information. We explain how functions, if expressed in terms of standard
+recursion patterns, can be easily lifted from a pure setting
+to an effectful, annotated scenario. As a running example, we sketch
+how to implement a persistent library of finite maps based on binary
+search trees.
 \end{abstract}
 
 % \category{CR-number}{subcategory}{third-level}
