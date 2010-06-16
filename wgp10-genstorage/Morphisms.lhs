@@ -559,19 +559,21 @@ We run |insertAlg| by passing it to |endoApoA|:
 
 \subsection{Summary}
 
-In this and the previous section we have shown a framework for
-generically annotating recursive datatypes. Using an annotated fixed point
-combinator we are able to store custom markers (containing potentially
-custom information) at the recursive positions of
-functional data structures. Using three different
-type classes we are able to associate extra functionality with the construction,
-destruction and modification of recursive structures. 
+In this and the previous section we have shown a framework for generically
+annotating recursive datatypes. Using an annotated fixed point combinator we
+are able to store custom markers (containing potentially custom information) at
+the recursive positions of functional data structures. We associate extra
+functionality -- potentially with effects -- with the creation, removal and
+modification of annotated recursive structures.
 
 By defining algebras for specific recursion patterns, we can define functions
 in a pure style, without having to worry about annotations or monadic contexts.
-We have shown three frequently occurring
-patterns, one for consumers, one for producers, and one for modifiers. More
-patterns can be defined in a similar style if desired.
-We can then use such operations in different contexts, as we have shown with
-the debug and identity annotations. 
+We have shown a number of frequently occurring patterns, for consumers,
+for producers, and for modifiers. More patterns can be defined in a similar style
+if desired. For example, we can define an endo-paramorphism that is dual to the
+endo-apomorphism.
 
+We have shown that several operations on binary search trees can be expressed
+using such patterns. In fact, we have built a library that replicates most of
+a finite map data structure based on binary search trees in our annotated framework,
+yielding a data structure that can be flexibly used with several annotations.
