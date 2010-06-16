@@ -75,13 +75,14 @@ Figure~\ref{fig:binary-instances}.
 
 \begin{figure}[pt]
 \begin{center}
+\texths
 
 > instance Binary (f (Fix f)) => Binary (Fix f) where
 >   put (In f) = put f
 >   get = fmap In get 
 >
-> instance  (Binary k, Binary v, Binary f)
->       =>  Binary (TreeF k v f) where
+> instance  (Binary k, Binary v, Binary f) =>
+>           Binary (TreeF k v f) where
 >   put Leaf              = do  putWord8 0
 >   put (Branch k v l r)  = do  putWord8 1
 >                               put k; put v; put l; put r

@@ -137,13 +137,12 @@ and it makes use of a state monad to manage the allocation map:
 
 \begin{figure}[t]
 \begin{center}
-\begin{spec}
+\texths
 
-class Binary t where
-  put  :: t -> Put
-  get  :: Get t
+< class Binary t where
+<   put  :: t -> Put
+<   get  :: Get t
 
-\end{spec}
 \end{center}
 \caption{The |Binary| type class}
 \label{fig:binaryclass}
@@ -221,6 +220,6 @@ In this section, we have described on a very high level a file based heap
 structure that can be used to store arbitrary blocks of binary data on disk.
 Access to the data is managed by pointers as offsets into the file. All Haskell
 values that have an instance for the |Binary| type class can automatically be
-marshalled from and to the heap. The structure is low-level and does not impose
-any relations on the individual blocks.
+marshalled from and to the heap. The structure is low-level and does not assume
+anything about the contents of the individual blocks.
 
