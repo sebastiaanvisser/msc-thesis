@@ -28,6 +28,7 @@
 
 %endif
 
+\enlargethispage*{2\baselineskip}%
 \section{Discussion and future work}\label{sec:discussion}
 
 In this section, we discuss some subtleties of our approach. We also
@@ -47,32 +48,30 @@ algorithms.
 
 As an example, recall the |lookup| function on binary search trees as
 discussed in Section~\ref{sec:catamorphisms}.
-If we instantiate the
-annotation to be the identity annotation, the operation performs an in-memory
+Used with the identity annotation, the operation performs an in-memory
 lookup, traversing one path in the tree from the root to a leaf. If the tree
 is properly balanced, this corresponds to a runtime of $O(\log n)$ where
 $n$ is the size of the tree.
-
-However, if we
-instantiate the annotation to be the pointer annotation from
+However, if used with the pointer annotation from
 Section~\ref{sec:storage},
 the lookup function runs inside the |Heap| monad which is
 strict, because the underlying |IO| monad is strict. The strict bind operator for the |Heap|
 monad makes the |lookupP| operation traverse the entire tree, i.e., to run in
-$\Theta(n)$. The same happens if we use the modification time or debug annotation
-which are both based on the |IO| monad as well.
+$\Theta(n)$. The same happens if we use the modification time or debug annotation.
 
+\enlargethispage*{2\baselineskip}%
 Two possible solutions for this problem come to mind:
 \begin{itemize}
-\item We can change the algebras to run in a monadic context. Then the
-patterns no longer have to precompute the results and pass them to the
-algebra, but can pass computations. It becomes the responsibility of the
-implementor of the algebras to explicitly evaluate the inputs that are
+\item We can let algebras be monadic. The recursion
+patterns then pass computations rather than precomputed results to the
+algebras. It becomes the responsibility of the
+algebra implementor to explicitly evaluate the inputs that are
 needed.
 \item We can try to ensure that the operations in a \emph{lazy monadic context}.
 When the context is lazy, the entire operations becomes lazy while the
-algebras remain pure. We thus have to find a way to regain laziness in
-strict contexts.
+algebras remain pure.
+% We thus have to find a way to regain laziness in
+% strict contexts.
 \end{itemize}
 We have adopted the second option: We build our recursion patterns on top of
 \emph{lazy monads}. We make a type class that can be used to lift monadic
@@ -93,9 +92,13 @@ identity function.
 
 A new catamorphism can be built that uses invokes the |lazy| method just
 before going into recursion:
+%if False
 
 > lazyCataA ::  (Out ann t m, Lazy m, Traversable t) =>
 >               (t b -> b) -> FixA ann t -> m b
+
+%endif
+
 > lazyCataA phi = return . phi <=< mapM (_lazy . lazyCataA phi) <=< outA
 
 %if False
@@ -131,6 +134,7 @@ values of consumer operations to ensure all side-effects stay within the |Heap|
 context and cannot escape. Our operations are now lazy on the inside but appear
 strict on the outside.
 
+\enlargethispage*{\baselineskip}%
 \subsection{Other data structures}
 
 We have shown how to build a generic storage framework for recursive data
@@ -208,6 +212,7 @@ no longer used.
 
 % -----------------------------------------------------------------------------
 
+\enlargethispage*{\baselineskip}%
 \section{Related work}\label{sec:relatedwork}
 
 \subsection{Generic programming with fixed points}
@@ -274,7 +279,7 @@ and a state framework. The state framework is called \emph{Happstack-State}.
 It uses a record-based system in which users can add, delete, modify and
 retrieve records of data on a database file. The system uses Template
 Haskell meta-programming to automatically derive storage operations for custom datatypes. The
-derivation of operations only works for monomorphic types which severly breaks
+derivation of operations only works for monomorphic types which severely breaks
 modularity.  Happstack State only allows storing record values and does not
 allow using custom domain specific data structures.
 
