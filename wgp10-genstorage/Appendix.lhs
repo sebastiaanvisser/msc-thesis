@@ -1,4 +1,4 @@
-\section{Conclusion}
+\section{Conclusion}\label{sec:conclusion}
 
 The power of programming languages is often correlated with the exposed
 standard libraries. Mainstream languages all provide their own set of data
