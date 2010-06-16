@@ -60,7 +60,19 @@ strict, because the underlying |IO| monad is strict. The strict bind operator fo
 monad makes the |lookupP| operation traverse the entire tree, i.e., to run in
 $\Theta(n)$.
 
-We solve this problem by building the recursion patterns with effects on top of
+To ways come to mind to solve this problem:
+
+\begin{itemize}
+\item Make the algebras run in a monadic context.  The catamorphism no longer
+precomputes the results and passes them to the algebra, but passes computations
+to the algebras that can be used to compute the sub results.  Now the algebras
+have the responsibility to compute the sub results when they are needed.
+\item Run the operations in a \emph{lazy monadic context}. When the context is
+lazy the entire operations becomes lazy while the algebras remain pure. We have
+to find a way to regain laziness in strict context.
+\end{itemize}
+
+We have chosen the second option, we build our recursion patterns on top of
 \emph{lazy monads}. We make a type class that can be used to lift monadic
 computations to lazy computations:
 
