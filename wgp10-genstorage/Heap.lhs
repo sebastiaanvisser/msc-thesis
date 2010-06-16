@@ -20,11 +20,11 @@
 \section{File-based storage heap}
 \label{sec:heap}
 
-In the previous sections we showed how to perform generic programming with
-fixed point annotations. The annotations form the bases of our Haskell storage
+In the previous sections, we showed how to perform generic programming with
+fixed point annotations. The annotations form the basis of our storage
 framework. We use the annotations to marshall individual nodes from and to a
-database file on disk. Before explaining this in more detail we first briefly
-show the low-level storage layer.
+database file on disk. Before we can explain this storage annotation in more
+detail, we first sketch the low-level storage layer.
 
 In this section, we introduce a block-based heap data structure that is used to
 allocate and use fragments of binary data on disk. The structure of the heap is
@@ -163,7 +163,7 @@ Figure~\ref{fig:binaryclass}.
 The |put| method serializes a value to a binary stream
 value to a binary stream, whereas |get| deserializes a binary stream back to a
 Haskell value.\footnote{Both |Get| and |Put| are monads defined in the |Binary|
-class. They are not relevant for our purposes here.
+class. The details are not relevant for our purposes here.
 Using the @regular@~\cite{jpm} library for generic
 programming with regular datatypes, we have created a generic function that can
 be used to automatically derive |Binary| instances for a large class of Haskell
@@ -176,7 +176,7 @@ on the heap and then safely stores the value:
 
 > write :: Binary (f a) => f a -> Heap (Ptr f a)
 
-The last two heap operations are for reading values from an existing block. The
+We provide two heap operations for reading values from an existing block. The
 |read| and |fetch| function both take a heap pointer, read the binary payload,
 deserialize the payload to a Haskell value using the |Binary| type class and
 return the value:
@@ -202,8 +202,8 @@ a file that can be used as on-disk heap:
 > run :: FilePath -> Heap a -> IO a
 
 Because of the file access, the result of |run| is in the |IO| monad. The
-|run| function opens the heap file and initializes it when it is new. When the
-file does exist it quickly scans all blocks to compute the in-memory allocation
+|run| function opens the heap file and initializes it if it is new. If the
+file exists, it quickly scans all blocks to compute the in-memory allocation
 map. It then applies the heap computations, and closes the heap file in the end.
 
 %if False
@@ -217,7 +217,7 @@ map. It then applies the heap computations, and closes the heap file in the end.
 
 %endif
 
-In this section we have described on a very high level a file based heap
+In this section, we have described on a very high level a file based heap
 structure that can be used to store arbitrary blocks of binary data on disk.
 Access to the data is managed by pointers as offsets into the file. All Haskell
 values that have an instance for the |Binary| type class can automatically be
