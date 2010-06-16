@@ -17,7 +17,7 @@
 
 %endif
 
-\section{File based storage heap}
+\section{File-based storage heap}
 \label{sec:heap}
 
 In the previous sections we showed how to perform generic programming with
