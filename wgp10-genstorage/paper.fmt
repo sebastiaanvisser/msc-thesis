@@ -1,4 +1,4 @@
-%subst verbatim a       = "\begingroup\small\begin{tabbing}\tt\gobble'n" a "'n\end{tabbing}\endgroup'n"
+%subst verbatim a       = "\begingroup\par\noindent\small\begin{tabbing}\tt\gobble'n" a "'n\end{tabbing}\endgroup'n"
 %subst verbnl           = "\\'n\tt\gobble "
 
 %format mempty              = "\mathrel{\emptyset}"
