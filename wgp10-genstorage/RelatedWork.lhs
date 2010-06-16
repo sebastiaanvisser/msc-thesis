@@ -190,9 +190,9 @@ The current framework only allows sequential access to the persistent data
 structures. Concurrent access at this moment would most certainly cause
 undesirable effects. Parallel access to the same persistent data structure is a
 topic for future research. We could benefit from in-memory transactions systems
-like \emph{software transactional memory} \cite{stm} to manage concurrent
+like \emph{software transactional memory}~\cite{stm} to manage concurrent
 threads to manipulate the same structure. Transactional in-memory caches to
-persistent data structures have been shown useful before \cite{tcache}.
+persistent data structures have been shown useful before~\cite{tcache}.
 
 Another approach to concurrent access is making the data structures immutable.
 Using |read| instead of the |fetch| in the |OutIn| type class would yield a
@@ -216,9 +216,9 @@ constructor fields of algebraic datatypes are represented. Our approach uses a
 more limited view in which we only abstract away from recursion and has 
 been shown useful in quite some situations.
 
-Swierstra \cite{alacarte} shows how the fixed point combinator can be used to
+Swierstra~\cite{alacarte} shows how the fixed point combinator can be used to
 abstract away from recursion to extend data types with new constructions. Van
-Steenbergen et al. \todo{cite martijn} show how to use generic programming with
+Steenbergen et al.~\cite{selections} show how to use generic programming with
 annotated fixed points to store source position information in abstract syntax
 trees.  Recursion patterns for working with non-regular recursive datatypes
 have been described by Ghani and Johann~\cite{initial}.
