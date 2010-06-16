@@ -53,7 +53,7 @@ referenced by pointer to the file offset.}
 \label{fig:binarytree-pers}
 \end{figure*}
 
-\subsection{Persistent producers and queries}\label{sec:ppq}
+\subsection{Persistent producers and consumers}\label{sec:ppq}
 
 To make the pointer type |Ptr| usable as an annotation, we have to define
 instances of the |Out| and |In| type classes from Section~\ref{sec:annotations}.
