@@ -134,7 +134,7 @@ values of consumer operations to ensure all side-effects stay within the |Heap|
 context and cannot escape. Our operations are now lazy on the inside but appear
 strict on the outside.
 
-\enlargethispage*{\baselineskip}%
+\enlargethispage*{2\baselineskip}%
 \subsection{Other data structures}
 
 We have shown how to build a generic storage framework for recursive data
@@ -212,7 +212,7 @@ no longer used.
 
 % -----------------------------------------------------------------------------
 
-\enlargethispage*{\baselineskip}%
+\enlargethispage*{2\baselineskip}%
 \section{Related work}\label{sec:relatedwork}
 
 \subsection{Generic programming with fixed points}
