@@ -37,6 +37,8 @@
 
 %format Fix                 = "\Conid{\mu}"
 %format FixA                = "\Conid{\mu_\alpha}"
+%format HFix                 = "\Conid{\mu^h}"
+%format HIn                 = "\Conid{In^h}"
 %format ann                 = "\Varid{\alpha}"
 %format outA                = "\Varid{out_\alpha}"
 %format inA                 = "\Varid{in_\alpha}"
