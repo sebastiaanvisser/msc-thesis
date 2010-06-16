@@ -42,6 +42,7 @@
 %format inA                 = "\Varid{in_\alpha}"
 %format outInA              = "\Varid{outIn_\alpha}"
 %format FixBotA             = "\Conid{\mu_{\widehat{\alpha}}}"
+%format FixPartialA         = FixBotA
 %format outIn1              = "\Varid{outIn_\mu}"
 
 %format AlgA                = "\Conid{Alg_\alpha}"
@@ -58,9 +59,13 @@
 %format PhiE                = "\ensuremath{\Phi_e}"
 %format EndoA               = "\Conid{Endo_\alpha}"
 %format endoA               = "\Varid{endo_\alpha}"
+%format endoApoA            = "\Varid{endoApo_\alpha}"
+%format endoApoA'
 %format phi                 = "\Varid{\phi}"
 %format psi                 = "\Varid{\psi}"
 %format ApoCoalgebraA       = "\Conid{ApoCoalgebra_\alpha}"
+%format ApoCoalgebraA'      = ApoCoalgebraA
+%format EndoApoCoalgebraA   = "\Conid{EndoApoCoalgebra_\alpha}"
 %format fullyOutA           = "\Varid{fullyOut_\alpha}"
 %format fullyInA            = "\Varid{fullyIn_\alpha}"
 
