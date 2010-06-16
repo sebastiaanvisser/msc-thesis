@@ -170,6 +170,7 @@ this task:
 
 Our example tree can now be expressed in terms of |leaf| and |branch|
 rather than |Leaf1| and |Branch1|, but otherwise looks as before.
+%if False
 
 > myTreeF :: Tree Int Int
 > myTreeF = branch 3 9  (branch 1 1   leaf
@@ -187,6 +188,7 @@ The structure of the tree is shown in Figure~\ref{fig:binarytreefix}.
 \caption{Binary tree with explicit recursion.}
 \label{fig:binarytreefix}
 \end{figure}
+%endif
 
 \subsection{Recursion patterns}\label{sec:simplerecpat}
 
