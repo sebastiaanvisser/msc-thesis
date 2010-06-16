@@ -212,25 +212,27 @@ no longer used.
 
 \subsection{Generic programming with fixed points}
 
-Generic programming with fixed points is a well-explored area, both for regular
-datatypes~\cite{genintro, polyp} and mutually recursive
-datatypes~\cite{multirec}. Most generic programming approaches use fixed points
-of nested sums of product, a view in which recursion, constructors, and
-constructor fields of algebraic datatypes are represented. Our approach uses a
-more limited view in which we only abstract away from recursion and has 
-been shown useful in quite some situations.
+The idea of using fixed points and recursion patterns to express datatypes
+and operations on such datatypes is well-explored~\cite{bananas, genintro, polyp}.
+While the original motivation for taking this view was mainly to derive algorithms
+generically or calculate laws -- such as fusion laws for optimisation purposed,
+fixed-point representations have also been used to modify datatypes in various
+ways. A few examples:
 
-Swierstra~\cite{alacarte} shows how the fixed point combinator can be used to
-abstract away from recursion to extend data types with new constructions. Van
-Steenbergen et al.~\cite{selections} show how to use generic programming with
+Garrigue~\cite{garrigue} shows how writing datatypes in an open way enables
+adding extra functionality at a later point. Swierstra~\cite{alacarte} presents
+a very polished approach to a similar problem tailored to Haskell. The Zipper
+data structure can be generically derived from a fixed-point view~\cite{tidata, multirec}.
+Van Steenbergen et al.~\cite{selections} show how to use generic programming with
 annotated fixed points to store source position information in abstract syntax
-trees.  Recursion patterns for working with non-regular recursive datatypes
-have been described by Ghani and Johann~\cite{initial}.
+trees. 
 
-% \andres[inline]{There seems to be something missing here: the general
-% idea to use fixed points, has been used for many purposes, such as -- among
-% other things -- to allow extension of the datatype (Garrigue, our rewriting
-% paper).}
+Most recursion patterns we use are standard, except for the endo-apomorphism
+defined in Section~\ref{sec:modification}. This pattern somewhat resembles
+a \emph{futumorphism}~\cite{futus}.
+
+% Recursion patterns for working with non-regular recursive datatypes
+% have been described by Ghani and Johann~\cite{initial}.
 
 \subsection{Lazy IO}
 
@@ -250,20 +252,20 @@ In their paper \emph{Efficient and Type-Safe Generic Data Storage} Smetsers,
 Van Weelden and Plasmeijer~\cite{clean} describe a generic storage framework
 for the programming language Clean. Similar to our storage framework, they aim
 at generically mapping functional data structures to a persistent storage on
-disk. Using something similar to our storage heap -- they call this
-\emph{Chunks} -- they are able to store individual parts of the data
+disk. Using \emph{Chunks} -- a concept similar to our storage heap --
+they are able to store individual parts of the data
 structures on the disk without the need for reading and writing the entire
 collection at once.
 
 The major difference between their approach and ours is that they do not slice
-the data structure at the recursive points but at the points where the actual
+the data structure at the recursive points, but at the points where the actual
 element values are stored. This means that
 every record value is stored in its own
 chunk, while they entire data structure itself is stored in one single chunk.
-Updates of individual record values can now be done efficiently without
+Updates of individual record values can now be performed efficiently without
 touching the entire collection, but for every structural change to the
-collection the chunk containing the data structure itself -- they call this
-the \emph{Root chunk} -- has to be read in and written back as a whole.
+collection the chunk containing the data structure itself (the
+\emph{Root chunk}) has to be read in and written back as a whole.
 
 \subsection{Happstack State}
 
