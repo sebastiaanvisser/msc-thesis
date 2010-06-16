@@ -23,25 +23,24 @@
 \section{Persistent data structures}
 \label{sec:storage}
 
-In the previous section, we have chosen to define the |Ptr| datatype with
-\emph{two} type parameters -- a functor of kind~|* -> *| and an explicit
-index of kind~|*|. Due to this design decision, the pointer type becomes
-usable as a fixed point annotation -- as we will see in Section~\ref{sec:ppq},
-we can make the |Ptr| type an instance of both the |Out| and the |In|
-type classes from Section~\ref{sec:annotations}. The effects associated with
-wrapping an unwrapping live in the |Heap| monad. 
+Everything is in place now to define an annotation that allows us to make data
+structures persistent.  In the previous section, we have chosen to define the
+|Ptr| datatype with \emph{two} type parameters -- a functor of kind~|* -> *|
+and an explicit index of kind~|*|. This design decision makes |Ptr| usable as a
+fixed point annotation. Creating a |Ptr| corresponds to writing to the heap,
+whereas removing a |Ptr| implies reading from the heap. 
 
-We then show how to build \emph{persistent} data structures such as binary
-search trees, by using the pointer annotation:
+We can then build concrete persistent data structures such as binary search
+trees, by using the pointer annotation:
 
 > type TreeP k v = FixA Ptr (TreeF k v)
 
-When we work with a value of type |TreeP k v| we now actually work with a
+When we work with a value of type |TreeP k v|, we now actually work with a
 \emph{pointer} to a binary tree that lives somewhere on the heap that is
 stored on the disk. To be precise, the pointer references a heap block that
 stores a binary serialization of a single node of type |TreeF k v (TreeP k v)|.
 The recursive positions of the node contain again pointers to substructures.
-Figure~\ref{fig:binarytree-pers} shows how such a tree will look like.
+Figure~\ref{fig:binarytree-pers} shows how such a tree looks like.
 
 \begin{figure*}[pt]
 \begin{center}
