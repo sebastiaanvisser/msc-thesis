@@ -71,8 +71,8 @@ want.
 Before we can use |cataA| on an actual datatype such as binary search trees,
 we have to give a |Traversable| instance for the pattern functor:\footnote{%
 Haskell's |Traversable| has |Foldable| as superclass, so we have to define
-that instance as well, but since it does not add here, we omit it. GHC 6.12.1
-and later can derive both |Foldable| and |Traversable| automatically.}
+that instance as well, but since its functionality is not used here, we omit it.
+GHC 6.12.1 and later can derive both |Foldable| and |Traversable| automatically.}
 %if False
 
 > instance Foldable (TreeF k v) where
