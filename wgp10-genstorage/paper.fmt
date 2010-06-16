@@ -49,6 +49,7 @@
 %format Psi                 = "\Conid{\Psi}"
 %format Psi                 = "\ensuremath{\Psi}"
 %format cataA               = "\Varid{cata_\alpha}"
+%format lazyCataA           = "\Varid{lazyCata_\alpha}"
 %format anaA                = "\Varid{ana_\alpha}"
 %format paraA               = "\Varid{para_\alpha}"
 %format CoalgA              = "\Conid{Coalg_\alpha}"
@@ -69,6 +70,7 @@
 %format fullyOutA           = "\Varid{fullyOut_\alpha}"
 %format fullyInA            = "\Varid{fullyIn_\alpha}"
 
+%format _lazy               = "\Varid{\textbf{\textit{lazy}}}"
 %format rr                  = "\Varid{\textbf{\textit{r}}}"
 
 %format lookupAlg           = "\Varid{lookup_{ALG}}"

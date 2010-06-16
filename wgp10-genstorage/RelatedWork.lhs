@@ -1,3 +1,33 @@
+%if False
+
+> {-# LANGUAGE
+>     ScopedTypeVariables
+>   , KindSignatures
+>   , FlexibleContexts
+>   , FlexibleInstances
+>   , TupleSections
+>   , GADTs
+>   , RankNTypes
+>   , MultiParamTypeClasses
+>   , TypeOperators
+>   , TupleSections
+>   #-}
+> module RelatedWork where
+
+> import Data.Ord
+> import Data.List hiding (group)
+> import Data.Monoid
+> import Prelude hiding (mapM)
+> import Control.Monad.Identity (Identity(..))
+> import Control.Monad hiding (mapM, (<=<))
+> import Data.Foldable
+> import Data.Traversable
+> import System.IO.Unsafe
+> import Fixpoints hiding (Algebra, cata, lookup, Coalgebra, fromList)
+> import Morphisms hiding (Algebra, cata, lookup, Coalgebra, fromList)
+
+%endif
+
 \section{Discussion and future work}
 
 In this section, we discuss some subtle points of our approach. We also
@@ -26,21 +56,60 @@ However, if we
 instantiate the annotation to be the pointer annotation from
 Section~\ref{sec:storage},
 the lookup function runs inside the |Heap| monad which is
-strict, because the underlying |IO| monad is strict.\andres{You said that
-|State| is strict, too, but I don't think so. Sebas: Reading/writing state is
-lazy, the bind of state is strict.} The strict bind operator for the |Heap|
+strict, because the underlying |IO| monad is strict. The strict bind operator for the |Heap|
 monad makes the |lookupP| operation traverse the entire tree, i.e., to run in
 $\Theta(n)$.
 
-We have solved this problem by creating two separate heap contexts, a read-only
-context which uses lazy IO and a read-write context that uses strict IO. The
-pointer instance for the |Out| type class is now associated with the read-only
-context, the instance for the |In| type class is associated with the read-write
-context. The instance for the |OutIn| uses a hybrid approach, lifting lazy read
-actions into the strict context. The separation between the two context allows
-us to have strict producer functions and lazy consumer functions. The running time
-of the persistent |lookup| function in the lazy context is now reduced back to
-$O(\log n)$.
+We solve this problem by building the recursion patterns with effects on top of
+\emph{lazy monads}. We make a type class that can be used to lift monadic
+computations to lazy computations:
+
+> class Lazy m where
+>   lazy :: m a -> m a
+
+We make an instances for the |IO| monad by using |unsafeInterleaveIO|, this functions
+only sequences IO operations using bind when the result of the computation
+requires so:
+
+> instance Lazy IO where
+>   lazy = unsafeInterleaveIO
+
+A new catamorphism can be build that uses invokes the |lazy| method just
+before going into recursion:
+
+> lazyCataA ::  (Out ann t m, Lazy m, Traversable t) =>
+>               (t b -> b) -> FixA ann t -> m b
+> lazyCataA phi = return . phi <=< mapM (_lazy . lazyCataA phi) <=< outA
+
+%if False
+
+> _lazy :: (Lazy m) => m a -> m a
+> _lazy = lazy
+
+%endif
+
+The lazy catamorphism ensures that the monadic actions will only be performed when
+the algebra requires the results. The type context tells us this catamorphism
+is only applicable to monads that can be run lazy. We derive a new |lookup|
+function using |lazyCataA|:
+
+> lookup k = lazyCataA (lookupAlg k)
+
+When we perform a lookup on the output of |myTree_a| -- specialized to the debug annotation --
+we see a clear reduction in the number of steps needed to compute the answer:
+
+\begin{verbatim}
+ghci> lookup 4 it
+("out",Branch 3 9 () ())
+("out",Branch 4 16 () ())
+Just 16
+\end{verbatim}
+
+We have solved the laziness problem for the storage heap specifically by
+creating two separate heap contexts, a read-only context which uses lazy IO and
+a read-write context that uses strict IO. The pointer instance for the |Out|
+type class is now associated with the read-only context, the instance for the
+|In| type class is associated with the read-write context.
 
 To avoid any problems regarding lazy IO, we strictly force the entire result
 values of consumer operations to ensure all side-effects stay within the Heap
