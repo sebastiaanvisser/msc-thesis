@@ -620,7 +620,6 @@ No need to show two annotated trees in figures ...
 
 \subsection{Summary}
 
-\andres{Look at this summary again.}
 In this section, we have introduced annotated fixed points. We have discussed
 how to abstract from the creation and removal of annotations by means of the
 |In| and |Out| type classes. We have also introduced two example annotations,
