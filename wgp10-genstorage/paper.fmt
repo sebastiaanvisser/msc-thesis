@@ -33,6 +33,7 @@
 %format branchA             = "\Varid{branch_\alpha}"
 %format myTreeF             = "\Varid{myTree_f}"
 %format myTree_a            = "\Varid{myTree_\alpha}"
+%format myTree_a'
 
 %format Fix                 = "\Conid{\mu}"
 %format FixA                = "\Conid{\mu_\alpha}"
@@ -60,6 +61,8 @@
 %format phi                 = "\Varid{\phi}"
 %format psi                 = "\Varid{\psi}"
 %format ApoCoalgebraA       = "\Conid{ApoCoalgebra_\alpha}"
+%format fullyOutA           = "\Varid{fullyOut_\alpha}"
+%format fullyInA            = "\Varid{fullyIn_\alpha}"
 
 %format rr                  = "\Varid{\textbf{\textit{r}}}"
 

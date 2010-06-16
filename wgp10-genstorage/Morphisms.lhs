@@ -22,7 +22,7 @@
 > import Control.Monad hiding (mapM, (<=<))
 > import Data.Foldable
 > import Data.Traversable
-> import Fixpoints hiding ((:+:), Algebra, cata, lookup, Coalgebra, fromList)
+> import Fixpoints hiding (Algebra, cata, lookup, Coalgebra, fromList)
 
 %endif
 
@@ -118,6 +118,14 @@ reveals that the \emph{entire} tree is traversed, not just the path to the
 propagates to the whole operation now that |IO| is used behind the scenes.
 We defer the discussion of this problem until Section~\ref{sec:laziness}.
 
+We can use the annotated catamorphism also to remove all annotations from
+a recursive structure, removing all layers of annotations and performing
+the associated effects:
+
+> fullyOutA ::  (Out ann f m, Monad m, Traversable f) =>
+>               FixA ann f -> m (Fix f)
+> fullyOutA = cataA In
+
 \subsection{Anamorphism}
 
 For anamorphisms, the situation is very similar as for catamorphisms. We
@@ -146,7 +154,14 @@ The definition
 
 is equivalent to the old |myTree_a|.
 
-\subsection{Apomorphism}
+With the catamorphism we can remove all annotations from a structure --
+with the anamorphism we can completely annotate a recursive structure:
+
+> fullyInA ::  (In a f m, Monad m, Traversable f) =>
+>              Fix f -> m (FixA a f)
+> fullyInA = anaA out
+
+\subsection{Apomorphism}\label{sec:apomorphisms}
 
 The situation for the apomorphism is a bit different, because
 the fixed point combinator occurs in the type of coalgebras:
@@ -179,6 +194,43 @@ We therefore define a new recursion pattern for modifiers such as |insert|.
 However, we need some additional utilities for this pattern that we
 define first.\andres{Add pointers.}
 
+\subsection{Partially annotated structures}
+\todo{maybe introduce this when needed}
+
+We define an additional type that represents a recursive structure of which the
+top contains no annotations but the sub structures are fully annotated. The
+unannotated top may contain multiple levels. The |FixBotA| type uses the fixed
+point combinator with in combination with a sum type:
+
+> type FixBotA a f = Fix (f :+: K (FixA a f))
+
+where:
+
+> newtype K f a = K { unK :: f }
+> data (f :+: g) a = L (f a) | R (g a)
+
+%if False
+
+> infixl 6 :+:
+
+%endif
+
+The left part of the sum represents an unannotated top node, the right part of
+the sum contains a fully annotated bottom structure. The constant functor |K|
+is used to ignore the incoming type index that the fixed point combinator
+supplies, which stops the recursion and ensures there are no unannotated nodes
+in a sub-structure of an annotated node.
+
+A helper function |topIn| can be used to wrap the unannotated top part of a
+|FixBotA| structure in fresh annotations and build a fully annotated structure:
+
+> topIn :: (Traversable f, In a f m) => FixBotA a f -> m (FixA a f)
+> topIn = sum  (inA <=< mapM topIn)
+>              (return . unK) . out
+>   where  sum f _  (L  l)  = f  l
+>          sum _ g  (R  r)  = g  r
+
+
 %if False
 \subsection{Destructing with paramorphisms}
 
@@ -197,7 +249,7 @@ structures at those positions.
 %if False
 
 > type a :*: b = (a, b)
-> type a :+: b = Either a b
+> -- type a :+: b = Either a b
 
 %endif
 
@@ -320,7 +372,6 @@ By abstracting away from recursion we can reuse a single operation in different
 contexts, both for annotated and unannotated recursive structures.
 
 \subsection{Constructing with apomorphisms}
-\label{sec:apomorphisms}
 
 Where paramorphisms are used to destruct recursive datatypes into a result
 value, \emph{apomorphisms} are used to construct recursive datatypes from a
@@ -333,7 +384,7 @@ an existing recursive structure:
 > data CoalgA  (a ::  (  *  -> *) -> * -> *  )
 >              (f ::     *  -> *             )
 >              (s ::     *                   ) where
->   Phi :: (s -> f (s :+: FixBotA a f)) -> CoalgA a f s
+>   Phi :: (s -> f (Either s (FixBotA a f))) -> CoalgA a f s
 
 As for paramorphisms, we define a type synonym for coalgebras that do not
 make use of a particular annotation:
@@ -450,7 +501,7 @@ unannotated top:
 
 > data EndoA  (a  :: (  * -> *) -> * -> *  )
 >             (f  ::    * -> *             ) where
->   PhiE :: (f (FixA a f) -> f (FixA a f :+: FixBotA a f)) -> EndoA a f
+>   PhiE :: (f (FixA a f) -> f (Either (FixA a f) (FixBotA a f))) -> EndoA a f
 
 Because the input has type |f (Fix a f)| and the output has a
 slightly different type |FixA a f|, we cannot just reuse the |CoalgA| type.%
