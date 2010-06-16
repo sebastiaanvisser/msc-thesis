@@ -54,7 +54,7 @@ storage system when manipulating persistent data structures.
 \end{enumerate}
 
 Consider the following two simple Haskell programs that on a high level
-illustrate the use of our storage framework:
+illustrates the use of our storage framework:
 
 > build :: IO ()
 > build = run "squares.db" $
