@@ -1,3 +1,6 @@
+%subst verbatim a       = "\begin{tabbing}\tt\gobble'n" a "'n\end{tabbing}'n"
+%subst verbnl           = "\\'n\tt\gobble "
+
 %format mempty              = "\mathrel{\emptyset}"
 %format <>                  = "\mathrel{\diamond}"
 %format <=<                 = "\mathrel{\triangleleft}"

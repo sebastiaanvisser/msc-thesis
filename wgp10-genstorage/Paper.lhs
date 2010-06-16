@@ -12,6 +12,9 @@
 %include forall.fmt
 %include paper.fmt
 
+% For indentation in verbatim blocks:
+\newcommand\gobble[1]{\hspace*{\mathindent}}
+
 \begin{document}
 
 %include Titlepage.lhs
