@@ -88,7 +88,7 @@ before going into recursion:
 
 %endif
 
-The lazy catamorphism ensures that the monadic actions will only be used when
+The lazy catamorphism ensures that the monadic actions will only be performed when
 the algebra requires the results. The type context tells us this catamorphism
 is only applicable to monads that can be run lazy. We derive a new |lookup|
 function using |lazyCataA|:
