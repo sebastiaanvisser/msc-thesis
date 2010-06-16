@@ -10,10 +10,10 @@
 >   #-}
 > module Storage where
 
-> import Control.Monad
+> import Control.Monad hiding ((<=<))
 > import Data.Binary
 > import Data.Traversable
-> import Fixpoints
+> import Fixpoints hiding (fromList, lookup, insert)
 > import Heap
 > import Morphisms
 > import Prelude hiding (read, lookup)
@@ -64,10 +64,10 @@ We associate the pointer annotation with the
 and use the |write| operation as the implementation for |inA|:
 
 > instance (Traversable f, Binary (f (FixA Ptr f))) => Out Ptr f Heap
->    where outA = read
+>    where outA = read <=< return . out
 >
 > instance (Traversable f, Binary (f (FixA Ptr f))) => In Ptr f Heap
->    where inA = write
+>    where inA = return . In <=< write
 
 To make the two instances work, we need a |Binary| instance for both the fixed
 combinator and the |TreeF| pattern functor. Both instances are shown in
@@ -166,7 +166,7 @@ To start, we have to give an instance for the |OutIn| type class for
 the pointer annotation in the |Heap| context:
 
 > instance (Traversable f, Binary (f (FixA Ptr f))) => OutIn Ptr f Heap
->    where outInA f = write <=< f <=< fetch
+>    where outInA f = return . In <=< write <=< f <=< fetch <=< return . out
 
 Note that we do \emph{not} use the default implementation for |outInA|,
 which in this case would be equivalent to
