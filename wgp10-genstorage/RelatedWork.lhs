@@ -202,30 +202,31 @@ approach practically usable we need full sharing between different versions of
 the data structures and need a garbage collector to clean up versions that are
 no longer used.
 
+% -----------------------------------------------------------------------------
+
 \section{Related work}
 
 \subsection{Generic programming with fixed points}
 
 Generic programming with fixed points is a well-explored area, both for regular
-datatypes~\cite{genintro, polyp}
-and mutually recursive datatypes~\cite{multirec}. Most
-generic programming approaches use fixed points of nested sums of product, a
-view in which recursion, constructors, and constructor fields of algebraic
-datatypes are represented. Our approach uses a more limited view in which we
-only abstract away from recursion. The nested sums of product view is useful
-when writing operations that are truly datatype generic. Only abstracting away
-from recursion has shown to be useful when generically annotating datatype
-specific operations.\andres{Might need a rewrite. ``Generic'' has been
-used in our sense before, which is good.}
+datatypes~\cite{genintro, polyp} and mutually recursive
+datatypes~\cite{multirec}. Most generic programming approaches use fixed points
+of nested sums of product, a view in which recursion, constructors, and
+constructor fields of algebraic datatypes are represented. Our approach uses a
+more limited view in which we only abstract away from recursion and has 
+been shown useful in quite some situations.
 
-Recursion patterns for working with non-regular recursive datatypes have been
-described by Ghani and Johann~\cite{initial}.
+Swierstra \cite{alacarte} shows how the fixed point combinator can be used to
+abstract away from recursion to extend data types with new constructions. Van
+Steenbergen et al. \todo{cite martijn} show how to use generic programming with
+annotated fixed points to store source position information in abstract syntax
+trees.  Recursion patterns for working with non-regular recursive datatypes
+have been described by Ghani and Johann~\cite{initial}.
 
-\andres[inline]{There seems to be something missing here: the general
-idea to use fixed points, has been used for many purposes, such as -- among
-other things -- to allow extension of the datatype (Garrigue, our rewriting
-paper). Martijn uses annotations of recursive structures to store line
-number information.}
+% \andres[inline]{There seems to be something missing here: the general
+% idea to use fixed points, has been used for many purposes, such as -- among
+% other things -- to allow extension of the datatype (Garrigue, our rewriting
+% paper).}
 
 \subsection{Lazy IO}
 
