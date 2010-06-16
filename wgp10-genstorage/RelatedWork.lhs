@@ -177,12 +177,12 @@ constructions described in the paper can be lifted to the more complex scenario,
 but no code reuse is directly possible due to the more complicated kinds
 in the higher-order situation.
 
-In XXX \todo{refer to thesis somehow?}\andres{Yes, give a link for the time
-being.}, we show how represent finger trees~\cite{fingertree}, a nested data
-structure supporting efficient lookup and concatenation, as an indexed GADT
-and use the higher-order storage framework
-to derive a persistent finger tree. All the structural invariants we expect the
-finger tree to have are encoded using the datatype indices.
+A more in depth report about persistent indexed datatypes can be found in
+\cite{sebas}. We show how represent finger trees~\cite{fingertree}, a nested
+data structure supporting efficient lookup and concatenation, as an indexed
+GADT and use the higher-order storage framework to derive a persistent finger
+tree. All the structural invariants we expect the finger tree to have are
+encoded using the datatype indices.
 
 \subsection{Concurrency}
 
