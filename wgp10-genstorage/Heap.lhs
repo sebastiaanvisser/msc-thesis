@@ -100,10 +100,9 @@ The |allocate| functions runs in the |Heap| context that we explain below.
 The heap structure uses an in-memory \emph{allocation map} to track the current
 heap size and all blocks in the heap that are not currently used:
 
-> data AllocMap = AllocMap
->   {  heapsize  :: Size
->   ,  unused    :: Map Size [Offset]
->   }
+> data AllocMap = AllocMap  {  heapsize  ::  Size
+>                           ,  unused    ::  Map Size [Offset]
+>                           }
 
 The allocation map is a finite mapping from size to a list of
 offsets. The offsets represent blocks that have a payload of exactly the size
@@ -122,8 +121,8 @@ transformer stack that uses the |IO| monad on the inside. The context uses a
 reader monad to distribute the file handle of the heap file to all operations,
 and it makes use of a state monad to manage the allocation map:
 
-> newtype Heap a = Heap
->   (ReaderT  Handle (StateT AllocMap IO ) a)
+> newtype Heap a =
+>   Heap (ReaderT Handle (StateT AllocMap IO ) a)
 
 %if False
 
@@ -150,7 +149,7 @@ class Binary t where
 \label{fig:binaryclass}
 \end{figure}
 
-\subsection{Writing and reading}
+\subsection{Writing and reading}\label{sec:writeread}
 
 The |update| heap operation takes a heap pointer and a Haskell
 value of type |f a|. It writes a binary serialization of the value to the

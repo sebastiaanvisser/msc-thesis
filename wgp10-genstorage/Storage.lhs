@@ -61,10 +61,12 @@ We associate the pointer annotation with the
 |Heap| context, use the |read| operation as the implementation for |outA|
 and use the |write| operation as the implementation for |inA|:
 
-> instance (Traversable f, Binary (f (FixA Ptr f))) => Out Ptr f Heap
+> instance  (Traversable f, Binary (f (FixA Ptr f))) =>
+>           Out Ptr f Heap
 >    where outA = read <=< return . out
 >
-> instance (Traversable f, Binary (f (FixA Ptr f))) => In Ptr f Heap
+> instance  (Traversable f, Binary (f (FixA Ptr f))) =>
+>           In Ptr f Heap
 >    where inA = return . In <=< write
 
 To make the two instances work, we need a |Binary| instance for both the fixed
@@ -166,15 +168,13 @@ generic annotation framework. We now show the same for modifiers.
 To start, we have to give an instance for the |OutIn| type class for
 the pointer annotation in the |Heap| context:
 
-> instance (Traversable f, Binary (f (FixA Ptr f))) => OutIn Ptr f Heap
+> instance  (Traversable f, Binary (f (FixA Ptr f))) =>
+>           OutIn Ptr f Heap
 >    where outInA f = return . In <=< write <=< f <=< fetch <=< return . out
 
 Note that we do \emph{not} use the default implementation for |outInA|,
-which in this case would be equivalent to
-\begin{spec}
-write <=< f <=< read
-\end{spec}
-Instead, we replace |read| by |fetch|. As explained in Section~\ref{sec:heap},
+which in this case would use |read| instead of |fetch|.
+As explained in Section~\ref{sec:writeread},
 |fetch| immediately frees a block after reading it. By using |fetch| instead
 of |read|, we get the effect that all modifications to the persistent data
 structure are \emph{mutable} operations. After a modification finishes the old
