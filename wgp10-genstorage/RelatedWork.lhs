@@ -69,7 +69,7 @@ to the algebras that can be used to compute the sub results.  Now the algebras
 have the responsibility to compute the sub results when they are needed.
 \item Run the operations in a \emph{lazy monadic context}. When the context is
 lazy the entire operations becomes lazy while the algebras remain pure. We have
-to find a way to regain laziness in strict context.
+to find a way to regain laziness in strict contexts.
 \end{itemize}
 
 We have chosen the second option, we build our recursion patterns on top of
