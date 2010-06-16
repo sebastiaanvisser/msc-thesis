@@ -394,10 +394,10 @@ annotation. The |outA| method unwraps an annotated node, exposing the
 functor with the annotated substructures.
 The results of both operations live in the monad~|m|:
 
-> class (Monad m) => In ann f m where
+> class Monad m => In ann f m where
 >   inA :: f (FixA ann f) -> m (FixA ann f)
 >
-> class (Monad m) => Out ann f m where
+> class Monad m => Out ann f m where
 >   outA :: FixA ann f -> m (f (FixA ann f)) 
 
 The functor~|f| is added as a class parameter, so that we can impose
@@ -498,7 +498,7 @@ using the modification time annotation simply by specializing its type
 accordingly. The construction of the tree has to take place in the |IO|
 monad:
 \begin{verbatim}
-ghci> myTree_a :: IO (TreeD Int Int)
+ghci> myTree_a :: IO (TreeM Int Int)
 {M 236807 (Branch 3 9
   {M 236755 (Branch 1 1
     {M 236688 Leaf}
@@ -620,7 +620,6 @@ No need to show two annotated trees in figures ...
 
 \subsection{Summary}
 
-\andres{Look at this summary again.}
 In this section, we have introduced annotated fixed points. We have discussed
 how to abstract from the creation and removal of annotations by means of the
 |In| and |Out| type classes. We have also introduced two example annotations,
