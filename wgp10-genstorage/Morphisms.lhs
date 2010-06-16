@@ -192,46 +192,38 @@ constructing new annotated values is associated with effects.
 
 We therefore define a new recursion pattern for modifiers such as |insert|.
 However, we need some additional utilities for this pattern that we
-define first.\andres{Add pointers.}
+define first.\andres{Add pointers; rephrase.}
 
 \subsection{Partially annotated structures}
-\todo{maybe introduce this when needed}
 
-We define an additional type that represents a recursive structure of which the
-top contains no annotations but the sub structures are fully annotated. The
-unannotated top may contain multiple levels. The |FixBotA| type uses the fixed
-point combinator with in combination with a sum type:
+Let us capture the idea of building some layers of a recursive structure
+in a pure, annotation-agnostic way, while still being able to reuse parts
+of an annotated structure that we have available already.
 
-> type FixBotA a f = Fix (f :+: K (FixA a f))
+To this end, we introduce an \emph{annotation transformer} called |Partial|.
+Given an annotation |ann|, we can either choose to use a complete annotated
+subtree, or create a new unannotated layer:
 
-where:
+> data Partial ann f a  =  New  (f a)
+>                       |  Old  (FixA ann f)
 
-> newtype K f a = K { unK :: f }
-> data (f :+: g) a = L (f a) | R (g a)
+We define an abbreviation for partially annotated structures:
 
-%if False
+> type FixPartialA ann f = FixA (Partial ann) f
 
-> infixl 6 :+:
+Using the function |topIn|, we can complete the missing annotations at the
+top of a partially annotated structure:
 
-%endif
-
-The left part of the sum represents an unannotated top node, the right part of
-the sum contains a fully annotated bottom structure. The constant functor |K|
-is used to ignore the incoming type index that the fixed point combinator
-supplies, which stops the recursion and ensures there are no unannotated nodes
-in a sub-structure of an annotated node.
-
-A helper function |topIn| can be used to wrap the unannotated top part of a
-|FixBotA| structure in fresh annotations and build a fully annotated structure:
-
-> topIn :: (Traversable f, In a f m) => FixBotA a f -> m (FixA a f)
-> topIn = sum  (inA <=< mapM topIn)
->              (return . unK) . out
->   where  sum f _  (L  l)  = f  l
->          sum _ g  (R  r)  = g  r
-
+> topIn ::  (In ann f m, Monad m, Traversable f) =>
+>           FixPartialA ann f -> m (FixA ann f)
+> topIn = topIn' . out
+>   where  topIn' (New  x) = (inA <=< mapM topIn) x
+>          topIn' (Old  x) = return x
 
 %if False
+
+> {-
+
 \subsection{Destructing with paramorphisms}
 
 \andres[inline]{My first intuition is that we should explain the step from
@@ -451,9 +443,11 @@ the apomorphism by using the identity annotation in the identity monad:
 > apo :: Traversable f => CoalgA Id1 f s -> s -> Fix f
 > apo phi = runIdentity . fullyOut . runIdentity . apoA' phi
 
+> -}
+
 %endif
 
-\subsection{Modification with endomorphisms}
+\subsection{Modification functions}
 \label{sec:modification}
 
 Paramorphisms are used to create consumers, apomorphisms are used to
