@@ -22,7 +22,7 @@
 > import Control.Monad hiding (mapM, (<=<))
 > import Data.Foldable
 > import Data.Traversable
-> import Fixpoints hiding (Algebra, cata, lookup, Coalgebra, fromList)
+> import Fixpoints hiding (Algebra, cata, lookup, Coalgebra, fromList, insertAlg)
 
 %endif
 
@@ -450,120 +450,112 @@ the apomorphism by using the identity annotation in the identity monad:
 \subsection{Modification functions}
 \label{sec:modification}
 
-Paramorphisms are used to create consumers, apomorphisms are used to
-create producers. These functions hide the destruction and construction
-of recursive values, and, in our case, the unwrapping and wrapping of
-annotations from the user of these patterns. However, what about functions
-that both consume and produce a recursive structure? Because we want to
-abstract from all constructor and destructor applications, we cannot
-express such modification functions using the recursion patterns discussed
-so far. In this section, we introduce an
-\emph{endomorphic apomorphism}\andres{Think about a better name}
-and use this pattern to define modification operations such as the
-insertion of a new key-value pair into an given binary search tree.
+By employing the partially annotated structures, we can now introduce
+a variant of the apomorphism that modifies a given structure.
 
 As a preparation, we define a type class~|OutIn| that combines the functionality
 of the |Out| and |In| classes: using the class method |outInA|,
 an annotated node is unwrapped, modified, and finally re-wrapped:
 
-> class (Out a f m, In a f m) => OutIn a f m where
->   outInA  ::   (  f  (FixA a f) -> m (   f  (FixA a f)))
->           ->         (FixA a f) -> m        (FixA a f)
+> class (Out ann f m, In ann f m) => OutIn ann f m where
+>   outInA  ::   (  f  (FixA ann f) -> m (   f  (FixA ann f)))
+>           ->         (FixA ann f) -> m        (FixA ann f)
 >   outInA f = inA <=< f <=< outA
 
-We require both |Out| and |In| as superclasses of |OutIn|. Given the |outA|
-and |inA| methods, we can supply a default implementation for |outInA|.
-This default implementation is useful for some
-annotation types, such as the identity and debug annotation.
-Some other annotation types might profit from a custom implementation.\andres{Do
-we have an example for this?}
+We require both |Out| and |In| as superclasses of |OutIn|. Given the |outA| and
+|inA| methods, we supply a default implementation for |outInA|.
+For all the annotations we have been using so far, the default implementation
+is sufficient:
 
-For the debug annotation, we use the default implementation:
+> instance  OutIn Id1 f Identity
+> instance  OutIn ModTime f IO
+> instance  (Functor f, Show (f ())) => OutIn Debug f IO
 
-> instance  (Traversable f, Show (f ()))
->       =>  OutIn Debug f IO
+For some annotation types (such as the |Heap|
+annotation we use in Section~\ref{sec:storage}), we can give an improved direct
+definition.
 
-In order to write modification functions in an annotation-agnostic way, we
-define an additional recursion pattern: the \emph{endomorphic apomorphism}
-takes as seed value a recursive structure with the same type as the structure
-to produce.
-
-The algebra type for this pattern takes as input seed a node with fully
-annotated substructures and produces either a new seed with slightly modified
-type |FixA a f|, or a final recursive structure, possibly with a yet
-unannotated top:
-
-> data EndoA  (a  :: (  * -> *) -> * -> *  )
->             (f  ::    * -> *             ) where
->   PhiE :: (f (FixA a f) -> f (Either (FixA a f) (FixBotA a f))) -> EndoA a f
-
-Because the input has type |f (Fix a f)| and the output has a
-slightly different type |FixA a f|, we cannot just reuse the |CoalgA| type.%
-\andres{perhaps we should remove this sentence}
-
-Once more, we define a derived type that hides the annotation variable:
-
-> type Endo f = forall a. EndoA a f
-
-The modifier pattern has a structure similar to that of the regular
-apomorphism. The main difference is the use of the |outInA| from the |OutIn|
-type class to unwrap the incoming structure, apply the supplied coalgebra, and
-wrap the result in an annotation:
-
-> endoA  ::  (Traversable f, OutIn a f m)
->        =>  EndoA a f -> FixA a f -> m (FixA a f)
-> endoA (PhiE phi) = outInA $
->   mapM (endoA (PhiE phi) `either` topIn) . phi
-
-The endo-algebras that drive the modification operations have significant
-choice regarding their output:
+We can now define a variant of the apomorphisms for modification functions
+that is different from the normal apomorphism in the following ways:
 \begin{itemize}
-\item A new seed can be produced to drive the next recursive step, by
-choosing the left part of the sum type in the result of |EndoA|. We
-define the helper function |next| to give a more meaningful name to
-the operation:
+\item the type of the seed is restricted to be a value of the recursive
+  structure itself;
+\item instead of stopping the recursion by returning a fully annotated tree,
+  we allow to stop with a partially annotated tree.
+\end{itemize}
+We give both the old and the new coalgebra type for comparison:
 
-> next :: FixA a f -> Either (FixA a f) (FixBotA a f)
+> type ApoCoalgebraA'      ann f s  =
+>   s               ->  f (Either s             (FixA ann f))
+>
+> type EndoApoCoalgebraA   ann f    =
+>   f (FixA ann f)  ->  f (Either (FixA ann f)  (FixPartialA ann f))
+
+The associated recursion looks as follows:
+
+> endoApoA ::  (OutIn ann f m, Monad m, Traversable f) =>
+>              EndoApoCoalgebraA ann f -> FixA ann f -> m (FixA ann f)
+> endoApoA psi = outInA $ mapM endoApoA' . psi
+>   where  endoApoA' (Left   l)  =  endoApoA psi l
+>          endoApoA' (Right  r)  =  topIn r
+
+Compared to the regular apomorphism, we use |outInA| because we now
+work with the same source and target structure, and we use |topIn|
+to create the missing annotations when we stop the recursion.
+
+When defining a coalgebra for use with |endoApoA|, we now effectively
+have the choice between the following three actions per recursive
+position: 
+\begin{itemize}
+\item We can produce a new seed to drive the next recursive step,
+  by selecting the left part of the sum type in the result of the
+  coalgebra. We define a helper function with the more meaningful
+  name~|next| for this choice:
+
+> next :: FixA ann f -> Either (FixA ann f) (FixPartialA ann f)
 > next = Left
 
-\item A fully annotated part of the input can be used as the
-final output. We use the helper function |stop| for this purpose:
+\item We can reuse a fully annotated part of the input as output,
+  stopping the recursion at this point.
+  We define the helper function |stop| for this purpose:
 
-> stop :: FixA a f -> Either (FixA a f) (FixBotA a f)
-> stop = Right . In . R . K
+> stop :: FixA ann f -> Either (FixA ann f) (FixPartialA ann f)
+> stop = Right . In . Old
 
-\item Finally, one or more levels of new nodes can be created, using
-the helper function |make|, which takes a structure of type |FixBotA a f|
-as its argument:
+\item Finally, we can create one or more layers of new nodes, by using
+the helper function |make|, which takes a partially annotated
+structure as its argument:
 
-> make :: f (FixBotA a f) -> Either (FixA a f) (FixBotA a f)
-> make = Right . In . L
+> make :: f (FixPartialA ann f) -> Either (FixA ann f) (FixPartialA ann f)
+> make = Right . In . New
 
 \end{itemize}
 
-Using the helper functions, we can now give an example of
-a modifier: a function to insert a new key-value pair into a binary search
+We can now return to our example, the |insert| function on binary search
+trees. Unfortunately, we cannot quite reuse the original coalgebra we have
+given in Section~\ref{sec:simplerecpat}. We have to be more explicit about
+where we reuse old parts the tree, and where we create new parts of the
 tree:
 
-> insertEndo :: Ord k => k -> v -> EndoA a (TreeF k v)
-> insertEndo k v = PhiE $ \s ->
->   case s of
->     Leaf -> Branch k v (make Leaf) (make Leaf)
->     Branch m w l r  ->
->       case k `compare` m of
->         LT  -> Branch m w (next  l) (stop  r)
->         _   -> Branch m w (stop  l) (next  r)
+> insertAlg ::  Ord k =>
+>               k -> v -> EndoApoCoalgebraA ann (TreeF k v)
+> insertAlg k v Leaf =
+>   Branch k v (make Leaf) (make Leaf)
+> insertAlg k v (Branch n x l r)
+>       case k `compare` n of
+>         LT  -> Branch n x (next  l) (stop  r)
+>         _   -> Branch n x (stop  l) (next  r)
 
-The structure of the |insertEndo| function is similar to that of the |insert|
-function from Section~\ref{sec:fixpoints}. At the positions that the original
-|insert| goes into recursion, we now call |next|. Trees are created using
-either |make| or |stop|.
+The differences are relatively minor:
+We can still define |insertAlg| as a pure function, and annotation-agnostic.
+We no longer have to pattern match on parts of the recursive structure,
+because we use the endo-apomorphism now. And we can still get the original
+behaviour back, by specializing to the identity annotation and the identity
+monad.
 
-We run the |insertEndo| algebra by passing it to |endoA|:
+We run |insertAlg| by passing it to |endoApoA|:
 
-> insert  ::  (Ord k, OutIn a (TreeF k v) m)
->         =>  k -> v -> TreeA a k v -> m (TreeA a k v)
-> insert k v = endoA (insertEndo k v)
+> insert k v = endoApoA (insertAlg k v)
 
 \subsection{Summary}
 
