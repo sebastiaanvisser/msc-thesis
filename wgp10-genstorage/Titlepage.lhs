@@ -15,8 +15,8 @@
 \maketitle
 
 \begin{abstract}
-We present a framework to define data structures that can be used on disk.
-The structure resides in a heap in a file on the disk. Operations
+We present a framework for constructing functional data structures that can be stored on disk.
+The data structures reside in a heap saved in a binary file. Operations
 read and write only the parts of the data structure that are actually
 needed. The framework is based on expressing datatypes as fixed points
 of functors and then annotating the recursive positions with additional

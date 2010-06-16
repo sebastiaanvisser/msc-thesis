@@ -19,7 +19,6 @@ both the definitions of the datatypes and the definitions of the operations.
 The operations abstract away from recursion using recursion patterns like the
 catamorphism and the anamorphism. The algebras used as a description for the
 recursions operations remain pure and annotation agnostic.
-
 Working with persistent data structures is not very different from working with
 normal data structures, although all operations need to be lifted to the
 monadic |Heap| context.
