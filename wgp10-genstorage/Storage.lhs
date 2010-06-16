@@ -23,8 +23,6 @@
 \section{Persistent data structures}
 \label{sec:storage}
 
-\todo[inline]{Intro: In section ? we have X and in section ? we have Y and now we combine.}
-
 In the previous section, we have chosen to define the |Ptr| datatype with
 \emph{two} type parameters -- a functor of kind~|* -> *| and an explicit
 index of kind~|*|. Due to this design decision, the pointer type becomes
@@ -154,7 +152,10 @@ ghci> run "squares.db" (consume (lookupP 3))
 Just 9
 \end{verbatim}
 
-\todo[inline]{explain what happens}
+The database file is opened and the root pointer is read from the null block.
+The root pointer references a persistent binary tree that is passed to the
+|lookupP| function that, node by node, traverses the three until the key is
+found and the value can be returned.
 
 \subsection{Persistent modification}
 
@@ -176,9 +177,8 @@ write <=< f <=< read
 Instead, we replace |read| by |fetch|. As explained in Section~\ref{sec:heap},
 |fetch| immediately frees a block after reading it. By using |fetch| instead
 of |read|, we get the effect that all modifications to the persistent data
-structure are \emph{in-place}.\todo{only usable when being lazy}\andres{Also,
-I don't believe it. This only works if the updates are structure-preserving
-as well, so we should be a bit more careful here.}
+structure are \emph{mutable} operations. After a modification finishes the old
+structure is no longer available.
 
 With the |OutIn| instance we can now also specialize modification functions
 such as |insert| to work on the persistent storage:
@@ -203,10 +203,23 @@ ghci> run "squares.db" (consume (lookupP 9))
 Just 81
 \end{verbatim}
 
-Using this building blocks we... \todo{blablabl}
+This is an interesting example because it shows three consecutive runs on the
+same database file. The second run modifies the binary tree on disk and stores
+the new root pointer in the null block. A lookup in the third command shows us
+the database file is updated.
 
-Appendix a shows an example program.\andres{Should go to intro, and perhaps
-be referred to from here.}
+\subsection{Summary}
 
-\andres[inline]{Some summary should go here.}
+This section we have combined the annotated recursion patterns and the basic
+heap operations to derive persistent data structures. By annotating the
+recursive datatypes with a pointer annotation we are able to store individual
+non-recursive nodes on their own block on the heap. The |Out| and |In|
+instances for the pointer type class |read| nodes from and |write| nodes to the
+blocks on disk.
+
+The operations on persistent data structures are applied to the file based
+storage heap in the same way they are normally applied to the in-memory heap.
+By writing data structures as pattern functors and by abstracting away from the
+recursion we can annotate the behaviour generically. There is no need to
+reflect over memory layout of the compiler runtime.
 
