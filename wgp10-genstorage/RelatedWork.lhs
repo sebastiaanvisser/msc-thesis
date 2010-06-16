@@ -235,9 +235,9 @@ technically behave as impure code.  Kiselyov \cite{iteratee} describes
 iteratee-based IO
 as a solution for the lazy IO problem. Until now their approach has
 only been shown useful for linear IO system, like processing a file line by
-line. Iterators have a structure similar to algebras for list catamorphisms,
-whether their approach is extensible to different functor types is still a
-topic of active research.\andres{Is it? References? Backup?}
+line. Iterators have a structure similar to algebras for list catamorphisms, it
+is not sure whether the iteratee approach is extensible to different functor
+types, like the tree base functor.
 
 \subsection{Persistent storage in Clean}
 
