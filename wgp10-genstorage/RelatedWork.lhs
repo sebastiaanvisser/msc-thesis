@@ -202,6 +202,8 @@ approach practically usable we need full sharing between different versions of
 the data structures and need a garbage collector to clean up versions that are
 no longer used.
 
+\section{Related work}
+
 \subsection{Generic programming with fixed points}
 
 Generic programming with fixed points is a well-explored area, both for regular
