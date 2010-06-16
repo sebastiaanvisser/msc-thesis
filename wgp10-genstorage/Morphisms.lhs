@@ -146,6 +146,39 @@ The definition
 
 is equivalent to the old |myTree_a|.
 
+\subsection{Apomorphism}
+
+The situation for the apomorphism is a bit different, because
+the fixed point combinator occurs in the type of coalgebras:
+
+> type ApoCoalgebra f s = s -> f (Either s (Fix f))
+
+In a first step, we are changing the coalgebra type to use |FixA|
+instead:
+
+> type ApoCoalgebraA ann f s = s -> f (Either s (FixA ann f))
+
+Whe can now define |apoA|:
+
+> apoA ::  (In ann f m, Monad m, Traversable f) =>
+>          ApoCoalgebraA ann f s -> s -> m (FixA ann f)
+> apoA psi = inA <=< mapM apoA' <=< return . psi
+>   where  apoA' (Left   l)  =  apoA psi l
+>          apoA' (Right  r)  =  return r
+
+However, we unfortunately cannot directly use |apoA| to lift |insert|
+to work on annotated binary search trees. The reason is that a modification
+function such as |insert| both destructs and constructs a tree. If we want
+to use an annotated binary search tree as seed for the apomorphism, we have
+to destruct it in the coalgebra in order to pattern match -- but we cannot,
+because destructing is associated with effects. Furthermore, we create new
+leaves when inserting key-value pairs -- but again, we cannot, because
+constructing new annotated values is associated with effects.
+
+We therefore define a new recursion pattern for modifiers such as |insert|.
+However, we need some additional utilities for this pattern that we
+define first.\andres{Add pointers.}
+
 %if False
 \subsection{Destructing with paramorphisms}
 
@@ -312,9 +345,9 @@ in order to produce an entire recursive structure. Wherever the coalgebra
 produces a new seed value inside a node, the |apoA| function recursively
 continues the construction.
 
-> apoA :: (Traversable f, In a f m) => CoalgA a f s -> s -> m (FixA a f)
-> apoA (Phi p)  =    inA
->               <=<  mapM (apoA (Phi p) `either` topIn) . p
+> apoA' :: (Traversable f, In a f m) => CoalgA a f s -> s -> m (FixA a f)
+> apoA' (Phi p)  =    inA
+>               <=<  mapM (apoA' (Phi p) `either` topIn) . p
 
 As an example, we define a coalgebra |fromSortedListCoalg| that creates
 a binary search tree from a sorted list of key-value pairs. If the input is an
@@ -337,7 +370,7 @@ to establish the precondition of~|fromSortedListCoalg|.
 
 > fromList'  ::  (In a (TreeF k v) m, Ord k)
 >            =>  [(k, v)] -> m (FixA a (TreeF k v))
-> fromList'  =   apoA fromSortedListCoalg
+> fromList'  =   apoA' fromSortedListCoalg
 >            .   sortBy (comparing fst)
 
 Once again, the functions are written in a pure style. However, we can
@@ -365,7 +398,7 @@ As for the paramorphism, we can also create a pure, unannotated variant of
 the apomorphism by using the identity annotation in the identity monad:
 
 > apo :: Traversable f => CoalgA Id1 f s -> s -> Fix f
-> apo phi = runIdentity . fullyOut . runIdentity . apoA phi
+> apo phi = runIdentity . fullyOut . runIdentity . apoA' phi
 
 %endif
 

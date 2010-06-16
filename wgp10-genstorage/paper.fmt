@@ -53,9 +53,13 @@
 %format Phi                 = "\Conid{\Phi}"
 %format Phi                 = "\ensuremath{\Phi}"
 %format apoA                = "\Varid{apo_\alpha}"
+%format apoA'
 %format PhiE                = "\ensuremath{\Phi_e}"
 %format EndoA               = "\Conid{Endo_\alpha}"
 %format endoA               = "\Varid{endo_\alpha}"
+%format phi                 = "\Varid{\phi}"
+%format psi                 = "\Varid{\psi}"
+%format ApoCoalgebraA       = "\Conid{ApoCoalgebra_\alpha}"
 
 %format rr                  = "\Varid{\textbf{\textit{r}}}"
 

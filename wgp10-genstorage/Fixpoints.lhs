@@ -284,8 +284,8 @@ anamorphism, and the dual concept of a paramorphism~\cite{paras}.
 >
 > apo :: Functor f => ApoCoalgebra f s -> s -> Fix f
 > apo psi = In . fmap apo' . psi
->   where apo' (Left   l)  =  apo psi l
->         apo' (Right  r)  =  r
+>   where  apo' (Left   l)  =  apo psi l
+>          apo' (Right  r)  =  r
 
 Where the coalgebra for anamorphisms generates a functor with new seeds
 from a single seed, we can now decide at every recursive position whether
