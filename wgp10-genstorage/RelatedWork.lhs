@@ -28,7 +28,7 @@
 
 %endif
 
-\section{Discussion and future work}
+\section{Discussion and future work}\label{sec:discussion}
 
 In this section, we discuss some subtle points of our approach. We also
 point out current shortcomings and topics for future work.
@@ -204,7 +204,7 @@ no longer used.
 
 % -----------------------------------------------------------------------------
 
-\section{Related work}
+\section{Related work}\label{sec:relatedwork}
 
 \subsection{Generic programming with fixed points}
 

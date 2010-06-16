@@ -18,7 +18,7 @@
 
 %endif
 
-\section{Conclusion}
+\section{Conclusion}\label{sec:conclusion}
 
 \appendix
 
