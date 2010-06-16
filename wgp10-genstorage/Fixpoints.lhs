@@ -65,10 +65,8 @@ An example tree, also shown in Figure~\ref{fig:binarytree}, can be
 defined as follows:
 
 > myTree :: Tree1 Int Int
-> myTree = Branch1 3 9  (Branch1 1 1   Leaf1
->                                      Leaf1) 
->                       (Branch1 4 16  (Branch1 7 49  Leaf1
->                                                     Leaf1)
+> myTree = Branch1 3 9  (Branch1 1 1   Leaf1 Leaf1) 
+>                       (Branch1 4 16  (Branch1 7 49  Leaf1 Leaf1)
 >                                      Leaf1)
 
 \begin{figure}[tp]
