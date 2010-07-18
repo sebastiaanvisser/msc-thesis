@@ -28,7 +28,6 @@
 
 %endif
 
-\enlargethispage*{2\baselineskip}%
 \section{Discussion and future work}\label{sec:discussion}
 
 In this section, we discuss some subtleties of our approach. We also
@@ -50,7 +49,7 @@ As an example, recall the |lookup| function on binary search trees as
 discussed in Section~\ref{sec:catamorphisms}.
 Used with the identity annotation, the operation performs an in-memory
 lookup, traversing one path in the tree from the root to a leaf. If the tree
-is properly balanced, this corresponds to a runtime of $O(\log n)$ where
+is properly balanced, this corresponds to a runtime of $\mathrm{O}(\log n)$ where
 $n$ is the size of the tree.
 However, if used with the pointer annotation from
 Section~\ref{sec:storage},
@@ -59,7 +58,6 @@ strict, because the underlying |IO| monad is strict. The strict bind operator fo
 monad makes the |lookupP| operation traverse the entire tree, i.e., to run in
 $\Theta(n)$. The same happens if we use the modification time or debug annotation.
 
-\enlargethispage*{2\baselineskip}%
 Two possible solutions for this problem come to mind:
 \begin{itemize}
 \item We can let algebras be monadic. The recursion
@@ -67,7 +65,7 @@ patterns then pass computations rather than precomputed results to the
 algebras. It becomes the responsibility of the
 algebra implementor to explicitly evaluate the inputs that are
 needed.
-\item We can try to ensure that the operations in a \emph{lazy monadic context}.
+\item We can try to ensure that the operations run in a \emph{lazy monadic context}.
 When the context is lazy, the entire operations becomes lazy while the
 algebras remain pure.
 % We thus have to find a way to regain laziness in
@@ -134,7 +132,6 @@ values of consumer operations to ensure all side-effects stay within the |Heap|
 context and cannot escape. Our operations are now lazy on the inside but appear
 strict on the outside.
 
-\enlargethispage*{2\baselineskip}%
 \subsection{Other data structures}
 
 We have shown how to build a generic storage framework for recursive data
@@ -157,7 +154,7 @@ but no code reuse is directly possible due to the more complicated kinds
 in the higher-order situation.
 
 A more in depth report about persistent indexed datatypes can be found is
-provided by Visser~\cite{sebas}. He shows how represent finger
+provided by Visser~\cite{sebas}. He shows how to represent finger
 trees~\cite{fingertree}, a nested
 data structure supporting efficient lookup and concatenation, as an indexed
 GADT and use the higher-order storage framework to derive a persistent finger
@@ -172,7 +169,7 @@ framework, but because sharing in Haskell is not observable, shared substructure
 will be duplicated in the heap. Storing shared values more than once can be a
 serious space leak for datatypes that heavily rely on sharing.
 
-Solution has been proposed to make sharing in Haskell observable \cite{sharing,
+Solutions have been proposed to make sharing in Haskell observable \cite{sharing,
 reify}. These solutions are often not very elegant, because they require some
 form of reflection on the internal machinery of the compiler runtime.
 
@@ -212,7 +209,6 @@ no longer used.
 
 % -----------------------------------------------------------------------------
 
-\enlargethispage*{2\baselineskip}%
 \section{Related work}\label{sec:relatedwork}
 
 \subsection{Generic programming with fixed points}
@@ -220,10 +216,11 @@ no longer used.
 The idea of using fixed points and recursion patterns to express datatypes
 and operations on such datatypes is well-explored~\cite{bananas, genintro, polyp}.
 While the original motivation for taking this view was mainly to derive algorithms
-generically or calculate laws -- such as fusion laws for optimisation purposed,
+generically or calculate laws -- such as fusion laws for optimisation purposes,
 fixed-point representations have also been used to modify datatypes in various
-ways. A few examples:
+ways. 
 
+A few examples:
 Garrigue~\cite{garrigue} shows how writing datatypes in an open way enables
 adding extra functionality at a later point. Swierstra~\cite{alacarte} presents
 a very polished approach to a similar problem tailored to Haskell. The Zipper
@@ -253,7 +250,7 @@ types, like the tree base functor.
 
 \subsection{Persistent storage in Clean}
 
-In their paper \emph{Efficient and Type-Safe Generic Data Storage} Smetsers,
+In their paper \emph{Efficient and Type-Safe Generic Data Storage}, Smetsers,
 Van Weelden and Plasmeijer~\cite{clean} describe a generic storage framework
 for the programming language Clean. Similar to our storage framework, they aim
 at generically mapping functional data structures to a persistent storage on
@@ -266,7 +263,7 @@ The major difference between their approach and ours is that they do not slice
 the data structure at the recursive points, but at the points where the actual
 element values are stored. This means that
 every record value is stored in its own
-chunk, while they entire data structure itself is stored in one single chunk.
+chunk, while the entire data structure itself is stored in one single chunk.
 Updates of individual record values can now be performed efficiently without
 touching the entire collection, but for every structural change to the
 collection the chunk containing the data structure itself (the

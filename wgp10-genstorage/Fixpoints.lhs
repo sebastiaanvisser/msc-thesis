@@ -197,7 +197,7 @@ GHC can derive this instance automatically.}
 
 \paragraph{Catamorphism}
 
-A \emph{catamorphism} is a recursion pattern that traverses a value
+A \emph{catamorphism} is a recursion pattern that consumes a value
 of a given data structure systematically. It is a generalization of
 Haskell's |foldr| function to other datatypes:
 
@@ -267,7 +267,7 @@ recursive calls, as those are handled by |ana| now:
 \paragraph{Apomorphism}
 
 Let us recall the function |insert|. When we are in a branch of the tree,
-we compare the stored with the given key. Depending on the outcome, we
+we compare the stored key with the given key. Depending on the outcome, we
 continue inserting into one subtree, but want to keep the other subtree
 unchanged. While it is possible to coerce |insert| into both the catamorphism
 and the anamorphism pattern, neither pattern is a very good fit.
@@ -380,7 +380,7 @@ to data that is stored on disk. Reading and writing to disk are effectful
 operations. Therefore, we allow the creation and removal of annotations to
 be associated with a monadic context.
 
-We now define a type class |In| and |Out| that generalize the |In| and
+We now define type classes |In| and |Out| that generalize the |In| and
 |out| operations on fixed points to the annotated scenario. The method~|inA|
 wraps a functor with fully annotated substructures and adds a new
 annotation. The |outA| method unwraps an annotated node, exposing the
@@ -417,7 +417,7 @@ binary search tree datatype:
 > branchA k v l r = inA (Branch k v l r)
 
 The |leafA| and |branchA| smart constructors can be used to build up annotated
-binary search tree for an arbitrary annotation type |ann|. However, since the annotation type
+binary search trees for an arbitrary annotation type~|ann|. However, since the annotation type
 is associated with a monadic context, we now have to build our example tree
 in monadic style:
 
@@ -429,7 +429,7 @@ in monadic style:
 >       f  <- branchA 4 16  d  l
 >       branchA 3 9 e f
 
-Note the type of |myTree_a|: The value is overloaded on the annotation~|ann|,
+Note the type of |myTree_a|: the value is overloaded on the annotation~|ann|,
 so we can use it with different annotations later.
 
 \subsection{Example annotation: modification time}
@@ -457,7 +457,7 @@ The following definition derives a non-record version of Show:
 
 %endif
 
-In order to use the annotation, we have to define instances of both th
+In order to use the annotation, we have to define instances of both the
 |In| and |Out| classes, and thereby specify the behaviour associated with
 creating and removing the annotation. In our case, we want to store the
 current time when creating the annotation, but do nothing further

@@ -44,7 +44,7 @@ An example layout of the heap is shown in Figure~\ref{fig:heap}.
 \end{center}
 \caption{A snippet of a heap structure containing four blocks of which two
 block are in use and contain a payload. The blocks are placed next to each
-other. An in-memory allocation map is used to map payload sizes to free block
+other. An in-memory allocation map is used to map payload sizes to free
 blocks of data.}
 \label{fig:heap}
 \end{figure}
@@ -73,10 +73,10 @@ data structure we could also have used a single phantom type of kind |*|.
 \subsection{Allocating and freeing}
 
 The |allocate| function can be used to allocate a new block of data that is
-large enough to hold payload of the given size. The |allocate| function can be
-compared to the in-memory |malloc| function from the C language. The function
-returns a pointer to a suitable block on disk.
-The |allocate| functions runs in the |Heap| context that we explain below.
+large enough to hold payload of the given size. The function can be
+compared to the in-memory |malloc| function from the C language. On
+return, |allocate| yields a pointer to a suitable block on disk, in a
+|Heap| context that we explain below.
 
 > type Size  = Integer
 >
@@ -98,16 +98,15 @@ The |allocate| functions runs in the |Heap| context that we explain below.
 %endif
                        
 The heap structure uses an in-memory \emph{allocation map} to track the current
-heap size and all blocks in the heap that are not currently used:
+heap size and all blocks that are not currently used:
 
 > data AllocMap = AllocMap  {  heapsize  ::  Size
->                           ,  unused    ::  Map Size [Offset]
->                           }
+>                           ,  unused    ::  Map Size [Offset] }
 
-The allocation map is a finite mapping from size to a list of
+The allocation map is a finite map from a size to a list of
 offsets. The offsets represent blocks that have a payload of exactly the size
 they are related to. By maintaining an in-memory allocation map the allocation
-operations can efficiently find free blocks of data, without any disk-access.
+operations can efficiently find free blocks of data, without any disk access.
 When a program requests a block of data with a payload that is bigger than can
 be found in the allocation map, a new block is allocated at the end of the
 heap file.
@@ -159,14 +158,15 @@ payload of the block:
 To produce a binary serialization of a Haskell value, the |Binary|
 type class is used~\cite{databinary}. The class interface is shown in
 Figure~\ref{fig:binaryclass}.
-The |put| method serializes a value to a binary stream
-value to a binary stream, whereas |get| deserializes a binary stream back to a
+The |put| method serializes a value to a binary stream,
+whereas |get| deserializes a binary stream back to a
 Haskell value.\footnote{Both |Get| and |Put| are monads defined in the |Binary|
 class. The details are not relevant for our purposes here.
 Using the @regular@~\cite{jpm} library for generic
-programming with regular datatypes, we have created a generic function that can
-be used to automatically derive |Binary| instances for a large class of Haskell
-datatypes.} The |update| function itself is \emph{unsafe}: if the binary
+programming, we have created a generic function that can
+be used to automatically derive |Binary| instances for Haskell
+datatypes that are regular.}
+The |update| function itself is \emph{unsafe}: if the binary
 serialization of the value is larger than the block payload, the function
 cannot store the entire value. We solve the problem by wrapping the unsafe
 |update| operation in a safe |write| function that takes a Haskell value,
@@ -183,7 +183,7 @@ return the value:
 > read   ::  Binary (f a) => Ptr f a -> Heap (f a)
 > fetch  ::  Binary (f a) => Ptr f a -> Heap (f a)
 
-The |read| function leaves the original block intact, whereas the |fetch|
+The |read| function leaves the original block intact, whereas |fetch|
 frees the block after reading the data.
 
 The |allocate|, |free| and |update| heap operations are used in the
@@ -216,10 +216,10 @@ map. It then applies the heap computations, and closes the heap file in the end.
 
 %endif
 
-In this section, we have described on a very high level a file based heap
-structure that can be used to store arbitrary blocks of binary data on disk.
+In this section, we have sketched the interface of a file based heap
+structure. It can be used to store arbitrary blocks of binary data on disk.
 Access to the data is managed by pointers as offsets into the file. All Haskell
 values that have an instance for the |Binary| type class can automatically be
-marshalled from and to the heap. The structure is low-level and does not assume
+marshalled from and to the heap. The heap structure is low-level and does not assume
 anything about the contents of the individual blocks.
 

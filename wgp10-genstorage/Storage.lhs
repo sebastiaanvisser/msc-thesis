@@ -20,6 +20,16 @@
 
 %endif
 
+\begin{figure*}[pt]
+\begin{center}
+\includegraphics[scale=0.3]{img/binarytree-pers.pdf}
+\end{center}
+\caption{A persistent binary tree that lives on the storage heap. Each node is
+stored on its own heap block in binary representation. All substructures are
+referenced by pointer to the file offset.}
+\label{fig:binarytree-pers}
+\end{figure*}
+
 \section{Persistent data structures}
 \label{sec:storage}
 
@@ -42,16 +52,6 @@ stores a binary serialization of a single node of type |TreeF k v (TreeP k v)|.
 The recursive positions of the node contain again pointers to substructures.
 Figure~\ref{fig:binarytree-pers} shows how such a tree looks like.
 
-\begin{figure*}[pt]
-\begin{center}
-\includegraphics[scale=0.3]{img/binarytree-pers.pdf}
-\end{center}
-\caption{A persistent binary tree that lives on the storage heap. Each node is
-stored on its own heap block in binary representation. All substructures are
-referenced by pointer to the file offset.}
-\label{fig:binarytree-pers}
-\end{figure*}
-
 \subsection{Persistent producers and consumers}\label{sec:ppq}
 
 To make the pointer type |Ptr| usable as an annotation, we have to define
@@ -69,7 +69,7 @@ and use the |write| operation as the implementation for |inA|:
 >    where inA = return . In <=< write
 
 To make the two instances work, we need a |Binary| instance for both the fixed
-combinator and the |TreeF| pattern functor. Both instances are shown in
+point combinator and the |TreeF| pattern functor. Both instances are shown in
 Figure~\ref{fig:binary-instances}.
 
 \begin{figure}[pt]
@@ -97,7 +97,7 @@ Figure~\ref{fig:binary-instances}.
 \end{figure}
 
 We can now specialize the |fromList| function from Section~\ref{sec:apomorphisms}
-to use the pointer annotation in the |Heap| context. This yields a operation
+to use the pointer annotation in the |Heap| context. This yields an operation
 that builds a binary search tree \emph{on disk} instead of in application
 memory:
 

@@ -89,7 +89,7 @@ As before, we obtain an actual lookup function by passing the algebra to~|cataA|
 
 > lookup k = cataA (lookupAlg k)
 
-If we have an annotated tree, we can use the function. Let us assume that
+We can use |lookup| once we have an annotated tree. Let us assume that
 @it@ is bound to the result of evaluating |myTree_a| using the modification
 time annotation. The following returns the expected result, but now in the |IO| monad:
 \begin{verbatim}
@@ -173,7 +173,7 @@ instead:
 
 > type ApoCoalgebraA ann f s = s -> f (Either s (FixA ann f))
 
-Whe can now define |apoA|:
+We can now define |apoA|:
 
 > apoA ::  (In ann f m, Monad m, Traversable f) =>
 >          ApoCoalgebraA ann f s -> s -> m (FixA ann f)
