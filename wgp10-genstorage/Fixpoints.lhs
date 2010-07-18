@@ -38,12 +38,8 @@ In this section, we repeat how datatypes can be rewritten as fixed points,
 and algorithms working on such datatypes can be expressed in terms of
 recursion patterns (Sections~\ref{sec:recdata} and \ref{sec:fix}).
 Reexpressing datatypes and algorithms in this style
-grants us fine-grained access to both the structure of the datatypes and
-the behaviour of operations. We make use of that control by introducing
-\emph{annotations} (Section~\ref{sec:annotations}) and discuss examples
-(Sections~\ref{sec:modtime} and \ref{sec:debug}). In the next section,
-we discuss how annotations help us to derive persistent data structures
-generically.
+grants us fine-grained access to the structure of the datatypes, and
+thereby control over the behaviour of operations. 
 
 \subsection{Recursive datatypes}\label{sec:recdata}
 
@@ -61,7 +57,7 @@ are represented by |Leaf1|. We will maintain the binary search tree
 property as an invariant. For simplicity, we will not try to keep the
 tree properly balanced at all times.
 
-An example tree, also shown in Figure~\ref{fig:binarytree}, can be
+An example tree, illustrated in Figure~\ref{fig:binarytree}, can be
 defined as follows:
 
 > myTree :: Tree1 Int Int
@@ -82,8 +78,8 @@ functions that operate on datatypes, these examples follow the structure
 of the datatype closely: they are instances of standard recursion patterns.
 
 First, let us consider the |lookup| function on binary search trees. Given
-a key, the function descends the key. In each branch, it compares the
-argument with the stored key in order to decide what branch to take. If
+a key, the function descends the tree. In each branch, the
+argument is compared to the stored key in order to decide what branch to take. If
 a correct key is found before a leaf is reached, the associated value is
 returned.
 
@@ -128,24 +124,23 @@ Function |lookup1| destructs a tree, whereas |fromList1| builds one. The
 function |insert1| modifies a tree, or destructs one tree while building
 another.
 
-We now show how re-expressing a datatype as a fixed point of a functor
-helps us to make the recursion patterns of the operations explicit.
-
 \subsection{Fixed points}\label{sec:fix}
 
-We will show how abstracting from the recursive positions in a datatype
-changes the situation. For our running example, this means that we move
+We now show how abstracting from the recursive positions in a datatype
+and re-expressing the datatype as a fixed point of a functor
+helps us to make the recursion patterns of the operations explicit.
+For our running example, this means that we move
 from |Tree1| to |TreeF| by adding a parameter~|r|
-that is used whereever |Tree1| makes a recursive call:
+that is used wherever |Tree1| makes a recursive call:
 
-> data TreeF k v rr = Leaf | Branch k v rr rr
+> data TreeF k v r = Leaf | Branch k v r r
 
 The type |TreeF| is also called the \emph{pattern functor} of |Tree|. 
 
 To get our binary search trees back, we have to tie the recursive knot,
 i.e., instantiate the parameter |r| with the recursive call. This job is
 performed by the type-level fixed point combinator |Fix| that takes a
-functor~|f| of kind~|* -> *| and parameterized |f| with its own fixed
+functor~|f| of kind~|* -> *| and parameterizes |f| with its own fixed
 point:
 
 > newtype Fix f = In { out :: f (Fix f) }

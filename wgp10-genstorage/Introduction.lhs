@@ -46,8 +46,8 @@ and on disk.
 
 We identify the three important properties of our framework:
 \begin{enumerate}
-\item \textbf{Flexibility:} The storage system doest not impose a single way to
-structure the data. Both general purpose and domain-specific data structure can
+\item \textbf{Flexibility:} The storage system does not impose a single way to
+structure the data. Both general purpose and domain-specific data structures can
 be stored on disk.
 \item \textbf{Efficiency:} By enabling incremental access to parts of the data
 we allow efficient manipulation of large collections of data.  Algorithms
