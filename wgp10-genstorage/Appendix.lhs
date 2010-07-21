@@ -28,6 +28,11 @@ We encourage writing recursive datatype definitions as pattern functors and
 operations in terms of recursion patterns. Datatypes written
 this way are open to annotation which can be exploited in a variety of ways.
 
+\acks
+
+We thank Chris Eidhof, Tom Lokhorst, Jos\'e Pedro Magalh\~aes and the anonymous
+referees for their helpful remarks.
+
 % \appendix
 %
 % \acks
