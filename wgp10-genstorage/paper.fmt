@@ -1,5 +1,7 @@
 %subst verbatim a       = "\begingroup\par\noindent\small\begin{tabbing}\tt\gobble'n" a "'n\end{tabbing}\endgroup'n"
 %subst verbnl           = "\\'n\tt\gobble "
+%subst keyword a        = "\Keyword{" a "}"
+%subst numeral a        = "\Numeral{" a "}"
 
 %format mempty              = "\mathrel{\emptyset}"
 %format <>                  = "\mathrel{\diamond}"

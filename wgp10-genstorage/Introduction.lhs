@@ -54,7 +54,7 @@ we allow efficient manipulation of large collections of data.  Algorithms
 working on a persistent data structure have the same asymptotic running time as
 their in-memory counterpart.
 \item \textbf{Transparency:} The final interface to the users uses common
-Haskell idioms. Users are not be bothered with the inner workings of the
+Haskell idioms. Users are not bothered with the implementation details of the
 storage system when manipulating persistent data structures.
 \end{enumerate}
 
@@ -63,7 +63,7 @@ illustrate the use of our storage framework:
 
 > build :: IO ()
 > build = run "squares.db" $
->   do  let squares = [(1,1),(3,3),(4,16),(7,49)]
+>   do  let squares = [(1,1),(3,9),(4,16),(7,49)]
 >       produce (fromListP squares)
 >
 > find :: IO ()
@@ -103,7 +103,7 @@ patterns and functions that are defined in terms of these patterns. We show that
 in many cases, we can easily lift algebras written in a pure, annotation-agnostic
 style to work on annotated datatypes.
 
-In order to define an annotation suitable for our generic storage framework,
+In order to use annotations for our generic storage framework,
 we need an on-disk heap structure that can hold blocks of binary data. Such
 a heap is discussed in Section~\ref{sec:heap}. It allows dynamic allocation
 and feeing of blocks on disk, and can grow and shrink on demand. We then

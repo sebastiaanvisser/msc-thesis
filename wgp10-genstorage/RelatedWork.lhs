@@ -153,7 +153,7 @@ constructions described in the paper can be lifted to the more complex scenario,
 but no code reuse is directly possible due to the more complicated kinds
 in the higher-order situation.
 
-A more in depth report about persistent indexed datatypes can be found is
+A more in depth report about persistent indexed datatypes is
 provided by Visser~\cite{sebas}. He shows how to represent finger
 trees~\cite{fingertree}, a nested
 data structure supporting efficient lookup and concatenation, as an indexed

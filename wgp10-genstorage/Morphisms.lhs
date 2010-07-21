@@ -39,8 +39,8 @@ In this section, we therefore have another look at catamorphisms, anamorphisms
 and apomorphisms. We discuss how these recursion patterns have to be adapted so
 that they work with annotated structures.
 
-Using recursion patterns, we can avoid the problems that directly defined
-operations on annotated structures have. As we will see, in many cases we can
+Using recursion patterns, we can avoid the problems that operations defined
+directly on annotated structures have. As we will see, in many cases we can
 reuse the original algebras, written in a pure, annotation-agnostic way. By
 plugging them into the new patterns, we can still run them in a framework that
 performs effectful operations behind the scenes.
@@ -54,7 +54,7 @@ Recall the definition of a catamorphism from Section~\ref{sec:simplerecpat}:
 > cata :: Functor f => Algebra f r -> Fix f -> r
 > cata phi = phi . fmap (cata phi) . out
 
-In order to move to the annotate setting, we replace |out|
+In order to move to the setting of annotations, we replace |out|
 by |outA|; as a consequence, everything becomes monadic,
 so we replace function composition by Kleisli composition;
 finally, we replace |fmap| by |mapM|:

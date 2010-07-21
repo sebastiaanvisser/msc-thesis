@@ -152,7 +152,7 @@ datatype once more that is isomorphic to the original |Tree1| datatype:
 
 Building a binary tree structure for our new |Tree| type requires wrapping
 all constructor applications with an additional application of the |In| constructor
-of the |Fix| datatype. It is thus helpful to define \emph{smart constructors} for
+of the |Fix| datatype. It is thus helpful to define ``smart constructors'' for
 this task:
 
 > leaf :: Tree k v
@@ -385,7 +385,7 @@ We now define type classes |In| and |Out| that generalize the |In| and
 wraps a functor with fully annotated substructures and adds a new
 annotation. The |outA| method unwraps an annotated node, exposing the
 functor with the annotated substructures.
-The results of both operations live in the monad~|m|:
+The results of both operations live in a monad~|m|:
 
 > class Monad m => In ann f m where
 >   inA :: f (FixA ann f) -> m (FixA ann f)

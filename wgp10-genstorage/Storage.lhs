@@ -69,12 +69,7 @@ and use the |write| operation as the implementation for |inA|:
 >    where inA = return . In <=< write
 
 To make the two instances work, we need a |Binary| instance for both the fixed
-point combinator and the |TreeF| pattern functor. Both instances are shown in
-Figure~\ref{fig:binary-instances}.
-
-\begin{figure}[pt]
-\begin{center}
-\texths
+point combinator and the |TreeF| pattern functor:
 
 > instance Binary (f (Fix f)) => Binary (Fix f) where
 >   put (In f) = put f
@@ -90,11 +85,6 @@ Figure~\ref{fig:binary-instances}.
 >              then return Leaf
 >              else liftM4 Branch get get get get
 
-\end{center}
-\caption{The |Binary| instances for the fixed point combinator |Fix| and the
-|TreeF| pattern functor.}
-\label{fig:binary-instances}
-\end{figure}
 
 We can now specialize the |fromList| function from Section~\ref{sec:apomorphisms}
 to use the pointer annotation in the |Heap| context. This yields an operation

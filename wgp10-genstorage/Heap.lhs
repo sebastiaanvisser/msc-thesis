@@ -134,19 +134,6 @@ and it makes use of a state monad to manage the allocation map:
 
 %endif
 
-\begin{figure}[t]
-\begin{center}
-\texths
-
-< class Binary t where
-<   put  :: t -> Put
-<   get  :: Get t
-
-\end{center}
-\caption{The |Binary| type class}
-\label{fig:binaryclass}
-\end{figure}
-
 \subsection{Writing and reading}\label{sec:writeread}
 
 The |update| heap operation takes a heap pointer and a Haskell
@@ -156,8 +143,13 @@ payload of the block:
 > update :: Binary (f a) => Ptr f a -> f a -> Heap ()
 
 To produce a binary serialization of a Haskell value, the |Binary|
-type class is used~\cite{databinary}. The class interface is shown in
-Figure~\ref{fig:binaryclass}.
+type class is used~\cite{databinary}. The interface of the class
+is as follows:
+
+< class Binary t where
+<   put  :: t -> Put
+<   get  :: Get t
+
 The |put| method serializes a value to a binary stream,
 whereas |get| deserializes a binary stream back to a
 Haskell value.\footnote{Both |Get| and |Put| are monads defined in the |Binary|
