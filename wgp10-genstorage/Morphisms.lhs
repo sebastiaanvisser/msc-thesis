@@ -29,21 +29,19 @@
 \section{Annotated recursion patterns}
 \label{sec:patterns}
 
-Writing operations on annotated datatypes directly is inconvenient.  The |inA|
-and |outA| methods have monadic result type, forcing us to use monadic style
-all over the place. Furthermore, if we want to write code that is generic over
-all annotations, we cannot use pattern matching, because we do not know how the
-annotated terms look like.
+It is inconvenient to write operations on annotated datatype directly.
+Since both~|inA| and |outA| are monadic, we are forced to use monadic
+style everywhere. Furthermore, code that is supposed to be generic in
+the annotation type cannot use pattern matching, because nothing is known
+about the shape of the annotation.
 
-In this section, we therefore have another look at catamorphisms, anamorphisms
-and apomorphisms. We discuss how these recursion patterns have to be adapted so
-that they work with annotated structures.
-
-Using recursion patterns, we can avoid the problems that operations defined
-directly on annotated structures have. As we will see, in many cases we can
-reuse the original algebras, written in a pure, annotation-agnostic way. By
-plugging them into the new patterns, we can still run them in a framework that
-performs effectful operations behind the scenes.
+In this section, we show that by using recursion patterns, we can avoid the
+above problems. We demonstrate that catamorphisms, anamorphisms and
+apomorphisms can all be easily adapted to work with annotated structures.
+As we will see, in many cases we can reuse the original algebras, written in a
+pure, annotation-agnostic way. By plugging these algebras into the new patterns,
+they can run in a setting where effectful operations are performed behind
+the scenes.
 
 \subsection{Catamorphism}\label{sec:catamorphisms}
 
@@ -54,7 +52,7 @@ Recall the definition of a catamorphism from Section~\ref{sec:simplerecpat}:
 > cata :: Functor f => Algebra f r -> Fix f -> r
 > cata phi = phi . fmap (cata phi) . out
 
-In order to move to the setting of annotations, we replace |out|
+In order to make the function annotation-ready, we replace |out|
 by |outA|; as a consequence, everything becomes monadic,
 so we replace function composition by Kleisli composition;
 finally, we replace |fmap| by |mapM|:
@@ -65,7 +63,8 @@ finally, we replace |fmap| by |mapM|:
 
 Haskell's |Traversable| type class replaces the |Functor| constraint -- it
 contains the |mapM| method. Note that we use the same |Algebra| type as before,
-and assume pure algebras written in an annotation-agnostic way -- exactly as we
+and assume pure algebras that are 
+defined in an annotation-agnostic way -- exactly as we
 want.
 
 Before we can use |cataA| on an actual datatype such as binary search trees,
@@ -91,7 +90,8 @@ As before, we obtain an actual lookup function by passing the algebra to~|cataA|
 
 We can use |lookup| once we have an annotated tree. Let us assume that
 @it@ is bound to the result of evaluating |myTree_a| using the modification
-time annotation. The following returns the expected result, but now in the |IO| monad:
+time annotation. The following expression
+returns the expected result, but now in the |IO| monad:
 \begin{verbatim}
 ghci> lookup 4 it
 Just 16

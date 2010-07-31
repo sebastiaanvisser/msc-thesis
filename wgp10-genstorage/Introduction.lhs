@@ -20,6 +20,8 @@
 
 \section{Introduction}
 
+\andres{Somewhere in the introduction, we should say that we expect
+single-threaded access.}
 Algebraic datatypes in Haskell provide a powerful way to structure data.
 Recursive datatypes can be used to create functional data structures.
 Unfortunately, when data structures grow too large to fit in application memory
@@ -92,21 +94,26 @@ program, we lift |fromListP|, |lookupP| and |insertP| to manipulate
 a persistent mapping from keys to values implemented as a binary search tree,
 similar to Haskell's @Data.Map@ library~\cite{bintree}.
 
-In Section~\ref{sec:fixpoints}, we repeat the basic idea of expressing
+In Section~\ref{sec:fixpoints}, we summarize the basic and
+well-known idea\andres{Add refs} of expressing
 datatypes as fixed points of their pattern functors, and defining
 functions by instantiating recursion patterns such as catamorphisms
 and anamorphisms. We then show how to
 add annotations to the recursive positions of datatypes (Section~\ref{sec:annotations})
 and how to associate functionality with the creation and removal of annotations.
+The concept of annotations is not really new, but to our knowledge, has not
+been presented systematically before.\andres{Verify.}
 In Section~\ref{sec:patterns}, we discuss how annotations affect recursion
 patterns and functions that are defined in terms of these patterns. We show that,
 in many cases, we can easily lift algebras written in a pure, annotation-agnostic
 style to work on annotated datatypes.
 
-In order to use annotations for our generic storage framework,
-we need an on-disk heap structure that can hold blocks of binary data. Such
-a heap is discussed in Section~\ref{sec:heap}. It allows dynamic allocation
-and feeing of blocks on disk, and can grow and shrink on demand. We then
+Our main contribution is the use of annotations for a generic
+storage framework. For that, we
+need an on-disk heap structure that can hold blocks of binary data
+(Section~\ref{sec:heap}).
+It allows dynamic allocation
+and freeing of blocks on disk, and can grow and shrink on demand. We then
 use pointers as offsets to blocks on the
 storage heap as annotations for the recursive positions of datatypes (Section~\ref{sec:storage}),
 yielding data structures than can be stored on disk. As a

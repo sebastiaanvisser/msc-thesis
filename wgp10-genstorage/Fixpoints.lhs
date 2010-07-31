@@ -57,6 +57,13 @@ are represented by |Leaf1|. We will maintain the binary search tree
 property as an invariant. For simplicity, we will not try to keep the
 tree properly balanced at all times.
 
+\begin{figure}[tp]
+\begin{center}
+\includegraphics[scale=0.35]{img/binarytree.pdf}
+\end{center}
+\caption{An example of a binary tree.}
+\label{fig:binarytree}
+\end{figure}
 An example tree, illustrated in Figure~\ref{fig:binarytree}, can be
 defined as follows:
 
@@ -65,13 +72,6 @@ defined as follows:
 >                       (Branch1 4 16  (Branch1 7 49  Leaf1 Leaf1)
 >                                      Leaf1)
 
-\begin{figure}[tp]
-\begin{center}
-\includegraphics[scale=0.35]{img/binarytree.pdf}
-\end{center}
-\caption{An example of a binary tree.}
-\label{fig:binarytree}
-\end{figure}
 
 We now present some simple operations on binary search trees. As many
 functions that operate on datatypes, these examples follow the structure
