@@ -17,6 +17,9 @@
 % For indentation in verbatim blocks:
 \newcommand\gobble[1]{\hspace*{\mathindent}}
 
+% Smaller code blocks:
+\renewcommand\hscodestyle\small
+
 % Font selection:
 \let\Varid\mathsf
 \let\Conid\mathsf
