@@ -491,7 +491,7 @@ using the modification time annotation simply by specializing its type
 accordingly. The construction of the tree has to take place in the |IO|
 monad:
 \begin{verbatim}
-ghci> myTree_a :: IO (TreeM Int Int)
+ghci> myTree_M <- myTree_a :: IO (TreeM Int Int)
 {M 236807 (Branch 3 9
   {M 236755 (Branch 1 1
     {M 236688 Leaf}
@@ -505,7 +505,8 @@ ghci> myTree_a :: IO (TreeM Int Int)
 For readability, we have cropped the modification times to the microseconds,
 reformatted the output slightly to resemble the tree structure, and used a custom
 |Show| instance for |Fix| that uses curly braces for the |In|
-constructor. The tree is also shown schematically in Figure~\ref{fig:binarytreeann}.
+constructor. The tree is shown schematically in Figure~\ref{fig:binarytreeann}.
+We bind the result of the computation to @myTree_D@ for later reuse.
 
 The last modification times of all the leaves are the same, because
 we share the result of one call to |leafA| in the definition of |myTree_a|. We
@@ -587,7 +588,7 @@ to be printed:
 
 %endif
 \begin{verbatim}
-ghci> myTree_a :: IO (TreeD Int Int)
+ghci> myTree_D <- myTree_a :: IO (TreeD Int Int)
 ("in",Leaf)
 ("in",Branch 7 49 () ())
 ("in",Branch 1 1 () ())

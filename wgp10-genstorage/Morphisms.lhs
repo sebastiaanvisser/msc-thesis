@@ -88,19 +88,19 @@ As before, we obtain an actual lookup function by passing the algebra to~|cataA|
 
 > lookup k = cataA (lookupAlg k)
 
-We can use |lookup| once we have an annotated tree. Let us assume that
-@it@ is bound to the result of evaluating |myTree_a| using the modification
+We can use |lookup| once we have an annotated tree. We reuse @myTree_M@
+that is bound to the result of evaluating |myTree_a| using the modification
 time annotation. The following expression
 returns the expected result, but now in the |IO| monad:
 \begin{verbatim}
-ghci> lookup 4 it
+ghci> lookup 4 myTree_M
 Just 16
 \end{verbatim}
 
-However, if we assume that @it@ is bound to the result of evaluating |myTree_a|
-in the debug annotation, the call to |lookup| reveals a problem:
+However, if we use @myTree_D@ that is bound to the result of evaluating
+|myTree_a| in the debug annotation, the call to |lookup| reveals a problem:
 \begin{verbatim}
-ghci> lookup 4 it
+ghci> lookup 4 myTree_D
 ("out",Branch 3 9 () ())
 ("out",Branch 1 1 () ())
 ("out",Leaf)
@@ -112,6 +112,7 @@ ghci> lookup 4 it
 ("out",Leaf)
 Just 16
 \end{verbatim}
+\noindent
 The function produces a result and a trace as expected. However, the trace
 reveals that the \emph{entire} tree is traversed, not just the path to the
 |Branch| containing the key~|4|. The culprit is the strictness of~|IO|, that
@@ -141,8 +142,9 @@ systematically to the annotated monadic setting:
 Note that the |Coalgebra| type synonym is unchanged and just repeated here
 for convenience.
 
-We can now produce annotated values more conveniently. Instead of
-using a monadic construction such as |myTree_a|, we can resort to |fromList|:
+We can now produce annotated values easily. Instead of
+using a monadic construction such as in the definition of~|myTree_a|,
+we can resort to~|fromList|:
 
 > fromList xs = anaA  fromSortedListAlg
 >                     (sortBy (comparing fst) xs)
@@ -152,10 +154,11 @@ The definition
 > myTree_a' :: In ann (TreeF Int Int) m => m (TreeA ann Int Int)
 > myTree_a' = fromList [(1,1),(3,9),(4,16),(7,49)]
 
-is equivalent to the old |myTree_a|.
+is equivalent to the old |myTree_a|, but significantly more concise.
 
-With the catamorphism we can remove all annotations from a structure --
-with the anamorphism we can completely annotate a recursive structure:
+The counterpart to |fullyOutA| that completely removes all annotations
+from a structure is |fullyInA| that completely annotates a recursive
+structure:
 
 > fullyInA ::  (In a f m, Monad m, Traversable f) =>
 >              Fix f -> m (FixA a f)
@@ -163,12 +166,12 @@ with the anamorphism we can completely annotate a recursive structure:
 
 \subsection{Apomorphism}\label{sec:apomorphisms}
 
-The situation for the apomorphism is a bit different, because
+For the apomorphism, we have slightly more work to do, because
 the fixed point combinator occurs in the type of coalgebras:
 
 > type ApoCoalgebra f s = s -> f (Either s (Fix f))
 
-In a first step, we are changing the coalgebra type to use |FixA|
+As a first step, we are changing the coalgebra type to use |FixA|
 instead:
 
 > type ApoCoalgebraA ann f s = s -> f (Either s (FixA ann f))
@@ -191,8 +194,8 @@ leaves when inserting key-value pairs -- but again, we cannot, because
 constructing new annotated values is associated with effects.
 
 We therefore define a new recursion pattern for modifiers such as |insert|
-in Section~\ref{sec:modification}. However, we need some preparation for
-that, so we first look at partially annotated structures.
+in Section~\ref{sec:modification}. As a preparation for the new pattern,
+we first look at partially annotated structures.
 
 \subsection{Partially annotated structures}
 
@@ -201,8 +204,8 @@ in a pure, annotation-agnostic way, while still being able to reuse parts
 of an annotated structure that we have available already.
 
 To this end, we introduce an \emph{annotation transformer} called |Partial|.
-Given an annotation |ann|, we can either choose to use a complete annotated
-subtree, or create a new unannotated layer:
+Given an annotation |ann|, we can either choose to create a new unannotated
+layer, or (re)use a complete annotated subtree:
 
 > data Partial ann f a  =  New  (f a)
 >                       |  Old  (FixA ann f)
@@ -252,8 +255,9 @@ We can now define a variant of the apomorphisms for modification functions
 that is different from the normal apomorphism in the following ways:
 \begin{itemize}
 \item the type of the seed is restricted to be a value of the recursive
-  structure itself;
-\item instead of stopping the recursion by returning a fully annotated tree,
+  structure itself -- this also motivates the name \emph{endo-apomorphism}
+  for the new pattern;
+\item instead of ending the recursion by returning a fully annotated tree,
   we allow to stop with a partially annotated tree.
 \end{itemize}
 We give both the old and the new coalgebra type for comparison:
@@ -264,7 +268,7 @@ We give both the old and the new coalgebra type for comparison:
 > type EndoApoCoalgebraA   ann f    =
 >   f (FixA ann f)  ->  f (Either (FixA ann f)  (FixPartialA ann f))
 
-The associated recursion looks as follows:
+The associated recursion pattern looks as follows:
 
 > endoApoA ::  (OutIn ann f m, Monad m, Traversable f) =>
 >              EndoApoCoalgebraA ann f -> FixA ann f -> m (FixA ann f)
@@ -274,7 +278,7 @@ The associated recursion looks as follows:
 
 Compared to the regular apomorphism, we use |outInA| because we now
 work with the same source and target structure, and we use |topIn|
-to create the missing annotations when we stop the recursion.
+to create the missing annotations once we stop the recursion.
 
 When defining a coalgebra for use with |endoApoA|, we now effectively
 have the choice between the following three actions per recursive
@@ -304,7 +308,7 @@ structure as its argument:
 
 \end{itemize}
 
-We can now return to our example, the |insert| function on binary search
+Let us now return to our example, the |insert| function on binary search
 trees. Unfortunately, we cannot quite reuse the original coalgebra we have
 given in Section~\ref{sec:simplerecpat}. We have to be more explicit about
 where we reuse old parts the tree, and where we create new parts of the
