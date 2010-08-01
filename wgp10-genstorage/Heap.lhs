@@ -29,7 +29,8 @@ detail, we first sketch the low-level storage layer.
 In this section, we introduce a block-based heap data structure that is used to
 allocate and use fragments of binary data on disk. The structure of the heap is
 similar to that of in-memory heaps as used by most programming languages to
-manage dynamically allocated data.
+manage dynamically allocated data. The heap structure can freely grow and shrink on demand.
+
 The heap uses a file to store a contiguous list of blocks of binary data. Each
 of the blocks contains a header and a payload. The header contains a flag to
 tell if the block is currently free or in use. Furthermore, the header
