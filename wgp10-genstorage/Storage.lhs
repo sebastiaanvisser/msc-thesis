@@ -115,10 +115,11 @@ define a helper function~|produce| that takes a producer operation, such as
 in a reserved location on the heap:
 
 > produce :: Binary (f (Fix f)) => Heap (Fix f) -> Heap ()
-> produce c = c >>= update (P 0) . out
+> produce c = c >>= writeRoot . out
 
-By writing the pointer to the root of the produced functional data structure in
-the special \emph{null block} we can easily locate it again to perform
+We write the pointer to the root node of the produced data structure to
+a special location on disk, we call this location the \emph{root block}.
+Becaues we use |writeRoot| to store the root pointer we can easily read back the pointer using |readRoot| to perform
 consecutive operations on the same data structure.
 We delete the @squares.db@ file and
 run the example again, this time saving the root node:
@@ -128,10 +129,10 @@ ghci> run "squares.db" (produce (fromListP squares))
 
 We make a similar wrapper function for performing consumer functions. The~|consume|
 operation takes a heap operation and passes it as input the data structure
-pointed to by the pointer stored in the null block:
+pointed to by the pointer stored in the root block:
 
 > consume :: Binary (f (Fix f)) => (Fix f -> Heap b) -> Heap b
-> consume c = read (P 0) >>= c . In
+> consume c = readRoot >>= c . In
 
 We can now run any consumer operation on the binary tree of squares stored on
 disk. We specialize the |lookup| function and apply it to our squares database:
@@ -144,7 +145,7 @@ ghci> run "squares.db" (consume (lookupP 3))
 Just 9
 \end{verbatim}
 
-The database file is opened and the root pointer is read from the null block.
+The database file is opened and the root pointer is read from the root block.
 The root pointer references a persistent binary tree that is passed to the
 |lookupP| function that, node by node, traverses the tree until the key is
 found and the value can be returned.
@@ -178,11 +179,11 @@ such as |insert| to work on the persistent storage:
 
 Similar to |produce| and |consume|, we define a function |modify|
 that applies a given modifier to the tree pointed at by the pointer
-in the null block, and stores the resulting tree pointer in the null
+in the root block, and stores the resulting tree pointer in the root
 block once more:
 
 > modify :: Binary (f (Fix f)) => (Fix f -> Heap (Fix f)) -> Heap ()
-> modify c = read (P 0) >>= c . In >>= update (P 0) . out
+> modify c = readRoot >>= c . In >>= writeRoot . out
 
 Here is an example:
 \begin{verbatim}
@@ -195,7 +196,7 @@ Just 81
 
 This is an interesting example because it shows three consecutive runs on the
 same database file. The second run modifies the binary tree on disk and stores
-the new root pointer in the null block. A lookup in the third command shows us
+the new root pointer in the root block. A lookup in the third command shows us
 the database file is updated.
 
 \subsection{Summary}
