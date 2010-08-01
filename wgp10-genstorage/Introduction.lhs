@@ -52,7 +52,8 @@ be stored on disk.
 \item \textbf{Efficiency:} By enabling incremental access to parts of the data
 we allow efficient manipulation of large collections of data.  Algorithms
 working on a persistent data structure have the same asymptotic running time as
-their in-memory counterpart.
+their in-memory counterpart. Partial access is a signification
+extension to more conventional data serialization methods~\cite{databinary,Jansson01polytypicdata}.
 \item \textbf{Transparency:} The final interface to the users uses common
 Haskell idioms. Users are not bothered with the implementation details of the
 storage system when manipulating persistent data structures.
