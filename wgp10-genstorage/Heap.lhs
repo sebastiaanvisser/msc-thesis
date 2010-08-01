@@ -80,17 +80,24 @@ data structure we could also have used a single phantom type of kind |*|.
 
 The implementation of the storage heap consists of a small set of
 operations that run inside a monadic |Heap| context. The |Heap| monad
-is a simple monad transformer stack that uses the |IO|
-monad on the inside. The context uses a reader monad to distribute the file
-handle of the heap file to all operations, and it makes use of a state monad to
-which an \emph{allocation map}, which we will briefly describe below.
+is a monad transformer stack that uses the |IO|
+monad on the inside.
 
 > newtype Heap a = Heap (ReaderT Handle (StateT AllocMap IO ) a)
 
+The context uses a reader monad to distribute the file
+handle of the heap file to all operations, and it makes use of a state monad to
+manage an \emph{allocation map}.
+
+The allocation map stores a mapping of
+block sizes to the offsets of all blocks that are not currently in use.
+Because we manage an in-memory map no disk access is needed when
+allocating new blocks of data.
+
 From the point of view of the user the |Heap| is opaque, no access to the
 internals of the monad are required to work with the heap.
-In order to run a sequence of heap operations, we must supply the name of
-a file that can be used as on-disk heap:
+In order to run a sequence of heap operations we use the |run| function, that
+gets supplied the name of a heap file.
 
 %if False
 
@@ -115,8 +122,8 @@ map. It then applies the heap computations, and closes the heap file in the end.
 \subsection{Heap operations}
 
 In this section we list all the heap operations one by one. We will not the
-implementation of any of the functions, but describe their usage and give their
-type signature:
+implementation of any of the functions, but give their type signature and
+describe their usage:
 
 \begin{itemize}
 
