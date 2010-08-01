@@ -106,7 +106,7 @@ and anamorphisms. We then show how to
 add annotations to the recursive positions of datatypes (Section~\ref{sec:annotations})
 and how to associate functionality with the creation and removal of annotations.
 The concept of annotations is not really new, but to our knowledge, has not
-been presented systematically before.\andres{Verify.}
+been presented systematically before.\andres{Verify.}\todo{Sean's push-up pull-down paper uses annotations, doesn't it?}
 In Section~\ref{sec:patterns}, we discuss how annotations affect recursion
 patterns and functions that are defined in terms of these patterns. We show that,
 in many cases, we can easily lift algebras written in a pure, annotation-agnostic
