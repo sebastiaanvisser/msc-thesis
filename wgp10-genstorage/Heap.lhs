@@ -130,7 +130,7 @@ describe their usage:
 \item | allocate :: Integer -> Heap (Ptr f a) |
 
 The |allocate| operation can be used to allocate a new block of data that is
-large enough to hold payload of the given size. The function can be
+large enough to hold a payload of the given size. The function can be
 compared to the in-memory |malloc| function from the C language. On
 return, |allocate| yields a pointer to a suitable block on disk. The function
 marks the current block as occupied in the in-memory allocation map.
@@ -181,8 +181,8 @@ datatypes that are regular.}
 
 \item | read :: Binary (f a) => Ptr f a -> Heap (f a) |
 
-Dual to the |write| operation we have the |read| operation 
-that takes a pointer to a block on disk, reads the binary payload,
+Dual to the |write| operation we have the |read| operation. 
+The function takes a pointer to a block on disk, reads the binary payload,
 deserializes the payload to a Haskell value using the |Binary| type class and
 returns the value.
 
