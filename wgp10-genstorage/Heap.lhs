@@ -121,7 +121,7 @@ map. It then applies the heap computations, and closes the heap file in the end.
 
 \subsection{Heap operations}
 
-In this section we list all the heap operations one by one. We will not the
+In this section we list all the heap operations one by one. We will not give the
 implementation of any of the functions, but give their type signature and
 describe their usage:
 
