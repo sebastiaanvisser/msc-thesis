@@ -20,8 +20,6 @@
 
 \section{Introduction}
 
-\andres{Somewhere in the introduction, we should say that we expect
-single-threaded access.}
 Algebraic datatypes in Haskell provide a powerful way to structure data.
 Recursive datatypes can be used to create functional data structures.
 Unfortunately, when data structures grow too large to fit in application memory
@@ -59,6 +57,12 @@ their in-memory counterpart.
 Haskell idioms. Users are not bothered with the implementation details of the
 storage system when manipulating persistent data structures.
 \end{enumerate}
+
+This paper deals with the generic mapping from data structures that are used in
+memory to the same structures that can be stored on disk. The system we have
+implemented only works for single threaded access to the data. Although we do
+not address the problem of concurrent access in detail, we quickly sketch what
+is needed to extend the framework to make multi threaded access possible.
 
 Consider the following two simple Haskell programs that on a high level
 illustrate the use of our storage framework:
