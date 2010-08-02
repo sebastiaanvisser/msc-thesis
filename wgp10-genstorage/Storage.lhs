@@ -107,8 +107,8 @@ ghci> run "squares.db" (fromListP squares)
 \end{verbatim}
 
 Figure \ref{fig:binarytree-pers} shows an illustration of our example tree
-laid out on the heap. The example above does write a binary tree of integers to
-disk as we expected, but has a slight problem when used on its own: the root
+laid out on the heap. The example above writes a binary tree of integers to
+disk as expected, but has a slight problem when used on its own: the root
 pointer of the structure is discarded and lost. We therefore
 define a helper function~|produce| that takes a producer operation, such as
 |fromListP|, runs the operation on the heap and then saves the final pointer

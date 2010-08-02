@@ -97,7 +97,7 @@ before going into recursion:
 
 %endif
 
-> lazyCataA phi = return . phi <=< mapM (_lazy . lazyCataA phi) <=< outA
+> lazyCataA phi = return . phi <=< mapM (lazy . lazyCataA phi) <=< outA
 
 %if False
 
