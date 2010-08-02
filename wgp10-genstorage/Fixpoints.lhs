@@ -36,7 +36,7 @@
 
 In this section, we show how datatypes can be rewritten as fixed points,
 and algorithms working on such datatypes can be expressed in terms of
-recursion patterns (Sections~\ref{sec:recdata} and \ref{sec:fix}).
+recursion patterns~\cite{bananas, genintro, polyp, twolevel}.
 Reexpressing datatypes and algorithms in this style
 grants us fine-grained access to the structure of the datatypes, and
 thereby control over the behaviour of operations. 

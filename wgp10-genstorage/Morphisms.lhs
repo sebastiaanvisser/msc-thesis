@@ -53,7 +53,7 @@ Recall the definition of a catamorphism from Section~\ref{sec:simplerecpat}:
 > cata phi = phi . fmap (cata phi) . out
 
 In order to make the function annotation-ready, we replace |out|
-by |outA|; as a consequence, everything becomes monadic,
+by |outA|; as a consequence, everything becomes monadic~\cite{monadicfolds},
 so we replace function composition by Kleisli composition;
 finally, we replace |fmap| by |mapM|:
 
