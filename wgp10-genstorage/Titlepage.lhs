@@ -27,11 +27,11 @@ how to implement a persistent library of finite maps based on binary
 search trees.
 \end{abstract}
 
-% \category{CR-number}{subcategory}{third-level}
+\category{CR-number}{subcategory}{third-level}
 
-% \terms
-% term1, term2
+\terms
+term1, term2
 
-% \keywords
-% keyword1, keyword2
+\keywords
+keyword1, keyword2
 

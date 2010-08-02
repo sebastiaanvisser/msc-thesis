@@ -61,7 +61,7 @@ storage system when manipulating persistent data structures.
 
 This paper deals with the generic mapping from data structures that are used in
 memory to the same structures that can be stored on disk. The system we have
-implemented only works for single threaded access to the data. Although we do
+implemented only works for single-threaded access to the data. Although we do
 not address the problem of concurrent access in detail, we quickly sketch what
 is needed to extend the framework to make multi threaded access possible.
 
@@ -100,14 +100,14 @@ a persistent mapping from keys to values implemented as a binary search tree,
 similar to Haskell's @Data.Map@ library~\cite{bintree}.
 
 In Section~\ref{sec:fixpoints}, we summarize the basic and
-well-known idea\andres{Add refs} of expressing
+well-known idea of expressing
 datatypes as fixed points of their pattern functors, and defining
 functions by instantiating recursion patterns such as catamorphisms
 and anamorphisms. We then show how to
 add annotations to the recursive positions of datatypes (Section~\ref{sec:annotations})
 and how to associate functionality with the creation and removal of annotations.
-The concept of annotations is not really new, but to our knowledge, has not
-been presented systematically before.\andres{Verify.}\todo{Sean's push-up pull-down paper uses annotations, doesn't it?}
+Instances of annotations have been used before, but we aim to describe
+(possibly effectful) annotations systematically here.
 In Section~\ref{sec:patterns}, we discuss how annotations affect recursion
 patterns and functions that are defined in terms of these patterns. We show that,
 in many cases, we can easily lift algebras written in a pure, annotation-agnostic

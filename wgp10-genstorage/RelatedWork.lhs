@@ -215,6 +215,7 @@ no longer used.
 
 The idea of using fixed points and recursion patterns to express datatypes
 and operations on such datatypes is well-explored~\cite{bananas, genintro, polyp}.
+This approach to structuring data is also known as \emph{two-level types}~\cite{twolevel}.
 While the original motivation for taking this view was mainly to derive algorithms
 generically or calculate laws -- such as fusion laws for optimisation purposes,
 fixed-point representations have also been used to modify datatypes in various
@@ -228,10 +229,13 @@ data structure can be generically derived from a fixed-point view~\cite{tidata, 
 Van Steenbergen et al.~\cite{selections} show how to use generic programming with
 annotated fixed points to store source position information in abstract syntax
 trees. 
+Chuang and Mu~\cite{outofcore} explore an approach similar to our own, using
+fixed-point representations for storing data on disk in the context of OCaml.
 
 Most recursion patterns we use are standard, except for the endo-apomorphism
 defined in Section~\ref{sec:modification}. This pattern somewhat resembles
-a \emph{futumorphism}~\cite{futus}.
+a \emph{futumorphism}~\cite{futus}. Monadic folds have been described by
+Fokkinga~\cite{monadicfolds}.
 
 % Recursion patterns for working with non-regular recursive datatypes
 % have been described by Ghani and Johann~\cite{initial}.

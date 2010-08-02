@@ -1,4 +1,4 @@
-\documentclass[preprint]{sigplanconf}
+\documentclass{sigplanconf}
 
 \usepackage{todonotes}
 \newcommand\andres[2][]{\todo[color=blue!40,size=\footnotesize,#1]{#2}}

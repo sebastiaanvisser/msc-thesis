@@ -34,7 +34,7 @@
 \section{Working with fixed points}
 \label{sec:fixpoints}
 
-In this section, we repeat how datatypes can be rewritten as fixed points,
+In this section, we show how datatypes can be rewritten as fixed points,
 and algorithms working on such datatypes can be expressed in terms of
 recursion patterns (Sections~\ref{sec:recdata} and \ref{sec:fix}).
 Reexpressing datatypes and algorithms in this style
