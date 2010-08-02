@@ -1,3 +1,6 @@
+\conferenceinfo{WGP'10,} {September 26, 2010, Baltimore, Maryland, USA.}
+\CopyrightYear{2010}
+\copyrightdata{978-1-4503-0251-7/10/09}
 %\conferenceinfo{WXYZ '05}{date, City.} 
 %\copyrightyear{2005} 
 %\copyrightdata{[to be supplied]} 
