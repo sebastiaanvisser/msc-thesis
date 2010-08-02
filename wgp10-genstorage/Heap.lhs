@@ -76,10 +76,10 @@ that |Ptr| has the right kind to be used as a fixed-point annotation.
 
 \subsection{Heap context}
 
-The implementation of the storage heap consists of a small set of
-operations that run inside a monadic |Heap| context. The |Heap| monad
+All heap
+operations run inside a monadic |Heap| context. The |Heap| monad
 is a monad transformer stack that uses the |IO|
-monad on the inside.
+monad on the inside:
 
 > newtype Heap a = Heap (ReaderT Handle (StateT AllocMap IO ) a)
 
@@ -89,13 +89,13 @@ manage an \emph{allocation map}.
 
 The allocation map stores a mapping of
 block sizes to the offsets of all blocks that are not currently in use.
-Because we manage an in-memory map no disk access is needed when
+Because we manage an in-memory map, no disk access is needed when
 allocating new blocks of data.
 
 From the point of view of the user the |Heap| is opaque, no access to the
 internals of the monad are required to work with the heap.
-In order to run a sequence of heap operations we use the |run| function, that
-gets supplied the name of a heap file.
+In order to run a sequence of heap operations we use the |run| function, which
+receives the name of a heap file:
 
 %if False
 
@@ -113,16 +113,15 @@ gets supplied the name of a heap file.
 > run :: FilePath -> Heap a -> IO a
 
 Because of the file access, the result of |run| is in the |IO| monad. The
-|run| function opens the heap file and initializes it if it is new. If the
+|run|~function opens the heap file and initializes it if it is new. If the
 file exists, it quickly scans all blocks to compute the in-memory allocation
 map. It then applies the heap computations, and closes the heap file in the end.
 
 \subsection{Heap operations}\label{sec:writeread}
 
-In this section we list all the heap operations one by one. We will not give the
-implementation of any of the functions, but give their type signature and
-describe their usage:
-
+We now present the interface of the heap structure. For each operation, we
+provide the type signature and a short operations,
+but we do not go into details about the implementation.
 \begin{itemize}
 
 \item | allocate :: Integer -> Heap (Ptr f a) |
@@ -132,7 +131,7 @@ large enough to hold a payload of the given size. The function can be
 compared to the in-memory |malloc| function from the C language. On
 return, |allocate| yields a pointer to a suitable block on disk. The function
 marks the current block as occupied in the in-memory allocation map.
-Consecutive calls the |allocate| will no longer see the block as eligible for
+Subsequent calls to |allocate| will no longer see the block as eligible for
 allocation.
 
 \item | free :: Ptr f a -> Heap () |
@@ -172,37 +171,37 @@ The |put| method serializes a value to a binary stream,
 whereas |get| deserializes a binary stream back to a
 Haskell value.\footnote{Both |Get| and |Put| are monads defined in the |Binary|
 class. The details are not relevant for our purposes here.
-Using the @regular@~\cite{jpm} library for generic
+Using the @regular@~\cite{rewriting} library for generic
 programming, we have created a generic function that can
 be used to automatically derive |Binary| instances for Haskell
 datatypes that are regular.}
 
 \item | read :: Binary (f a) => Ptr f a -> Heap (f a) |
 
-Dual to the |write| operation we have the |read| operation. 
+Dual to the |write| operation, we have the |read| operation. 
 The function takes a pointer to a block on disk, reads the binary payload,
 deserializes the payload to a Haskell value using the |Binary| type class and
 returns the value.
 
 \item | fetch :: Binary (f a) => Ptr f a -> Heap (f a) |
 
-The |fetch| operation is a slight variation on the |read| operation. Whereas
+The |fetch| operation is a variant of the |read| operation. Whereas
 |read| leaves the original block intact, |fetch|
 frees the block after reading the data.
 
 \item | writeRoot :: Ptr f a -> Heap () |
 
-The |writeRoot| operation is a slight variation of the |write| operation which
+The |writeRoot| operation is a variant of |write| that
 will show to be useful in the next section. The function takes a pointer to
 some block on the heap and will store \emph{the pointer value} on a fixed
 location on the heap. This function can be used to store the root of a data
-structure in a place that can easily be identified and read back.
+structure in a place that can easily be identified, also beyond the end
+of a database session.
 
 \item | readRoot :: Heap (Ptr f a) |
 
 The |readRoot| operation can be used to read back the pointer that has been
 stored by the |writeRoot| operation. 
-
 \end{itemize}
 
 The |allocate| and |free| heap operations are both used in the
@@ -225,7 +224,7 @@ structures.
 
 %endif
 
-In this section, we have sketched the interface of a file based heap
+In this section, we have sketched the interface of a file-based heap
 structure. It can be used to store arbitrary blocks of binary data on disk.
 Access to the data is managed by pointers as offsets into the file. All Haskell
 values that have an instance for the |Binary| type class can automatically be
