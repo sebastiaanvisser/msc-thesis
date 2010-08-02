@@ -2,6 +2,7 @@
 %subst verbnl           = "\\'n\tt\gobble "
 %subst keyword a        = "\Keyword{" a "}"
 %subst numeral a        = "\Numeral{" a "}"
+%subst inline a         = "{\hscodestyle\ensuremath{ " a "}}"
 
 %format mempty              = "\mathrel{\emptyset}"
 %format <>                  = "\mathrel{\diamond}"

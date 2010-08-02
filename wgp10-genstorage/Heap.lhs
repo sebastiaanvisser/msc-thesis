@@ -120,7 +120,7 @@ Because of the file access, the result of |run| is in the |IO| monad. The
 file exists, it quickly scans all blocks to compute the in-memory allocation
 map. It then applies the heap computations, and closes the heap file in the end.
 
-\subsection{Heap operations}
+\subsection{Heap operations}\label{sec:writeread}
 
 In this section we list all the heap operations one by one. We will not give the
 implementation of any of the functions, but give their type signature and
