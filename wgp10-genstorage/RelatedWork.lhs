@@ -121,6 +121,7 @@ ghci> lookup 4 it
 Just 16
 \end{verbatim}
 
+\enlargethispage*{\baselineskip}%
 We have solved the laziness problem for the storage heap specifically by
 creating two separate heap contexts, a read-only context which uses lazy IO and
 a read-write context that uses strict IO. The pointer instance for the |Out|

@@ -330,6 +330,7 @@ because we use the endo-apomorphism now. And we can still get the original
 behaviour back, by specializing to the identity annotation and the identity
 monad.
 
+\enlargethispage*{\baselineskip}%
 We run |insertAlg| by passing it to |endoApoA|:
 
 > insert k v = endoApoA (insertAlg k v)
