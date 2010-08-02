@@ -411,9 +411,9 @@ binary search tree datatype:
 > leafA :: In ann (TreeF k v) m => m (TreeA ann k v)
 > leafA = inA Leaf
 >
-> branchA  ::  In ann (TreeF k v) m
->          =>  k -> v -> TreeA ann k v -> TreeA ann k v
->          ->  m (TreeA ann k v)
+> branchA  ::  In ann (TreeF k v) m =>
+>              k -> v -> TreeA ann k v -> TreeA ann k v ->
+>              m (TreeA ann k v)
 > branchA k v l r = inA (Branch k v l r)
 
 The |leafA| and |branchA| smart constructors can be used to build up annotated

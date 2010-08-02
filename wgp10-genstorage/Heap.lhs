@@ -221,6 +221,8 @@ structures.
 > update = undefined
 > free = undefined
 > run = undefined
+> readRoot = undefined
+> writeRoot = undefined
 
 %endif
 

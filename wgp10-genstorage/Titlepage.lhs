@@ -12,7 +12,7 @@
 %\subtitle{.}
 
 \authorinfo{Sebastiaan Visser \and Andres L\"oh}
-           {Department of Information and Computing Sciences\\ Utrecht University}
+           {Department of Information and Computing Sciences\\ Utrecht University\\ P.O. Box 80.089, 3508 TB Utrecht, The Netherlands}
            {sebastiaan@@fvisser.nl \and andres@@cs.uu.nl}
 
 \maketitle
