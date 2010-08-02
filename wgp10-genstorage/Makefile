@@ -3,6 +3,10 @@ DOC=Paper
 all: ${DOC}.pdf
 	open *.pdf
 
+submission: ${DOC}.pdf
+	cp ${DOC}.pdf wgp25k-visser.pdf
+	acroread -toPostScript wgp25k-visser.pdf
+
 ${DOC}.tex: \
 	*.lhs \
 	*.fmt
