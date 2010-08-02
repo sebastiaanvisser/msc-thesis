@@ -27,11 +27,10 @@ how to implement a persistent library of finite maps based on binary
 search trees.
 \end{abstract}
 
-\category{CR-number}{subcategory}{third-level}
+\category{D.2.13}{Reusable Software}{Reusable libraries}
 
 \terms
-term1, term2
+Languages
 
 \keywords
-keyword1, keyword2
-
+datatype-generic programming, fixed points, annotations
