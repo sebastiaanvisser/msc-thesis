@@ -20,8 +20,6 @@
 
 \section{Introduction}
 
-\andres{Somewhere in the introduction, we should say that we expect
-single-threaded access.}
 Algebraic datatypes in Haskell provide a powerful way to structure data.
 Recursive datatypes can be used to create functional data structures.
 Unfortunately, when data structures grow too large to fit in application memory
@@ -54,11 +52,18 @@ be stored on disk.
 \item \textbf{Efficiency:} By enabling incremental access to parts of the data
 we allow efficient manipulation of large collections of data.  Algorithms
 working on a persistent data structure have the same asymptotic running time as
-their in-memory counterpart.
+their in-memory counterpart. Partial access is a signification
+extension to more conventional data serialization methods~\cite{databinary,Jansson01polytypicdata}.
 \item \textbf{Transparency:} The final interface to the users uses common
 Haskell idioms. Users are not bothered with the implementation details of the
 storage system when manipulating persistent data structures.
 \end{enumerate}
+
+This paper deals with the generic mapping from data structures that are used in
+memory to the same structures that can be stored on disk. The system we have
+implemented only works for single threaded access to the data. Although we do
+not address the problem of concurrent access in detail, we quickly sketch what
+is needed to extend the framework to make multi threaded access possible.
 
 Consider the following two simple Haskell programs that on a high level
 illustrate the use of our storage framework:
@@ -102,7 +107,7 @@ and anamorphisms. We then show how to
 add annotations to the recursive positions of datatypes (Section~\ref{sec:annotations})
 and how to associate functionality with the creation and removal of annotations.
 The concept of annotations is not really new, but to our knowledge, has not
-been presented systematically before.\andres{Verify.}
+been presented systematically before.\andres{Verify.}\todo{Sean's push-up pull-down paper uses annotations, doesn't it?}
 In Section~\ref{sec:patterns}, we discuss how annotations affect recursion
 patterns and functions that are defined in terms of these patterns. We show that,
 in many cases, we can easily lift algebras written in a pure, annotation-agnostic

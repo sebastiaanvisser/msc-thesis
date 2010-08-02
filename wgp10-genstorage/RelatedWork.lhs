@@ -186,7 +186,7 @@ special form of garbage collection. The modification functions written with the
 help of the |OutIn| type class will automatically clean up old nodes that are
 no longer needed. The ability of explicit sharing would change this, a
 modification cannot blindly free old nodes because they might be shared with
-other parts of the data structure. The addition of explicit sharing this
+other parts of the data structure. The addition of explicit sharing 
 requires support for garbage collection.
 
 \subsection{Concurrency}
