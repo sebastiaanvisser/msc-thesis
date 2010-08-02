@@ -39,11 +39,11 @@ The payload is an arbitrary sequence of binary data. The size of the payload
 must not exceed the size specified in the header minus the header size.
 An example layout of the heap is shown in Figure~\ref{fig:heap}.
 
-The heap described here has a rather imperative and low level implementation.
-Some of the operations are unsafe, because they have invariants not checked at
-compile time. We discourage direct use of such unsafe structure and will show
-how to wrap the low-level operations into a safer and high-level domain in the
-next section.
+The heap described here has a rather imperative and low-level implementation.
+Some of the operations are unsafe: they have invariants that are not enforced at
+compile time. We emphasize that these unsafe operations are internal to our
+framework. The user defines operations in terms of a safe and more high-level
+interface as discussed in the next section.
 
 \begin{figure}[tp]
 \begin{center}
@@ -59,9 +59,9 @@ blocks of data.}
 \subsection{Offset pointers}
 
 Applications that use the heap can allocate blocks of data of any size and use
-it to freely write to it and read back the payload. All access to the heap is
-managed using pointers. The pointer datatype just stores an integer value that
-represents an offset into the heap file. There is an invariant that pointers always
+it for writing and reading data. All access to the heap is
+managed using pointers. The pointer datatype just stores an integer that
+represents an offset into the heap file. An invariant is that pointers always
 point to the beginning of a block.
 
 > type Offset  = Integer
@@ -69,13 +69,10 @@ point to the beginning of a block.
 > newtype Ptr (f :: * -> *) a = P Offset
 >   deriving Binary
 
-The |Ptr| type uses a phantom type to represent the type stored in the payload
-of the block, this way ensuring we can only read values from a block of with
-the same type as has been written to. Because we use the |Ptr| type as a fixed
-point annotation, as shown in the next section, we use two phantom type
-variables: one of kind |* -> *| and of kind |*|. The |Ptr| type fits the |a|
-variable from the annotation type classes. From the perspective of this heap
-data structure we could also have used a single phantom type of kind |*|.
+The |Ptr| has two phantom type arguments |f| and |a| that are used to ensure
+that only values of type |f a| can be written to or read from the location
+addressed by the pointer. By using two type arguments rather than one, we ensure
+that |Ptr| has the right kind to be used as a fixed-point annotation.
 
 \subsection{Heap context}
 
